@@ -1,0 +1,189 @@
+/* ── 右侧 Chat 页 ─────────────────────────────────────────────
+   面板内边距 16；竖着分两段：消息区（自己滚，flex:1）与输入区（贴底，48 高）。
+   栏体自带的那两条雾带在聊天页里不用（它们贴在面板上下沿、会盖住消息），
+   顶、底各自单独放一条：顶部与左边栏上缘同款（平台段归零），
+   底部复用 frost--bottom（方向朝上），消息在面板底沿化开、输入条悬浮其上。
+   滚动只发生在 .chat__log 里，.panel__body 不再做滚动容器 —— 否则输入框会
+   跟着消息一起滚走 */
+#panel-tools > .frost{display:none}
+#panel-tools > .chat__frost{display:block}   /* 聊天页顶部那条要留着 */
+/* 切到 Log 页时连它也收掉（Log 页没有滚动内容要托） */
+#panel-tools:has([data-panel-body][data-view="log"]) > .chat__frost{display:none}
+#panel-tools .panel__body{
+  padding:16px;
+  display:flex; flex-direction:column;
+  overflow:hidden;
+}
+/* 消息区顶部的渐变：整套参数不另设，直接继承 #panel-tools（.rail__panel）的
+   --frost-* —— 与左边栏顶部那条完全同源：16 满浓度平台 + 32 渐隐 + 同组色阶曲线。
+   .chat__frost 只承担显隐（#panel-tools > .chat__frost 那两条），不再覆盖参数 */
+.chat{
+  flex:1 1 auto; min-height:0;
+  display:flex; flex-direction:column;
+  position:relative;              /* 悬浮输入条的定位基准 */
+  /* 向下借出面板的 16 内边距：聊天区底沿与面板底沿相接，
+     输入条改为悬浮在最后几条消息上，不再把消息区顶短 */
+  margin-bottom:-16px;
+}
+.chat__log{
+  flex:1 1 auto; min-height:0;
+  display:flex; flex-direction:column; gap:24px;
+  /* 左/右 16：气泡比输入条再收进一格；
+     上 16 与面板的 16 内边距合起来正好 32，第一条消息落在雾带下沿之外；
+     下 80：悬浮输入条高 40 + 离面板底 16 + 呼吸 24，
+     滚到底时最后一条消息（含气泡下方的时间）从输入条上沿以上经过 */
+  padding:16px 16px 80px;
+  overflow-y:auto; overflow-x:clip;   /* 内容超出才滚，不满时不动 */
+  overscroll-behavior:contain;
+  scrollbar-width:none;
+}
+.chat__log::-webkit-scrollbar{width:0; height:0}
+
+/* 一条消息 = 气泡 + 时间。时间绝对定位在气泡下方（不占位，hover 时消息不跳），
+   靠 --time 那侧对齐：AI 的在右下，用户的在左下 */
+.msg{
+  position:relative;
+  display:flex; flex-direction:column; align-items:flex-start;
+  max-width:100%;
+}
+.msg--user{align-items:flex-end}
+/* 消息从顶部开始排，不满一屏时下面留白，超出才滚 */
+.msg__bubble{
+  /* 与面板同一套投影：--sh / --sh-a 就是栏体那两个值，气泡飘起来的手感一致 */
+  --sh:16px; --sh-a:.1;
+  position:relative;
+  max-width:100%;
+  /* 下限：1/8 面板内部宽、高度 32。百分比算的是消息区内容宽（面板内部宽再减掉
+     左右各 16 的内缩），所以换成百分比要补上那 32 的 1/8，即 +4px */
+  min-width:calc(12.5% + 4px);
+  min-height:32px;
+  padding:12px 16px;
+  border-radius:24px;
+  background:var(--panel);
+  box-shadow:0 0 var(--sh) rgba(var(--shadow), calc(var(--sh-a) * var(--sh-k)));
+  font-size:var(--fs-16); line-height:1.45; letter-spacing:.2px;
+  color:var(--text-secondary);
+  text-align:justify; text-justify:inter-word;   /* 两端对齐 */
+  overflow-wrap:anywhere;
+}
+/* 用户：右下角是直角。最大宽度是面板内容宽的 5/8 —— 消息区自己还内缩了左右各 16，
+   所以换算到这里的百分比是 62.5% 再加那 32 的 5/8（=20px），仍等于 5/8 面板宽 */
+.msg--user .msg__bubble{
+  max-width:calc(62.5% + 20px);
+  border-bottom-right-radius:0;
+}
+/* AI：左下角是直角，占满可用宽度；投影之外再加一层 1px 主题色内描边 */
+.msg--ai .msg__bubble{
+  max-width:100%;
+  border-bottom-left-radius:0;
+  box-shadow:
+    inset 0 0 0 1px var(--theme),
+    0 0 var(--sh) rgba(var(--shadow), calc(var(--sh-a) * var(--sh-k)));
+}
+/* 时间挂在气泡内部（.msg__bubble 是 position:relative），定位基准就是气泡本身，
+   不随气泡左右浮动；AI 的在左下、用户的在右下，距气泡底 4。
+   气泡左右各有 16 的消息区内缩，所以时间比气泡宽时也是溢进那 16 里，不会被裁 */
+.msg__time{
+  position:absolute; top:calc(100% + 4px);
+  font-size:var(--fs-12); line-height:1; letter-spacing:.2px;
+  color:var(--text-muted); white-space:nowrap;
+  opacity:0; pointer-events:none;
+  transition:opacity .18s linear;
+}
+.msg--ai .msg__time{left:0}
+.msg--user .msg__time{right:0}
+.msg:hover .msg__time{opacity:1}
+
+/* 输入区：只剩输入框一枚，自己就是整条盒子 —— 32 高、圆角 8，
+   底色（--panel）铺满、柔光投影和选中态描边都贴着同一个圆角，
+   不再有内衬留白把底色和投影圈读成两层。
+   历史钮已挪到聊天页左上角、发送钮已删除，发送统一走输入框回车。
+   整条悬浮在聊天区上（absolute 贴 .chat 底、离面板底沿 16） */
+.chat__composer{
+  position:absolute; left:0; right:0; bottom:16px; z-index:4;
+  display:flex; align-items:center;
+  padding:0;
+  border-radius:8px;
+  /* 未选中无边框，只有柔光投影 */
+  box-shadow:0 0 var(--sh) rgba(var(--shadow), calc(var(--sh-a) * var(--sh-k)));
+}
+/* 选中态描边单独放一层：两态的 box-shadow 列表长度不同没法插值（会直入直出），
+   描边常驻、用 opacity 做 0.1s 渐显渐隐，过渡必定平滑 */
+.chat__composer::after{
+  content:''; position:absolute; inset:0;
+  border-radius:inherit;
+  box-shadow:inset 0 0 0 1px var(--theme);
+  opacity:0;
+  pointer-events:none;
+  transition:opacity .1s ease;
+}
+.chat__composer:focus-within::after{opacity:1}
+/* 历史对话钮：挪到聊天页左上角（.chat 的定位基准），32×32 方形触控区，
+   无底色无描边，只有图标本身；按压脚本写进来的 --press 不再有底片可缩，自然空转 */
+.chat__btn{
+  appearance:none; -webkit-appearance:none;
+  position:absolute; top:0; left:0; z-index:4;   /* 压过雾带的 z3，不被顶部平台糊住 */
+  width:32px; height:32px;
+  display:grid; place-items:center;
+  padding:0; border:0;
+  background:transparent; color:var(--theme);
+  cursor:pointer;
+}
+.chat__btn svg{width:24px; height:24px; display:block; fill:currentColor}
+@media (prefers-reduced-motion: reduce){
+  /* 跑马灯也停：名字超宽时宁可截断，不滚动 */
+  .hud__name.is-loop .hud__name-track{animation:none}
+}
+.chat__input{
+  flex:1 1 auto; min-width:0;
+  height:32px; padding:0 8px;
+  border:0; border-radius:8px; outline:none; appearance:none;
+  /* 不透明的 panel fill 实色：--panel 自身半透明（.75），
+     这里把它的 rgb 按 75% 压到 --bg 上 —— 即面板实际渲染出来的实色。
+     不引用 --frost-base：那格变量定义在 .frost 上，输入框取不到 */
+  background:color-mix(in srgb, rgb(from var(--panel) r g b) 75%, var(--bg));
+  -webkit-backdrop-filter:blur(16px);
+  backdrop-filter:blur(16px);
+  /* 描边由外层盒子统一承担，输入框自身不再画框 */
+  font-family:inherit; font-weight:var(--fw); font-size:var(--fs-16);
+  letter-spacing:.2px; color:var(--text-primary);
+  caret-color:var(--theme);
+}
+.chat__input::placeholder{color:var(--text-muted)}
+/* 切到 Log 页时整块聊天收掉 */
+[data-panel-body][data-view="log"] [data-chat-only]{display:none}
+
+@media (max-width:640px){
+  /* 窄屏侧栏贴底、--rail-h 变成 auto，calc 会失效，这里给弹窗一条独立的高度 */
+  .modal__panel{
+    --modal-w:min(calc(100vw - 48px), calc(52vh * 1.5));
+  }
+}
+
+@media (max-width:1100px){
+  :root{--rail-expanded: calc(var(--rail-w) + 1px + var(--panel-pad) * 2 + var(--sc-w))}
+  /* 单列：仍然平分栏宽，稳态正好 240（273 面板 − 1 描边 − 32 内边距） */
+  .sc-grid{grid-template-columns:1fr}
+}
+
+/* 移动端：栏贴底、横向排布 */
+@media (max-width:640px){
+  :root{--rail-h:auto; --rail-w:64px; --rail-r:20px}
+  .topbar{flex-direction:column; align-items:flex-start; gap:12px; height:auto}
+  .rail{
+    top:auto; bottom:12px; translate:0 0;
+    height:64px; width:auto; left:12px; right:auto;
+  }
+  .rail--right{left:auto; right:12px}
+  .rail__bar{width:auto; flex:0 0 auto; padding:8px; flex-direction:row; align-items:center; gap:8px}
+  .rail__items{flex-direction:row; gap:8px}
+  .item__label{display:none}
+  .rail.is-open{width:calc(100vw - 24px)}
+  .rail__panel{display:none}
+  .rail__toggle{display:none}
+  .rail.is-hidden{opacity:0; pointer-events:none}
+  /* 这一档两栏已经贴到底边左右，底部中间再挂一条会和它们撞在一起 */
+  .dock{display:none}
+  /* 左下角的参数显示同样让位：两栏贴底后左下角就是左栏本体 */
+  .hud{display:none}
+}

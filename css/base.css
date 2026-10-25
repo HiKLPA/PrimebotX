@@ -1,0 +1,163 @@
+/* ============================================================
+   Design tokens — 取值来自 draft.fig
+   * 后缀 _light 用于浅色模式，_dark 保留
+   ============================================================ */
+:root{
+  /* color */
+  --theme:            #91d2c3;   /* theme_light */
+  --theme-hover:      #9cd7c9;   /* theme 提亮 10%（兜底，color-mix 不支持时用） */
+  --theme-hover:      color-mix(in srgb, var(--theme) 90%, #ffffff);  /* 向白混 10% */
+  --theme-dark:       #91d7cd;   /* theme_dark */
+  --hint:             #5f9b73;   /* hint */
+  --warning:          #aa4137;   /* warning */
+
+  --series-green-dark:  #789687;
+  --series-green-light: #6e9182;
+  --series-blue-dark:   #4169a0;
+  --series-blue-light:  #415fa0;
+  --series-pink-light:  #c86482;
+  --series-pink-dark:   #d26987;
+
+  --bg:               #f0f0f0;   /* background_fill_light */
+  --panel:            rgba(250,250,250,.75);   /* panel_fill_light，半透明才能透出背景模糊 */
+  --border:           #ffffff;   /* border_light */
+  --card:             rgba(255,255,255,.5);   /* 指令卡片底：比面板再亮一点，靠白描边分开 */
+  --blur:             16px;      /* 面板与按钮的背景高斯模糊半径 */
+
+  --text-primary:     #1c1c1c;
+  --text-secondary:   #2d2d2d;
+  --text-reduced:     #4b4b4b;
+  --text-muted:       #9b9b9b;
+  --text-invert:      #fafafa;
+  --avatar:           #d9d9d9;
+  /* 投影色单独拿出来：浅色底上用 #2d2d2d 的柔灰，深色底上必须换成纯黑，
+     否则面板与页面同明度，投影完全看不出来、几层表面会糊成一片。
+     --sh-k 是同一层柔光的浓度倍数：深色底要更沉一点才压得住 */
+  --shadow:           45,45,45;
+  --sh-k:             1;
+
+  /* type */
+  --font: "Barlow Condensed", "Barlow Condensed SemiBold", "Arial Narrow", "Helvetica Neue", sans-serif;
+  --fw: 600;
+  --fs-12: 12px; --fs-14: 14px; --fs-16: 16px; --fs-18: 18px;
+  --fs-24: 24px; --fs-28: 28px; --fs-32: 32px;
+
+  /* layout */
+  --edge: 16px;                        /* 顶栏上/右、侧栏左/右 */
+  --gap:  clamp(16px, 1.67vw, 32px);
+  --top-h: 48px;
+  --pill-h: calc(var(--top-h) - 8px);    /* 顶栏 48 - 胶囊内边距 4×2 */
+  --pill-w: clamp(118px, 8.34vw, 160px);  /* 160 @1920 */
+  --pill-fs: clamp(18px, 1.25vw, 24px);   /* 24 @1920 */
+  /* 按下时的压入比例：--press 由尾部按压脚本补间成无单位倍数，
+     底片按 1 - --press × 这个系数 等比缩放，四周收得一样多。
+     .02 即缩到 98%，160 宽的胶囊左右各让 1.6px、40 高的上下各让 0.4px，
+     窄的圆钮四边各让 0.48px */
+  --press-k: .02;
+  --rail-w: 80px;
+  --rail-h: 512px;
+  --rail-r: 24px;
+  /* 指令卡片：fig 原尺寸 240×150，一行两张，卡间距 8，面板内边距 16
+     栏的展开宽度直接由这三个数算出来，卡片多大、栏就多宽 */
+  --sc-w: 240px;
+  --sc-gap: 8px;
+  --panel-pad: 16px;
+  /* 面板那条 1px 竖直分割线也要算进栏宽，否则两张卡会被挤掉 1px */
+  --rail-expanded: calc(var(--rail-w) + 1px + var(--panel-pad) * 2 + var(--sc-w) * 2 + var(--sc-gap));
+  /* 兜底终值：推到缩放后的外沿正好贴住视口边界，不多留余量。
+     收起态宽 80、缩到 0.95，右沿落在 0：edge + 0.95 × rail-w；再扣掉
+     translate 里那半宽补偿 (1 - s) × 50% × w，即 0.025w，合计 0.975w */
+  --rail-hide: calc(var(--edge) + var(--rail-w) * 0.975);
+  /* 底部控制面板：宽度取页面的一半，高度不再按比例定死，
+     而是由内容撑出来 —— 三行按钮 + 两道间隔 + 上下各一圈内边距。
+     按钮直接用左右栏圆形图标钮的 --btn，间隔与内边距统一取 8，
+     所以面板高度是个定值，不随视口宽度变化，窄屏上按钮也不会被压小 */
+  --dock-w: 50vw;
+  --dock-gap: 8px;
+  --dock-pad: 8px;
+  --dock-btn: var(--btn);
+  --dock-h: calc(var(--dock-btn) * 3 + var(--dock-gap) * 2 + var(--dock-pad) * 2);
+  --btn: 48px;
+  --ease: cubic-bezier(.22,.61,.36,1);
+  --dur: .34s;
+
+  /* shadow —— 统一用 #2d2d2d 做投影色，固定两层：柔光 + 4px 贴边。
+     柔光半径挂在 --sh 上（默认 16px）、透明度挂在 --sh-a 上（默认 .10），
+     开合时由脚本同步补间到 32px / .20 再收回；
+     磁吸只改倾斜与浮起（transform），不动模糊半径 */
+}
+
+/* 开合时的形变比例：--sx / --sy 由脚本补间（1 → 1.02 → 1），元素用独立的
+   scale 属性接住，不写进 transform（那里还有 translateY(-50%) 与 is-hidden 的位移）。
+   inherits:false —— 只在这一层用，不必传给上千个子节点，否则每帧改值都会让整棵子树重算样式 */
+@property --sx{ syntax:'<number>'; inherits:false; initial-value:1 }
+@property --sy{ syntax:'<number>'; inherits:false; initial-value:1 }
+/* 栏体移入移出的两个量：--hide-s 是缩量、--hide-d 是退出位移。
+   同样注册成可补间类型，脚本才能给它们挂弹性曲线 */
+@property --hide-s{ syntax:'<number>'; inherits:false; initial-value:1 }
+@property --hide-d{ syntax:'<length>'; inherits:false; initial-value:0px }
+/* 投影柔光半径：注册成 <length> 才能被 GSAP 补间（16px → 32px → 16px）
+   --sh-a 是同一层的透明度，注册成 <number> 才能补间（.10 → .20） */
+@property --sh{ syntax:'<length>'; inherits:false; initial-value:16px }
+@property --sh-a{ syntax:'<number>'; inherits:false; initial-value:.1 }
+
+/* 三块承载投影的表面共用一个定义：柔光半径走 --sh、透明度走 --sh-a。
+   只用一层柔光，不再叠 0 0 4px 那层贴边阴影 —— 4px 的模糊半径太小，在边界
+   外侧只压出 1–2px 的硬暗线，面板与页面底色本来就接近，这条线读起来就是
+   「面板没贴住、中间有条缝」 */
+.group,
+.rail__surface,
+.user__surface,
+.dock__surface,
+.sc{
+  --sh: 16px;
+  --sh-a: .1;
+  box-shadow: 0 0 var(--sh) rgba(var(--shadow), calc(var(--sh-a) * var(--sh-k)));
+}
+
+/* 深色模式：给 <html> 加 data-theme="dark" 即生效，
+   Settings 里的 Mode → Night 切的就是它 */
+:root[data-theme="dark"]{
+  color-scheme: dark;      /* 滚动条、表单控件、默认光标也跟着走深色 */
+  --bg:    #2d2d2d;
+  --panel: rgba(73,73,73,.80);
+  --border:#545454;
+  --card:  rgba(255,255,255,.06);
+  --text-primary:   #fafafa;
+  --text-secondary: #e6e6e6;
+  --text-reduced:   #cdcdcd;
+  --text-muted:     #9b9b9b;
+  --text-invert:    #1c1c1c;
+  --avatar:         #545454;
+  --shadow:         0,0,0;
+  --sh-k:           1.9;
+}
+
+/* 明暗切换的过渡：View Transition 在切换前后各截一张整页快照，交给合成器做交叉淡入淡出。
+   不去逐条补间颜色 —— 全站上千个颜色属性一起过渡，每帧都要重绘，面板背后的
+   backdrop 模糊还得跟着重算，反而更卡；快照方案在过渡期间根本不重绘真实页面。
+   时长单独取 0.5s，比全站那套 .34s 的 --dur 慢一档：
+   整页明暗变化比单个按钮的反馈范围大得多，同样的时长读起来会显得急。
+   不支持这个 API 的浏览器直接瞬切，这两条规则不会命中 */
+::view-transition-old(root),
+::view-transition-new(root){
+  animation-duration:.5s;
+  animation-timing-function:var(--ease);
+}
+
+*{box-sizing:border-box}
+/* 选中文字：底用 hint 的 75% 不透明，字反白。写在这里统一生效，
+   输入框、气泡、卡片都算。要改浓淡只调 75% 这个数 */
+::selection{background:color-mix(in srgb, var(--hint) 75%, transparent); color:var(--text-invert)}
+::-moz-selection{background:color-mix(in srgb, var(--hint) 75%, transparent); color:var(--text-invert)}
+html,body{height:100%}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text-primary);
+  font-family:var(--font);
+  font-weight:var(--fw);
+  -webkit-font-smoothing:antialiased;
+  overflow:hidden;
+}
+

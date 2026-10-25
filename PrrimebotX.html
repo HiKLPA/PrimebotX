@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Primebot</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600&display=swap" rel="stylesheet">
+<script>
+/* 明暗模式在首帧之前定下来。色值全挂在 :root 的那套变量上，
+   晚一步再改 data-theme 会先按浅色画一遍、再整屏跳到深色。
+   键名与 Settings 弹窗里的 px.mode 一致，没存过就走 <html> 上的初始值 day */
+(function () {
+  try {
+    var v = localStorage.getItem('px.mode');
+    if (v === 'night') document.documentElement.setAttribute('data-theme', 'dark');
+    else if (v === 'day') document.documentElement.setAttribute('data-theme', 'light');
+  } catch (e) {}
+})();
+</script>
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/topbar.css">
+  <link rel="stylesheet" href="css/rail.css">
+  <link rel="stylesheet" href="css/hud.css">
+  <link rel="stylesheet" href="css/cards.css">
+  <link rel="stylesheet" href="css/modal.css">
+  <link rel="stylesheet" href="css/chat.css">
+</head>
+<body>
+
+<!-- ===================== Topbar ===================== -->
+<header class="topbar">
+  <a class="brand" href="#" aria-label="Primebot">
+    <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <polygon fill="#2d2d2d" points="5.59 8.59 5.59 12.43 9.17 16.73 12.6 11.24 9.43 8.59 5.59 8.59"/>
+      <polygon fill="#2d2d2d" points="15.61 24.45 19.74 29.41 26.41 29.41 26.41 22.74 21.01 18.24 15.61 24.45"/>
+      <polygon fill="#91d7cd" points="5.59 25.46 5.59 29.41 9.27 29.41 26.41 9.41 26.41 2.59 19.88 2.59 5.59 25.46"/>
+    </svg>
+  </a>
+
+  <nav class="nav" aria-label="主导航">
+    <div class="group" role="group" aria-label="Camera">
+      <button class="pill is-active" type="button" aria-pressed="true"><span class="pill__label">Camera</span><svg class="pill__arrow" viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3.3.3.79,0,1.09l-4.35,4.35c-.3.3-.54.89-.54,1.31v3.9c0,.42.35.77.77.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3.79-.79,1.09-1.09l4.35-4.35Z"/></svg></button>
+      <button class="pill" type="button" aria-pressed="false"><span class="pill__label">Modal</span><svg class="pill__arrow" viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3.3.3.79,0,1.09l-4.35,4.35c-.3.3-.54.89-.54,1.31v3.9c0,.42.35.77.77.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3.79-.79,1.09-1.09l4.35-4.35Z"/></svg></button>
+    </div>
+
+    <div class="group" role="group" aria-label="Control">
+      <button class="pill" type="button" aria-pressed="false"><span class="pill__label">Connect</span><svg class="pill__arrow" viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3.3.3.79,0,1.09l-4.35,4.35c-.3.3-.54.89-.54,1.31v3.9c0,.42.35.77.77.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3.79-.79,1.09-1.09l4.35-4.35Z"/></svg></button>
+      <button class="pill" type="button" aria-pressed="false"><span class="pill__label">Preference</span><svg class="pill__arrow" viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3.3.3.79,0,1.09l-4.35,4.35c-.3.3-.54.89-.54,1.31v3.9c0,.42.35.77.77.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3.79-.79,1.09-1.09l4.35-4.35Z"/></svg></button>
+      <button class="pill" type="button" aria-pressed="false"><span class="pill__label">Advance</span><svg class="pill__arrow" viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3.3.3.79,0,1.09l-4.35,4.35c-.3.3-.54.89-.54,1.31v3.9c0,.42.35.77.77.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3.79-.79,1.09-1.09l4.35-4.35Z"/></svg></button>
+    </div>
+
+    <div class="user" id="account">
+      <div class="user__surface">
+        <span class="avatar" aria-hidden="true"></span>
+        <span class="user__name">TestUser_11</span>
+        <div class="user__menu" role="group" aria-label="Account menu">
+        <button class="pill" type="button" aria-pressed="false"><span class="pill__label">Settings</span><svg class="pill__arrow" viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01,.54,1.31l4.35,4.35c.3.3.3.79,0,1.09l-4.35,4.35c-.3.3-.54,.89-.54,1.31v3.9c0,.42,.35,.77,.77,.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3,.79-.79,1.09-1.09l4.35-4.35Z"/></svg></button>
+        <button class="pill" type="button" aria-pressed="false"><span class="pill__label">Privacy</span><svg class="pill__arrow" viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01,.54,1.31l4.35,4.35c.3.3.3.79,0,1.09l-4.35,4.35c-.3.3-.54,.89-.54,1.31v3.9c0,.42,.35,.77,.77,.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3,.79-.79,1.09-1.09l4.35-4.35Z"/></svg></button>
+        <button class="pill" type="button" aria-pressed="false"><span class="pill__label">Contact</span><svg class="pill__arrow" viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01,.54,1.31l4.35,4.35c.3.3.3.79,0,1.09l-4.35,4.35c-.3.3-.54,.89-.54,1.31v3.9c0,.42,.35,.77,.77,.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3,.79-.79,1.09-1.09l4.35-4.35Z"/></svg></button>
+        </div>
+        <button class="user__trigger" type="button" aria-expanded="false" aria-label="Account"></button>
+      </div>
+    </div>
+  </nav>
+</header>
+
+<!-- ===================== Stage ===================== -->
+<main class="stage" aria-hidden="true"><canvas class="bgfx" id="bgfx"></canvas></main>
+
+<!-- ===================== 左侧：Shortcuts ===================== -->
+<aside class="rail rail--left" id="rail-shortcuts" aria-label="Shortcuts">
+  <div class="rail__surface">
+  <div class="rail__bar">
+    <div class="rail__items">
+      <button class="item" type="button" data-panel="Pinned" aria-expanded="false" aria-controls="panel-shortcuts">
+        <span class="item__btn">
+          <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M24.5,13.17h-5.67s0-5.67,0-5.67c0-1.57-1.27-2.83-2.83-2.83h0c-1.57,0-2.83,1.27-2.83,2.83v5.67s-5.67,0-5.67,0c-1.57,0-2.83,1.27-2.83,2.83h0c0,1.57,1.27,2.83,2.83,2.83h5.67v5.67c0,1.57,1.27,2.83,2.83,2.83h0c1.57,0,2.83-1.27,2.83-2.83v-5.67s5.67,0,5.67,0c1.57,0,2.83-1.27,2.83-2.83h0c0-1.57-1.27-2.83-2.83-2.83Z"/></svg>
+        </span>
+        <span class="item__label">Pinned</span>
+      </button>
+
+      <button class="item" type="button" data-panel="Action" aria-expanded="false" aria-controls="panel-shortcuts">
+        <span class="item__btn">
+          <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M24.5,13.17h-5.67s0-5.67,0-5.67c0-1.57-1.27-2.83-2.83-2.83h0c-1.57,0-2.83,1.27-2.83,2.83v5.67s-5.67,0-5.67,0c-1.57,0-2.83,1.27-2.83,2.83h0c0,1.57,1.27,2.83,2.83,2.83h5.67v5.67c0,1.57,1.27,2.83,2.83,2.83h0c1.57,0,2.83-1.27,2.83-2.83v-5.67s5.67,0,5.67,0c1.57,0,2.83-1.27,2.83-2.83h0c0-1.57-1.27-2.83-2.83-2.83Z"/></svg>
+        </span>
+        <span class="item__label">Action</span>
+      </button>
+
+      <button class="item" type="button" data-panel="Dialog" aria-expanded="false" aria-controls="panel-shortcuts">
+        <span class="item__btn">
+          <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M24.5,13.17h-5.67s0-5.67,0-5.67c0-1.57-1.27-2.83-2.83-2.83h0c-1.57,0-2.83,1.27-2.83,2.83v5.67s-5.67,0-5.67,0c-1.57,0-2.83,1.27-2.83,2.83h0c0,1.57,1.27,2.83,2.83,2.83h5.67v5.67c0,1.57,1.27,2.83,2.83,2.83h0c1.57,0,2.83-1.27,2.83-2.83v-5.67s5.67,0,5.67,0c1.57,0,2.83-1.27,2.83-2.83h0c0-1.57-1.27-2.83-2.83-2.83Z"/></svg>
+        </span>
+        <span class="item__label">Dialog</span>
+      </button>
+
+      <button class="item" type="button" data-panel="Tendance" aria-expanded="false" aria-controls="panel-shortcuts">
+        <span class="item__btn">
+          <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M24.5,13.17h-5.67s0-5.67,0-5.67c0-1.57-1.27-2.83-2.83-2.83h0c-1.57,0-2.83,1.27-2.83,2.83v5.67s-5.67,0-5.67,0c-1.57,0-2.83,1.27-2.83,2.83h0c0,1.57,1.27,2.83,2.83,2.83h5.67v5.67c0,1.57,1.27,2.83,2.83,2.83h0c1.57,0,2.83-1.27,2.83-2.83v-5.67s5.67,0,5.67,0c1.57,0,2.83-1.27,2.83-2.83h0c0-1.57-1.27-2.83-2.83-2.83Z"/></svg>
+        </span>
+        <span class="item__label">Tendance</span>
+      </button>
+    </div>
+  </div>
+
+  <section class="rail__panel" id="panel-shortcuts" aria-live="polite">
+    <span class="frost frost--top" aria-hidden="true"></span>
+    <!-- 底部那条渐隐遮罩按需求删掉：面板底沿直接露出内容，不再做化开 -->
+    <div class="panel__body" data-panel-body data-view="pinned">
+      <section class="sc-group sc-group--action">
+        <h3 class="sc-group__title">Action</h3>
+        <div class="sc-grid">
+          <div class="sc"><span class="sc__id">01</span><span class="sc__brief">Brief Intro</span><span class="sc__time">Expected Duration(s)</span><span class="sc__go"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3,.3.3,.79,0,1.09l-4.35,4.35c-.3,.3-.54,.89-.54,1.31v3.9c0,.42.35,.77,.77,.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3.79-.79,1.09-1.09l4.35-4.35Z"/></svg></span><button class="sc__pin" type="button" aria-pressed="false" aria-label="Pin"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 9V4h1a1 1 0 0 0 1-1V2H6v1a1 1 0 0 0 1 1h1v5c0 1.66-1.34 3-3 3v2h5.97v7l1 1 1-1v-7H19v-2c-1.66 0-3-1.34-3-3z"/></svg></button></div>
+          <div class="sc"><span class="sc__id">02</span><span class="sc__brief">Brief Intro</span><span class="sc__time">Expected Duration(s)</span><span class="sc__go"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3,.3.3,.79,0,1.09l-4.35,4.35c-.3,.3-.54,.89-.54,1.31v3.9c0,.42.35,.77,.77,.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3.79-.79,1.09-1.09l4.35-4.35Z"/></svg></span><button class="sc__pin" type="button" aria-pressed="false" aria-label="Pin"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 9V4h1a1 1 0 0 0 1-1V2H6v1a1 1 0 0 0 1 1h1v5c0 1.66-1.34 3-3 3v2h5.97v7l1 1 1-1v-7H19v-2c-1.66 0-3-1.34-3-3z"/></svg></button></div>
+          <div class="sc"><span class="sc__id">03</span><span class="sc__brief">Brief Intro</span><span class="sc__time">Expected Duration(s)</span><span class="sc__go"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3,.3.3,.79,0,1.09l-4.35,4.35c-.3,.3-.54,.89-.54,1.31v3.9c0,.42.35,.77,.77,.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3.79-.79,1.09-1.09l4.35-4.35Z"/></svg></span><button class="sc__pin" type="button" aria-pressed="false" aria-label="Pin"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 9V4h1a1 1 0 0 0 1-1V2H6v1a1 1 0 0 0 1 1h1v5c0 1.66-1.34 3-3 3v2h5.97v7l1 1 1-1v-7H19v-2c-1.66 0-3-1.34-3-3z"/></svg></button></div>
+          <div class="sc"><span class="sc__id">04</span><span class="sc__brief">Brief Intro</span><span class="sc__time">Expected Duration(s)</span><span class="sc__go"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3,.3.3,.79,0,1.09l-4.35,4.35c-.3,.3-.54,.89-.54,1.31v3.9c0,.42.35,.77,.77,.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3.79-.79,1.09-1.09l4.35-4.35Z"/></svg></span><button class="sc__pin" type="button" aria-pressed="false" aria-label="Pin"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 9V4h1a1 1 0 0 0 1-1V2H6v1a1 1 0 0 0 1 1h1v5c0 1.66-1.34 3-3 3v2h5.97v7l1 1 1-1v-7H19v-2c-1.66 0-3-1.34-3-3z"/></svg></button></div>
+        </div>
+      </section>
+
+      <section class="sc-group sc-group--dialog">
+        <h3 class="sc-group__title">Dialog</h3>
+        <div class="sc-grid">
+          <div class="sc"><span class="sc__id">01</span><span class="sc__brief">Brief Intro</span><span class="sc__time">Expected Duration(s)</span><span class="sc__go"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3,.3.3,.79,0,1.09l-4.35,4.35c-.3,.3-.54,.89-.54,1.31v3.9c0,.42.35,.77,.77,.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3.79-.79,1.09-1.09l4.35-4.35Z"/></svg></span><button class="sc__pin" type="button" aria-pressed="false" aria-label="Pin"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 9V4h1a1 1 0 0 0 1-1V2H6v1a1 1 0 0 0 1 1h1v5c0 1.66-1.34 3-3 3v2h5.97v7l1 1 1-1v-7H19v-2c-1.66 0-3-1.34-3-3z"/></svg></button></div>
+          <div class="sc"><span class="sc__id">02</span><span class="sc__brief">Brief Intro</span><span class="sc__time">Expected Duration(s)</span><span class="sc__go"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3,.3.3,.79,0,1.09l-4.35,4.35c-.3,.3-.54,.89-.54,1.31v3.9c0,.42.35,.77,.77,.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3.79-.79,1.09-1.09l4.35-4.35Z"/></svg></span><button class="sc__pin" type="button" aria-pressed="false" aria-label="Pin"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 9V4h1a1 1 0 0 0 1-1V2H6v1a1 1 0 0 0 1 1h1v5c0 1.66-1.34 3-3 3v2h5.97v7l1 1 1-1v-7H19v-2c-1.66 0-3-1.34-3-3z"/></svg></button></div>
+          <div class="sc"><span class="sc__id">03</span><span class="sc__brief">Brief Intro</span><span class="sc__time">Expected Duration(s)</span><span class="sc__go"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3,.3.3,.79,0,1.09l-4.35,4.35c-.3,.3-.54,.89-.54,1.31v3.9c0,.42.35,.77,.77,.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3.79-.79,1.09-1.09l4.35-4.35Z"/></svg></span><button class="sc__pin" type="button" aria-pressed="false" aria-label="Pin"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 9V4h1a1 1 0 0 0 1-1V2H6v1a1 1 0 0 0 1 1h1v5c0 1.66-1.34 3-3 3v2h5.97v7l1 1 1-1v-7H19v-2c-1.66 0-3-1.34-3-3z"/></svg></button></div>
+          <div class="sc"><span class="sc__id">04</span><span class="sc__brief">Brief Intro</span><span class="sc__time">Expected Duration(s)</span><span class="sc__go"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3,.3.3,.79,0,1.09l-4.35,4.35c-.3,.3-.54,.89-.54,1.31v3.9c0,.42.35,.77,.77,.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3.79-.79,1.09-1.09l4.35-4.35Z"/></svg></span><button class="sc__pin" type="button" aria-pressed="false" aria-label="Pin"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 9V4h1a1 1 0 0 0 1-1V2H6v1a1 1 0 0 0 1 1h1v5c0 1.66-1.34 3-3 3v2h5.97v7l1 1 1-1v-7H19v-2c-1.66 0-3-1.34-3-3z"/></svg></button></div>
+        </div>
+      </section>
+
+      <section class="sc-group sc-group--tendance">
+        <h3 class="sc-group__title">Tendance</h3>
+        <div class="sc-grid">
+          <div class="sc"><span class="sc__id">01</span><span class="sc__brief">Brief Intro</span><span class="sc__time">Expected Duration(s)</span><span class="sc__go"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3,.3.3,.79,0,1.09l-4.35,4.35c-.3,.3-.54,.89-.54,1.31v3.9c0,.42.35,.77,.77,.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3.79-.79,1.09-1.09l4.35-4.35Z"/></svg></span><button class="sc__pin" type="button" aria-pressed="false" aria-label="Pin"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 9V4h1a1 1 0 0 0 1-1V2H6v1a1 1 0 0 0 1 1h1v5c0 1.66-1.34 3-3 3v2h5.97v7l1 1 1-1v-7H19v-2c-1.66 0-3-1.34-3-3z"/></svg></button></div>
+          <div class="sc"><span class="sc__id">02</span><span class="sc__brief">Brief Intro</span><span class="sc__time">Expected Duration(s)</span><span class="sc__go"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3,.3.3,.79,0,1.09l-4.35,4.35c-.3,.3-.54,.89-.54,1.31v3.9c0,.42.35,.77,.77,.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3.79-.79,1.09-1.09l4.35-4.35Z"/></svg></span><button class="sc__pin" type="button" aria-pressed="false" aria-label="Pin"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 9V4h1a1 1 0 0 0 1-1V2H6v1a1 1 0 0 0 1 1h1v5c0 1.66-1.34 3-3 3v2h5.97v7l1 1 1-1v-7H19v-2c-1.66 0-3-1.34-3-3z"/></svg></button></div>
+          <div class="sc"><span class="sc__id">03</span><span class="sc__brief">Brief Intro</span><span class="sc__time">Expected Duration(s)</span><span class="sc__go"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3,.3.3,.79,0,1.09l-4.35,4.35c-.3,.3-.54,.89-.54,1.31v3.9c0,.42.35,.77,.77,.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3.79-.79,1.09-1.09l4.35-4.35Z"/></svg></span><button class="sc__pin" type="button" aria-pressed="false" aria-label="Pin"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 9V4h1a1 1 0 0 0 1-1V2H6v1a1 1 0 0 0 1 1h1v5c0 1.66-1.34 3-3 3v2h5.97v7l1 1 1-1v-7H19v-2c-1.66 0-3-1.34-3-3z"/></svg></button></div>
+          <div class="sc"><span class="sc__id">04</span><span class="sc__brief">Brief Intro</span><span class="sc__time">Expected Duration(s)</span><span class="sc__go"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3,.3.3,.79,0,1.09l-4.35,4.35c-.3,.3-.54,.89-.54,1.31v3.9c0,.42.35,.77,.77,.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3.79-.79,1.09-1.09l4.35-4.35Z"/></svg></span><button class="sc__pin" type="button" aria-pressed="false" aria-label="Pin"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 9V4h1a1 1 0 0 0 1-1V2H6v1a1 1 0 0 0 1 1h1v5c0 1.66-1.34 3-3 3v2h5.97v7l1 1 1-1v-7H19v-2c-1.66 0-3-1.34-3-3z"/></svg></button></div>
+        </div>
+      </section>
+    </div>
+  </section>
+  </div>
+
+</aside>
+
+<!-- 唤出/收起箭头挂在栏体外：它的位置由 CSS 自己平滑过渡，栏体的弹性传不到它身上 -->
+<button class="rail__toggle" type="button" aria-label="Hide panel" data-rail="left">
+  <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3.3.3.79,0,1.09l-4.35,4.35c-.3.3-.54.89-.54,1.31v3.9c0,.42.35.77.77.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3.79-.79,1.09-1.09l4.35-4.35Z" fill="currentColor"/></svg>
+</button>
+
+<!-- ===================== 右侧：Tools ===================== -->
+<aside class="rail rail--right" id="rail-tools" aria-label="Tools">
+  <div class="rail__surface">
+  <div class="rail__bar">
+    <div class="rail__items">
+      <button class="item" type="button" data-panel="Chat" aria-expanded="false" aria-controls="panel-tools">
+        <span class="item__btn">
+          <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M24.5,13.17h-5.67s0-5.67,0-5.67c0-1.57-1.27-2.83-2.83-2.83h0c-1.57,0-2.83,1.27-2.83,2.83v5.67s-5.67,0-5.67,0c-1.57,0-2.83,1.27-2.83,2.83h0c0,1.57,1.27,2.83,2.83,2.83h5.67v5.67c0,1.57,1.27,2.83,2.83,2.83h0c1.57,0,2.83-1.27,2.83-2.83v-5.67s5.67,0,5.67,0c1.57,0,2.83-1.27,2.83-2.83h0c0-1.57-1.27-2.83-2.83-2.83Z"/></svg>
+        </span>
+        <span class="item__label">Chat</span>
+      </button>
+
+      <button class="item" type="button" data-panel="Log" aria-expanded="false" aria-controls="panel-tools">
+        <span class="item__btn">
+          <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M24.5,13.17h-5.67s0-5.67,0-5.67c0-1.57-1.27-2.83-2.83-2.83h0c-1.57,0-2.83,1.27-2.83,2.83v5.67s-5.67,0-5.67,0c-1.57,0-2.83,1.27-2.83,2.83h0c0,1.57,1.27,2.83,2.83,2.83h5.67v5.67c0,1.57,1.27,2.83,2.83,2.83h0c1.57,0,2.83-1.27,2.83-2.83v-5.67s5.67,0,5.67,0c1.57,0,2.83-1.27,2.83-2.83h0c0-1.57-1.27-2.83-2.83-2.83Z"/></svg>
+        </span>
+        <span class="item__label">Log</span>
+      </button>
+    </div>
+  </div>
+
+  <section class="rail__panel" id="panel-tools" aria-live="polite">
+    <span class="frost frost--top" aria-hidden="true"></span>
+    <!-- 聊天页底部的渐变：复用同一套 frost--bottom（色阶与曲线同左栏那条，方向朝上），
+         挂 chat__frost 借它的参数与显隐（Log 页连它一起收掉）；消息从输入条下面
+         滚过时在面板底沿化开。z 序在输入条（z2）之下 —— 输入条自身带底色，不被糊 -->
+    <span class="frost frost--bottom chat__frost" aria-hidden="true"></span>
+    <!-- 聊天页顶部的渐变：整套参数继承 .rail__panel 的 --frost-*，
+         与左边栏顶部那条完全同一枚（16 平台 + 32 渐隐）。挂在不滚动的 .rail__panel 上，
+         消息从它下面滚过时被糊开；不放在 .panel__body 里是因为它的
+         backdrop-filter 在那里采不到滚动内容 -->
+    <span class="frost frost--top chat__frost" aria-hidden="true"></span>
+    <div class="panel__body" data-panel-body>
+      <!-- Chat 页：历史钮悬在左上角，消息区滚动，输入条贴底。
+           消息由尾部脚本按发送内容生成，这里只留空壳 -->
+      <div class="chat" data-chat data-chat-only>
+        <button class="chat__btn chat__btn--history" type="button" aria-label="History">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="4" y="6" width="16" height="2.6" rx="1.3"/>
+            <rect x="4" y="10.7" width="16" height="2.6" rx="1.3"/>
+            <rect x="4" y="15.4" width="16" height="2.6" rx="1.3"/>
+          </svg>
+        </button>
+        <div class="chat__log" data-chat-log></div>
+
+        <div class="chat__composer">
+          <input class="chat__input" data-chat-input type="text"
+                 placeholder="Message" aria-label="Message" autocomplete="off">
+        </div>
+      </div>
+    </div>
+  </section>
+  </div>
+
+</aside>
+
+<button class="rail__toggle" type="button" aria-label="Hide panel" data-rail="right">
+  <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3.3.3.79,0,1.09l-4.35,4.35c-.3.3-.54.89-.54,1.31v3.9c0,.42.35.77.77.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3.79-.79,1.09-1.09l4.35-4.35Z" fill="currentColor"/></svg>
+</button>
+
+<!-- ===================== 底部：控制面板 =====================
+     半页宽、高度由内容撑开的面板，默认只露高度的 1/8；上方 8px 那枚箭头管升 / 降，
+     它与面板同处一个 .dock 里，跟着整块一起上下走。
+     九宫格是八向箭头围着一枚播放键，圆钮与左右栏同尺寸（48），间距一律 8，
+     只做样式，没有具体功能 -->
+<section class="dock" aria-label="Playback controls">
+  <button class="dock__toggle" type="button" aria-label="Expand panel" aria-expanded="false">
+    <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3.3.3.79,0,1.09l-4.35,4.35c-.3.3-.54.89-.54,1.31v3.9c0,.42.35.77.77.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3.79-.79,1.09-1.09l4.35-4.35Z" fill="currentColor"/></svg>
+  </button>
+
+  <div class="dock__surface">
+    <div class="dock__pad">
+      <button class="dock__btn" type="button" data-dir="up-left" aria-label="Up left">
+        <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3.3.3.79,0,1.09l-4.35,4.35c-.3.3-.54.89-.54,1.31v3.9c0,.42.35.77.77.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3.79-.79,1.09-1.09l4.35-4.35Z"/></svg>
+      </button>
+      <button class="dock__btn" type="button" data-dir="up" aria-label="Up">
+        <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3.3.3.79,0,1.09l-4.35,4.35c-.3.3-.54.89-.54,1.31v3.9c0,.42.35.77.77.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3.79-.79,1.09-1.09l4.35-4.35Z"/></svg>
+      </button>
+      <button class="dock__btn" type="button" data-dir="up-right" aria-label="Up right">
+        <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3.3.3.79,0,1.09l-4.35,4.35c-.3.3-.54.89-.54,1.31v3.9c0,.42.35.77.77.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3.79-.79,1.09-1.09l4.35-4.35Z"/></svg>
+      </button>
+
+      <button class="dock__btn" type="button" data-dir="left" aria-label="Left">
+        <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3.3.3.79,0,1.09l-4.35,4.35c-.3.3-.54.89-.54,1.31v3.9c0,.42.35.77.77.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3.79-.79,1.09-1.09l4.35-4.35Z"/></svg>
+      </button>
+      <button class="dock__btn dock__btn--play" type="button" aria-label="Play" aria-pressed="false">
+        <svg class="dock__ico dock__ico--play" viewBox="0 0 32 32" aria-hidden="true"><path d="M12.2,8.6c-.9-.55-2.1.09-2.1,1.15v12.5c0,1.06,1.2,1.7,2.1,1.15l10.7-6.25c.88-.52.88-1.79,0-2.31L12.2,8.6Z"/></svg>
+        <svg class="dock__ico dock__ico--pause" viewBox="0 0 32 32" aria-hidden="true"><rect x="10.4" y="8.6" width="3.7" height="14.8" rx="1.85"/><rect x="17.9" y="8.6" width="3.7" height="14.8" rx="1.85"/></svg>
+      </button>
+      <button class="dock__btn" type="button" data-dir="right" aria-label="Right">
+        <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3.3.3.79,0,1.09l-4.35,4.35c-.3.3-.54.89-.54,1.31v3.9c0,.42.35.77.77.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3.79-.79,1.09-1.09l4.35-4.35Z"/></svg>
+      </button>
+
+      <button class="dock__btn" type="button" data-dir="down-left" aria-label="Down left">
+        <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3.3.3.79,0,1.09l-4.35,4.35c-.3.3-.54.89-.54,1.31v3.9c0,.42.35.77.77.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3.79-.79,1.09-1.09l4.35-4.35Z"/></svg>
+      </button>
+      <button class="dock__btn" type="button" data-dir="down" aria-label="Down">
+        <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3.3.3.79,0,1.09l-4.35,4.35c-.3.3-.54.89-.54,1.31v3.9c0,.42.35.77.77.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3.79-.79,1.09-1.09l4.35-4.35Z"/></svg>
+      </button>
+      <button class="dock__btn" type="button" data-dir="down-right" aria-label="Down right">
+        <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3.3.3.79,0,1.09l-4.35,4.35c-.3.3-.54.89-.54,1.31v3.9c0,.42.35.77.77.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3.79-.79,1.09-1.09l4.35-4.35Z"/></svg>
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- 左下角参数 HUD：电量 / 信号一行，设备名 / 可用情况一行。
+     电量画成参考图那枚的三段结构：浅调空槽 + 按比例的液位 + 槽内数字（svg text，接数据源时改 text、液位宽与类名）；
+     信号直接画五格竖条，亮几格就是几格（现在是 3/5，后两格压到 .28 透明度）。
+     两枚图标等高 20。设备名与可用情况的数值当前写死，状态换 hud__state--* 类 -->
+<div class="hud" aria-label="Device status">
+  <div class="hud__row">
+    <span class="hud__metric">
+      <!-- 参考微信那枚电池图标的三段结构：
+           空槽 = 电量色的浅调（hud__batt-empty，40% 透明压在页面底上），
+           液位 = 电量色从左按电量比例填（56% → 壳宽 30 填 17，clip 用壳体同一圆角矩形裁形，
+           液位直接贴住电池边框、不留内衬空隙），
+           数字 = 不描边、真镂空：文字画在 mask 里填黑，整组形状过 mask 后
+           数字处被抠掉，透出页面背景；56 > 20 挂 ok 档，跌到 20% 及以下换 hud__batt--low -->
+      <svg class="hud__ico hud__batt--ok" viewBox="0 0 38 20" width="38" height="20" aria-hidden="true">
+        <defs>
+          <clipPath id="hud-batt-clip"><rect x="1" y="1.5" width="30" height="17" rx="4"/></clipPath>
+          <mask id="hud-batt-hole">
+            <rect width="38" height="20" fill="#fff"/>
+            <text class="hud__batt-num" x="16" y="14.9" text-anchor="middle" fill="#000">56</text>
+          </mask>
+        </defs>
+        <g mask="url(#hud-batt-hole)">
+          <rect x="1" y="1.5" width="30" height="17" rx="4" class="hud__batt-empty"/>
+          <rect data-hud-batt-level x="1" y="1.5" width="17" height="17" fill="currentColor" clip-path="url(#hud-batt-clip)"/>
+          <rect x="32.5" y="6.5" width="3.5" height="7" rx="1.75" class="hud__batt-empty"/>
+        </g>
+      </svg>
+    </span>
+    <span class="hud__metric">
+      <!-- 五格竖条贴底对齐，格高 8/12/16/20/24；前 3 格全亮表示 3/5，
+           3 > 2 挂 ok 档（hint）；跌到 2 格及以下换 hud__sig--low（warning）。
+           与电池同高：viewBox 30×24 按 20 高出图，宽 25 -->
+      <svg class="hud__ico hud__sig--ok" viewBox="0 0 30 24" width="25" height="20" aria-hidden="true">
+        <rect x="0" y="16" width="4" height="8" rx="2" fill="currentColor"/>
+        <rect x="6.25" y="12" width="4" height="12" rx="2" fill="currentColor"/>
+        <rect x="12.5" y="8" width="4" height="16" rx="2" fill="currentColor"/>
+        <rect x="18.75" y="4" width="4" height="20" rx="2" fill="currentColor" opacity=".28"/>
+        <rect x="25" y="0" width="4" height="24" rx="2" fill="currentColor" opacity=".28"/>
+      </svg>
+    </span>
+  </div>
+  <div class="hud__row">
+    <!-- 设备名由弹窗脚本按 Connect 的「已确认机型」写入（data-hud-device），
+         这里的占位值只在脚本没跑到时兜底；超宽时限宽循环滚动 -->
+    <span class="hud__item hud__name"><span class="hud__name-track" data-hud-device>Q1_RandomName</span></span>
+    <span class="hud__item hud__state--ready">Ready</span>
+  </div>
+</div>
+
+<script src="js/hud.js"></script>
+
+<script src="js/rails.js"></script>
+
+<!-- 按压反馈：GSAP 3.12.5（本地库，与 STRCAT 同版本） -->
+<script src="lib/gsap.min.js"></script>
+<!-- 滚动驱动：ScrollTrigger 与 GSAP 同版本，组标题的交接淡出挂在这上面 -->
+<script src="lib/ScrollTrigger.min.js"></script>
+<script src="js/press.js"></script>
+
+<script src="js/panels.js"></script>
+
+<script src="js/magnet.js"></script>
+
+<script src="js/sticky.js"></script>
+
+<!-- 居中弹窗：Connect / Preference / Advance / Settings 四枚胶囊共用。
+     3:2、高比侧栏矮 48、内边距 16。
+     前三个只有标题区；Connect 另有机型列表与页脚，
+     Settings 是另一套内部版式（左区标题与选项目录 + 右区选项页面，见 .set） -->
+<div class="modal" id="modal" aria-hidden="true">
+  <div class="modal__panel" role="dialog" aria-modal="true" aria-label="Connect">
+    <!-- 顶部 64 为标题区：左列标题 + 说明，右列标题 + 说明；
+         文案由尾部脚本按所点的胶囊写入，这里放 Connect 一套做初始值 -->
+    <div class="modal__head">
+      <div class="modal__col">
+        <div class="modal__title" data-modal-title>Connect</div>
+        <div class="modal__sub" data-modal-sub>2 available</div>
+      </div>
+      <div class="modal__col modal__col--end" data-head-end>
+        <div class="modal__title" data-modal-title>Q1_RandomName</div>
+        <div class="modal__sub" data-modal-sub>current</div>
+      </div>
+    </div>
+
+    <!-- 机型列表：外层只负责占位与裁剪，里层 .modal__list 才是滚动容器。
+         行由尾部脚本按 MODELS 数组生成，这里只留空壳 -->
+    <div class="modal__body" data-connect-only hidden>
+      <div class="modal__list" data-model-list></div>
+    </div>
+
+    <!-- Settings：左区标题与选项目录，右区放选中项对应的页面。
+         与 Connect 的机型列表、页脚互斥：脚本按弹窗名切 hidden。
+         顶部标题区（.modal__head）在 Settings 下整块收掉，标题改由 .set__title 承担 -->
+    <div class="set" data-settings-only hidden>
+      <div class="set__nav">
+        <div class="set__title">Settings</div>
+        <div class="set__list" role="tablist" aria-label="Settings">
+          <button class="set__tab is-sel" type="button" role="tab"
+                  aria-selected="true" data-set-tab="appearance">Appearance</button>
+        </div>
+      </div>
+      <div class="set__main">
+        <section class="set__pane" data-set-pane="appearance">
+          <!-- 明暗模式：Day 是默认这套浅色，Night 直接切到 :root[data-theme="dark"]
+               那一组参数。这里只换 <html> 上的属性，颜色一律由 CSS 变量带出来 -->
+          <div class="set__item">
+            <div class="set__name">Mode</div>
+            <div class="set__body">
+              <div class="seg" role="radiogroup" aria-label="Color mode">
+                <button class="seg__opt is-sel" type="button" role="radio"
+                        aria-checked="true" data-mode="day"><span class="seg__lab">Day</span><svg class="seg__arrow" viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77,.35-.77,.77v3.9c0,.42,.24,1.01,.54,1.31l4.35,4.35c.3,.3,.3,.79,0,1.09l-4.35,4.35c-.3,.3-.54,.89-.54,1.31v3.9c0,.42,.35,.77,.77,.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3,.79-.79,1.09-1.09l4.35-4.35Z"/></svg></button>
+                <button class="seg__opt" type="button" role="radio"
+                        aria-checked="false" data-mode="night"><span class="seg__lab">Night</span><svg class="seg__arrow" viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77,.35-.77,.77v3.9c0,.42,.24,1.01,.54,1.31l4.35,4.35c.3,.3,.3,.79,0,1.09l-4.35,4.35c-.3,.3-.54,.89-.54,1.31v3.9c0,.42,.35,.77,.77,.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3,.79-.79,1.09-1.09l4.35-4.35Z"/></svg></button>
+              </div>
+            </div>
+          </div>
+          <div class="set__item">
+            <div class="set__name">Background</div>
+            <div class="set__body">
+              <div class="seg" role="radiogroup" aria-label="Background style">
+                <button class="seg__opt" type="button" role="radio"
+                        aria-checked="false" data-bg="plain"><span class="seg__lab">Plain</span><svg class="seg__arrow" viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77,.35-.77,.77v3.9c0,.42,.24,1.01,.54,1.31l4.35,4.35c.3,.3,.3,.79,0,1.09l-4.35,4.35c-.3,.3-.54,.89-.54,1.31v3.9c0,.42,.35,.77,.77,.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3,.79-.79,1.09-1.09l4.35-4.35Z"/></svg></button>
+                <button class="seg__opt is-sel" type="button" role="radio"
+                        aria-checked="true" data-bg="magnetic"><span class="seg__lab">Magnet</span><svg class="seg__arrow" viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77,.35-.77,.77v3.9c0,.42,.24,1.01,.54,1.31l4.35,4.35c.3,.3,.3,.79,0,1.09l-4.35,4.35c-.3,.3-.54,.89-.54,1.31v3.9c0,.42,.35,.77,.77,.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3,.79-.79,1.09-1.09l4.35-4.35Z"/></svg></button>
+                <button class="seg__opt" type="button" role="radio"
+                        aria-checked="false" data-bg="wave"><span class="seg__lab">Wave</span><svg class="seg__arrow" viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77,.35-.77,.77v3.9c0,.42,.24,1.01,.54,1.31l4.35,4.35c.3,.3,.3,.79,0,1.09l-4.35,4.35c-.3,.3-.54,.89-.54,1.31v3.9c0,.42,.35,.77,.77,.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3,.79-.79,1.09-1.09l4.35-4.35Z"/></svg></button>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <!-- 页脚只在 Connect 弹窗出现：脚本按当前弹窗名切 hidden。
+         左 Cancel 只退出，不保存；右 Confirm 默认就填主题色（is-active） -->
+    <div class="modal__foot" data-modal-foot data-connect-only hidden>
+      <button class="pill" type="button" data-act="cancel">
+        <span class="pill__label">CANCEL</span>
+        <svg class="pill__arrow" viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3,.3,.3,.79,0,1.09l-4.35,4.35c-.3,.3-.54,.89-.54,1.31v3.9c0,.42,.35,.77,.77,.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3,.79-.79,1.09-1.09l4.35-4.35Z"/></svg>
+      </button>
+      <button class="pill" type="button" data-act="confirm" data-no-press>
+        <span class="pill__label">CONFIRM</span>
+        <svg class="pill__arrow" viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3,.3,.3,.79,0,1.09l-4.35,4.35c-.3,.3-.54,.89-.54,1.31v3.9c0,.42,.35,.77,.77,.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3,.79-.79,1.09-1.09l4.35-4.35Z"/></svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<script src="js/modal.js"></script>
+
+<script src="js/models.js"></script>
+
+<script src="js/chat.js"></script>
+
+<!-- ===================== 背景动效 ===================== -->
+<script src="js/background.js"></script>
+
+</body>
+</html>

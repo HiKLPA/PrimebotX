@@ -1,0 +1,61 @@
+/* ============================================================
+   HUD —— 左下角参数显示
+   只读展示，不参与按压 / 磁吸（pointer-events 关掉，也不会被
+   尾部 PRESS 选择器抓到）。左、下都取 --edge，与侧栏、dock
+   共用同一条基准线；层级压在栏体（20）与 dock（18）之下
+   ============================================================ */
+.hud{
+  position:fixed;
+  left:var(--edge); bottom:var(--edge);
+  z-index:5;
+  display:flex; flex-direction:column; gap:4px;
+  font-size:18px;
+  /* 行高压到 1：默认行高的半行距会垫在字形下面，让文本看起来
+     离底边不止 --edge，压平后才和左右栏那条 16px 边距读成同一条线 */
+  line-height:1;
+  color:var(--text-muted);
+  pointer-events:none;
+  user-select:none;
+  -webkit-user-select:none;
+}
+.hud__row{display:flex; align-items:center; gap:12px; white-space:nowrap}
+/* 图标 + 数值的小组合：图标与文字沿中线对齐 */
+.hud__metric{display:inline-flex; align-items:center; gap:6px}
+.hud__ico{display:block; fill:currentColor; flex:0 0 auto}
+/* 设备名限宽：放不下时由脚本把名字复制一份拼进轨道，整条向左平移
+   一份的宽度，走完正好回到起点，无缝循环。限宽值就改 max-width 一处 */
+.hud__name{
+  display:block;
+  max-width:160px;
+  overflow:hidden;
+}
+.hud__name-track{display:inline-block; white-space:nowrap}
+.hud__name.is-loop .hud__name-track{animation:hud-marquee linear infinite}
+@keyframes hud-marquee{to{transform:translateX(-50%)}}
+.hud__name-copy{padding-right:16px}   /* 两份名字之间的空隙，也是循环的接缝 */
+/* 可用情况只有两态：ready 用 hint、disconnected 用 warning，
+   接真实状态时换 hud__state--* 类即可 */
+.hud__state--ready{color:var(--hint)}
+.hud__state--down{color:var(--warning)}
+/* 电量图标独立于整块 HUD 的文字色：> 20% 用 hint，≤ 20% 用 warning，
+   接真实电量时按这个阈值换 hud__batt--* 类（阈值改这里只动一处注释+类名） */
+.hud__batt--ok{color:var(--hint)}
+.hud__batt--low{color:var(--warning)}
+/* 电池的空槽与正极帽：电量色的浅调（40% 透明），压在页面底上
+   就是参考图那种淡色空区；液位走 currentColor 实色 */
+.hud__batt-empty{fill:color-mix(in srgb, currentColor 40%, transparent)}
+/* 槽内数字：不描边，真镂空 —— 数字画在 mask 里、填黑，
+   整组电池形状过一遍 mask 后数字处被抠掉，直接透出页面背景。
+   类只管字号字重，mask 里的填色写死 #000（黑 = 抠掉） */
+.hud__batt-num{
+  font-size:14px; font-weight:600;
+}
+/* 信号图标同一套思路：> 2 格用 hint，≤ 2 格用 warning（压暗的后几格
+   也一起变色，透明度不变，整组读起来还是「亮几格 + 余量剪影」） */
+.hud__sig--ok{color:var(--hint)}
+.hud__sig--low{color:var(--warning)}
+
+/* 不再需要按宽度压按钮：高度由内容定，按钮始终是 --btn 那个尺寸，
+   900 以下半页宽（450）也够放下 3 × 48 + 16 的九宫格。
+   640 以下整块收掉，见文件末尾那一档媒体查询 */
+

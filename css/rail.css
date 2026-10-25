@@ -1,0 +1,541 @@
+/* ============================================================
+   Rail —— 左右两侧工具/快捷栏
+   收起 80px，展开 320px，锚定侧边不变
+   ============================================================ */
+.rail{
+  position:fixed;
+  top:50%;
+  /* 位移与缩量都由脚本补间 --hide-d / --hide-s，这里只把两者组合成最终几何。
+     translate 属性在最外层，位移不会被 scale 缩掉；百分比相对自身宽度 */
+  --hide-s: 1;
+  --hide-d: 0px;
+  --side: 1;                     /* 中心补偿的方向：左栏往右补，右栏往左补 */
+  translate: calc(var(--hide-d) + (1 - var(--hide-s)) * 50% * var(--side)) -50%;
+  height:var(--rail-h);
+  display:flex;
+  z-index:20;
+  width:var(--rail-w);
+  /* 过渡只剩宽度：位移与缩放的自定义属性交给 GSAP 逐帧写，
+     再挂 CSS 过渡会把每帧的弹性值二次缓动，弹跳就被抹平了 */
+  transition:width .3s var(--ease);
+  /* 开合时的形变（STRCAT 同款弹性）：整块栏体从 1 撑到 1.03 再收回 1，
+     起点就是原大小，不先压窄。原点贴住栏根（左栏 0%、右栏 100%），
+     鼓起时朝屏幕内侧，边界不动、不会顶出视口 */
+  --sx: 1;
+  --sy: 1;
+  /* 退出屏外的整体缩量。单独一个系数乘在 --sx/--sy 上：那两个变量由 GSAP
+     逐帧补间，直接改它们会被内联值压掉，乘法互不干扰 */
+  scale: calc(var(--sx) * var(--hide-s)) calc(var(--sy) * var(--hide-s));
+  transform-origin:0% 50%;
+}
+.rail--left{left:var(--edge)}
+.rail--right{right:var(--edge); transform-origin:100% 50%; --side:-1}
+.rail.is-open{width:min(var(--rail-expanded), 78vw)}
+
+/* 栏体表面：承载底色与圆角，层级高于箭头，箭头被压在下面 */
+.rail__surface{
+  position:relative;
+  z-index:2;
+  display:flex;
+  flex:1 1 auto;
+  min-width:0;
+  width:100%; height:100%;
+  background:var(--panel);
+  border-radius:var(--rail-r);
+  /* 投影见上方 .group / .rail__surface / .user__surface 的共用定义（--sh）。
+     不再画描边后，padding box 就是栏体外沿，overflow:clip 默认的 0 裁切面正好落在
+     轮廓上，雾带贴边不会漏。hidden 那行留给不认 clip 的浏览器兜底 */
+  overflow:hidden;
+  overflow:clip;
+  -webkit-backdrop-filter:blur(var(--blur));
+  backdrop-filter:blur(var(--blur));
+  /* 不要再加 will-change:transform 之类的提层提示：提层会把内部雾带的 backdrop
+     采样掐掉，雾带只剩染色、模糊不发生 */
+}
+.rail--right .rail__surface{flex-direction:row-reverse}
+/* 退出界面：平移到屏外 + 缩到九成五，实际补间由脚本的 railMotion 驱动。
+   下面这组只是兜底：脚本没跑到（或补间被打断后重载）时 class 一切就直接到位。
+   缩放原点仍在栏根（开合弹性靠它），translate 里的 (1 - s) × 半宽把缩小的
+   基准点挪到栏心，看起来是整块居中收拢而不是被栏根拽走 */
+.rail--left.is-hidden{ --hide-s:.95; --hide-d:calc(-1 * var(--rail-hide)) }
+.rail--right.is-hidden{ --hide-s:.95; --hide-d:var(--rail-hide) }
+
+/* 收起/唤出箭头：挂在栏体外，fixed 定在自己的坐标系里。
+   位置只靠 left / right 的平滑过渡走过去，栏体那条弹性补间传不到它身上，
+   所以栏体甩出去回弹时，箭头是稳稳挪到屏边的 */
+.rail__toggle{
+  appearance:none; -webkit-appearance:none;
+  position:fixed;
+  top:50%; translate:0 -50%;
+  width:32px; height:32px;
+  display:grid; place-items:center;
+  background:none; border:0; padding:0;
+  color:var(--text-reduced);
+  cursor:pointer;
+  z-index:19;   /* 在栏体（20）下面，只露出栏外侧那一段 */
+  opacity:.5;
+  transition:opacity .1s linear,
+             left var(--dur) var(--ease), right var(--dur) var(--ease);
+}
+/* 栏在屏内时贴栏外侧 8；栏收走后贴屏边 4，留一点可点的边距 */
+.rail__toggle[data-rail="left"]{left:calc(var(--edge) + var(--rail-w) + 8px)}
+.rail__toggle[data-rail="right"]{right:calc(var(--edge) + var(--rail-w) + 8px)}
+body:has(.rail--left.is-hidden) .rail__toggle[data-rail="left"]{left:4px}
+body:has(.rail--right.is-hidden) .rail__toggle[data-rail="right"]{right:4px}
+.rail__toggle svg{
+  width:20px; height:20px; display:block;
+  fill:currentColor;
+  transition:transform var(--dur) var(--ease);
+}
+/* 栏在视口内：箭头指外侧（收起方向）；已移出：箭头翻向内侧（唤回方向） */
+.rail__toggle[data-rail="left"] svg{transform:rotate(180deg)}
+body:has(.rail--left.is-hidden) .rail__toggle[data-rail="left"] svg{transform:rotate(0deg)}
+.rail__toggle[data-rail="right"] svg{transform:rotate(0deg)}
+body:has(.rail--right.is-hidden) .rail__toggle[data-rail="right"] svg{transform:rotate(180deg)}
+/* 展开时原位淡出 */
+body:has(.rail--left.is-open) .rail__toggle[data-rail="left"],
+body:has(.rail--right.is-open) .rail__toggle[data-rail="right"]{
+  opacity:0; pointer-events:none; transition:opacity .3s linear;
+}
+
+/* ============================================================
+   Dock —— 底部控制面板
+   宽度取页面的一半，高度由内部九宫格撑开；默认只把高度的 1/8
+   露在底边外，点上方那枚箭头整块升起来。位移与缩放和左右栏
+   共用同一对通道（--hide-s / --hide-d），脚本补的也是同一组弹性参数
+   ============================================================ */
+.dock{
+  position:fixed;
+  left:50%; bottom:var(--edge);
+  width:var(--dock-w); height:var(--dock-h);
+  z-index:18;
+  /* 原点取底边中点：缩小时底边钉住不动、只有上沿往下走，
+     translate 写百分比的部分是自宽的 -50%，负责横向居中；
+     纵向那段由 --hide-d 补间。
+     展开后底边离视口底 --edge，和左右栏的左右边距是同一个值 */
+  --hide-s:.95;
+  /* 收起位移 = 缩放压低的 (.95h) 再减去要留在屏内的 h/8，
+     还要加上底边本身让出的 --edge —— 面板不再贴死视口底，
+     整个坐标起点抬高了这一段，不多让就多露一截 */
+  --hide-d:calc(var(--dock-h) * .825 + var(--edge));
+  /* 开合形变与栏体同一套：--sx/--sy 由 pop() 补到 1.02 再弹回 1，
+     乘在整体缩量上，两轴同值就是等比胀开 */
+  --sx:1;
+  --sy:1;
+  translate:-50% var(--hide-d);
+  scale:calc(var(--sx) * var(--hide-s)) calc(var(--sy) * var(--hide-s));
+  transform-origin:50% 100%;
+  /* 位移与缩放都交给 GSAP 逐帧写，这里不再挂过渡 */
+  transition:none;
+}
+/* 展开：缩量回到 1、位移归零，底边落回 --edge。
+   收起态那组数不是随手取的比例：缩放把上沿压低了 (1 − .95) × 高，
+   位移取 .95h − h/8 = .825h 正好把这压低的一段补回去，
+   再加上底边让出的 --edge，留在视口里的仍恰好是原高的 1/8。
+   高度由内容撑、不随宽度变，这条 calc 直接就是准的；
+   脚本那边的 dockHide() 按 offsetHeight 与算出来的 bottom 算，
+   以后改按钮尺寸、内边距或边距也会自己跟上 */
+.dock.is-open{ --hide-s:1; --hide-d:0px }
+
+/* 面板表面：承载底色、圆角与投影，和栏体同一层意思。
+   层级压在栏体（20）之下 —— 它只在底部中间，不该盖过两侧展开的栏 */
+.dock__surface{
+  position:relative;
+  width:100%; height:100%;
+  display:grid; place-items:center;
+  background:var(--panel);
+  border-radius:var(--rail-r);
+  overflow:hidden;
+  overflow:clip;
+  -webkit-backdrop-filter:blur(var(--blur));
+  backdrop-filter:blur(var(--blur));
+}
+
+/* 升降箭头：面板上沿往上 8。它放在 .dock 里，跟着整块一起上下走，
+   不用像栏体那样另算一套位置；箭头本身只是 32 的透明钮 */
+.dock__toggle{
+  appearance:none; -webkit-appearance:none;
+  position:absolute;
+  left:50%; bottom:calc(100% + 8px);
+  translate:-50% 0;
+  width:32px; height:32px;
+  display:grid; place-items:center;
+  padding:0; border:0; background:none;
+  color:var(--text-reduced);
+  cursor:pointer;
+  opacity:.5;
+  transition:opacity .1s linear, color .1s linear;
+}
+.dock__toggle:hover{opacity:1; color:var(--theme)}
+.dock__toggle svg{
+  width:20px; height:20px; display:block;
+  fill:currentColor;
+  /* 收起时箭头朝上（可以往上拉），展开后翻成朝下（收回去） */
+  transform:rotate(-90deg);
+  transition:transform var(--dur) var(--ease);
+}
+.dock.is-open .dock__toggle svg{transform:rotate(90deg)}
+/* 同一处光学补偿：箭头墨迹重心比包围盒中心靠后，向指向挪 1.5 个单位 */
+.dock__toggle svg path{transform:translate(1.5px, 0)}
+
+/* 九宫格：八向箭头围着一枚主按钮。
+   按钮与左右栏图标钮同尺寸（--btn），行内与行间一律 8，
+   外面再留一圈 --dock-pad，面板高度就是这三行加出来的，
+   九宫格在面板里横纵都居中 */
+.dock__pad{
+  display:grid;
+  grid-template-columns:repeat(3, var(--dock-btn));
+  grid-template-rows:repeat(3, var(--dock-btn));
+  gap:var(--dock-gap);
+  place-content:center;
+}
+/* 收起态整块不出现：只留面板上沿那一条。脚本接管时用同一件事的补间版
+   （pop 的内容通道把 opacity 从 0 补到 1），这里只是没有脚本时的样子 */
+.dock:not(.is-open) .dock__pad{opacity:0}
+
+/* 圆钮：与侧栏图标钮同一套 —— 底色常驻、静止 scale 0，
+   hover 时从圆心涨满，按下交给尾部的 --press 通道压一层 */
+.dock__btn{
+  appearance:none; -webkit-appearance:none;
+  position:relative;
+  width:var(--dock-btn); height:var(--dock-btn);
+  display:grid; place-items:center;
+  padding:0; border:0; border-radius:999px;
+  background:none;
+  color:var(--text-reduced);
+  cursor:pointer;
+  transition:color .1s cubic-bezier(.7,0,.84,.16);
+}
+.dock__btn::before{
+  content:''; position:absolute; inset:0;
+  border-radius:inherit;
+  background:var(--theme);
+  pointer-events:none;
+  scale:0;
+  transform-origin:50% 50%;
+  transform:scale(calc(1 - var(--press, 0) * var(--press-k)));
+  /* 进场先快后慢、出场取镜像，色块沿原路缩回圆心 */
+  transition:transform .2s linear, scale .1s cubic-bezier(.7,0,.84,.16);
+}
+.dock__btn:hover,
+.dock__btn:focus-visible{color:var(--text-invert)}
+.dock__btn:hover::before,
+.dock__btn:focus-visible::before{
+  scale:1;
+  transition:transform .2s linear, scale .1s cubic-bezier(.16,.84,.3,1);
+}
+.dock__btn.is-press::before{transition:scale .1s cubic-bezier(.7,0,.84,.16)}
+/* 只管八向箭头那一枚；播放键的两枚图标走下面 .dock__ico 的绝对定位叠放，
+   这里若一并命中就会把它们的 position 改回 relative，两枚图标会各占一行 */
+.dock__btn > svg:not(.dock__ico){
+  position:relative;
+  /* 图标取圆钮的一半：48 的钮里放 24，和侧栏那枚 48 的图标钮一致 */
+  width:calc(var(--dock-btn) * .5);
+  height:calc(var(--dock-btn) * .5);
+  display:block;
+  fill:currentColor;
+  /* 八向箭头共用 icon/arrow.svg 那一条路径（32 网格里朝右），
+     靠 --rot 转到各自方向；45 度的斜向按半径算也还在 32 的圆里 */
+  transform:rotate(var(--rot, 0deg));
+  transition:fill .1s cubic-bezier(.7,0,.84,.16);
+}
+/* 按面积重心而不是包围盒居中：这条 chevron 的两个分支在尾部，
+   墨迹重心比包围盒中心靠后 1.5 个用户单位（24px 下约 1.1px），
+   只看包围盒会觉得箭头往尾侧缩了一截。平移写在 path 上、随 svg 的 --rot
+   一起转，所以八个方向各自沿指向补偿，斜向不用另算 */
+.dock__btn > svg:not(.dock__ico) path{transform:translate(1.5px, 0)}
+/* 播放三角是「左边一块实心、右边收成尖」，重心同样偏左，略往回带一点 */
+.dock__ico--play path{transform:translate(1px, 0)}
+.dock__btn[data-dir="up"]{--rot:-90deg}
+.dock__btn[data-dir="down"]{--rot:90deg}
+.dock__btn[data-dir="left"]{--rot:180deg}
+.dock__btn[data-dir="up-right"]{--rot:-45deg}
+.dock__btn[data-dir="down-right"]{--rot:45deg}
+.dock__btn[data-dir="down-left"]{--rot:135deg}
+.dock__btn[data-dir="up-left"]{--rot:-135deg}
+
+/* 中间那枚是主操作：底色常驻、图标反白，hover 不再是「涨出来」，
+   只剩按下那一下形变。底色跟图标走 —— 露三角（未播）用 hint，
+   露双竖条（播放中）用 warning，两态之间底色补间过去。
+   里面两枚图标叠着放，靠 is-playing 互换 */
+/* 图标固定反白，不跟 --text-invert：hint / warning 是不随主题变的实色，
+   深色模式里 --text-invert 会翻成近黑，压在 warning 上只剩 2.9:1，红底黑字读不清 */
+.dock__btn--play{color:#fafafa}
+/* 连同 hover / focus 一起写：那两条把 transition 整体重声明了一遍，
+   只写在 .dock__btn--play::before 上会被它们盖掉，底色就变成硬切 */
+.dock__btn--play::before,
+.dock__btn--play:hover::before,
+.dock__btn--play:focus-visible::before{
+  scale:1;
+  background:var(--hint);
+  transition:transform .2s linear, scale .1s cubic-bezier(.16,.84,.3,1),
+             background-color .2s var(--ease);
+}
+.dock__btn--play.is-playing::before,
+.dock__btn--play.is-playing:hover::before,
+.dock__btn--play.is-playing:focus-visible::before{background:var(--warning)}
+/* 按下那一下尾部的 .is-press 也把 transition 换成了只有 scale，
+   这里补回底色那条，免得点击刚好落在按压区间里时红绿硬切 */
+.dock__btn--play.is-press::before{
+  transition:scale .1s cubic-bezier(.7,0,.84,.16), background-color .2s var(--ease);
+}
+.dock__ico{
+  position:absolute;
+  /* 两枚图标都脱离文档流叠在一起，必须自己回到按钮中心：
+     只写 position:absolute 时它的静态位置落在网格行首，会整体上移半个图标，
+     inset:0 + margin:auto 配固定宽高才是真正按盒居中的写法 */
+  inset:0; margin:auto;
+  width:calc(var(--dock-btn) * .5);
+  height:calc(var(--dock-btn) * .5);
+  display:block;
+  fill:currentColor;
+  transition:opacity .1s linear, scale .1s cubic-bezier(.7,0,.84,.16);
+}
+.dock__ico--pause{opacity:0; scale:.7}
+.dock__btn--play.is-playing .dock__ico--pause{opacity:1; scale:1}
+.dock__btn--play.is-playing .dock__ico--play{opacity:0; scale:.7}
+
+/* 图标列（始终贴锚定侧） */
+.rail__bar{
+  flex:0 0 var(--rail-w);
+  width:var(--rail-w);
+  display:flex; flex-direction:column; justify-content:space-between;
+  padding:33px 16px 32px;
+}
+.rail__items{display:flex; flex-direction:column; gap:16px}
+
+.item{
+  appearance:none; -webkit-appearance:none;
+  display:flex; flex-direction:column; align-items:center;
+  background:none; border:0; padding:0;
+  font-family:inherit; font-weight:var(--fw);
+  cursor:pointer;
+}
+.item__btn{
+  position:relative;
+  width:var(--btn); height:var(--btn);
+  display:grid; place-items:center;
+  border:0; border-radius:999px;
+  background:none;
+}
+.item__btn::before{
+  content:''; position:absolute; inset:0;
+  border-radius:inherit;
+  /* 颜色常驻、不参与过渡：可见性完全交给 scale。
+     若这里留 transparent，出场那一帧颜色会先瞬间跳回透明，
+     随后 0.1s 的收缩就发生在一块看不见的色块上，等于没有原路返回。
+     底色分给各按钮的强调色，未写 --itc 的回落到 --theme */
+  background:var(--itc, var(--theme));
+  /* 不留占位边，底片直接等于圆钮盒 */
+  border:0;
+  pointer-events:none;   /* 不扩命中区 */
+  /* 底色靠 scale 从圆心涨到满：0 时不可见，hover / 选中时放到 1，
+     扩张原点默认就是盒中心，不需要另写 transform-origin。
+     按下那一下走 transform 上的等比缩放，两条通道各管各的，互不打断。
+     scale 用成对的两条曲线：进场 cubic-bezier(.16,.84,.3,1) 先快后慢地铺开，
+     出场用它的镜像 (.7,0,.84,.16)，等于把进场倒着放，色块沿原路缩回圆心 */
+  scale:0;
+  transform-origin:50% 50%;
+  transform:scale(calc(1 - var(--press, 0) * var(--press-k)));
+  transition:transform .2s linear, scale .1s cubic-bezier(.7,0,.84,.16);
+}
+/* 图标与文字换色跟底色扩张同长同时序，三条（scale / fill / color）都走 .1s：
+   进场统一先快后慢地亮起，出场统一走镜像曲线，收尾时一起复位，
+   不会出现底片已经合拢、文字还停在半亮的中间态 */
+.item__btn svg{
+  position:relative; width:24px; height:24px; display:block;
+  fill:var(--text-reduced);
+  transition:fill .1s cubic-bezier(.7,0,.84,.16);
+}
+.item__label{
+  margin:4px 0 0;
+  font-size:var(--fs-14); line-height:1; letter-spacing:.2px;
+  color:var(--text-muted); text-align:center; white-space:nowrap;
+  transition:color .1s cubic-bezier(.7,0,.84,.16);
+}
+/* 每个图标钮各自的强调色。Action / Dialog / Tendance 填各自的分组色，
+   与展开后卡片区那套 --sc（.sc-group--action 等）同源；没写 --itc 的
+   按钮（Pinned 等）回落到全站的 --theme */
+.item[data-panel="Action"]{--itc:var(--series-green-light)}
+.item[data-panel="Dialog"]{--itc:var(--series-blue-light)}
+.item[data-panel="Tendance"]{--itc:var(--series-pink-light)}
+/* 选中与 hover 才把底片放出来（颜色本身常驻，靠 scale 开合），
+   同样不带边；进场这条曲线先快后慢，尾巴慢慢贴住圆周。
+   出场不在这里写，回到基态时用镜像曲线，等于原路缩回 */
+.item.is-active .item__btn::before,
+.item:hover .item__btn::before{
+  background:var(--itc, var(--theme));
+  scale:1;
+  transition:inset .2s linear, scale .1s cubic-bezier(.16,.84,.3,1);
+}
+/* 文字与图标在同一拍里提亮 */
+.item.is-active .item__btn svg,
+.item:hover .item__btn svg{
+  fill:var(--text-invert);
+  transition:fill .1s cubic-bezier(.16,.84,.3,1);
+}
+.item.is-active .item__label,
+.item:hover .item__label{
+  color:var(--text-secondary);
+  transition:color .1s cubic-bezier(.16,.84,.3,1);
+}
+
+/* 展开面板 */
+.rail__panel{
+  position:relative;   /* 上下两条雾化遮罩的定位基准 */
+  --frost-h:32px;     /* 渐隐段的长度：越高压着的内容越多、化开的行程也越长 */
+  --frost-head:16px;  /* 平台段：这一段是满浓度，之后才开始化开 */
+  --frost-blur:16px;  /* 遮罩的模糊半径，与面板自身的 --blur 同量级 */
+  --frost-a:.9;       /* 雾带最上沿的染色浓度；往下递减，0 为全透 */
+  /* 雾带越过面板顶/底内沿的余量。贴边放置时，backdrop-filter 的采样区正好被面板
+     边界切断，最外侧 1px 只能采到半个核，模糊不到位，读起来就是面板边和雾带之间
+     一条细缝。上下各多长 2px、由 overflow:clip 裁掉，边界处就变成采样区内侧，
+     缝消失。染色层同步一起外扩，避免只补了模糊、颜色仍短 1px */
+  --frost-over:2px;
+  /* 组标题盒顶边到面板顶端的距离，初始位置与吸顶位置共用这一个值。
+     取顶部遮罩的竖直中点：遮罩总高 = --frost-head + --frost-h = 48，中线 24，
+     标题盒高 24（24 号字 line-height:1），顶边 = 24 - 12 = 12，标题中心正落在 24。
+     标题的 top / margin-top 与尾部脚本算吸附时机时都读它，改这一处即可整体平移；
+     改 --frost-head 或 --frost-h 时这个数值要跟着重算（(head + h) / 2 - 12）。
+     写死成 px 而不是 calc：尾部脚本用 parseFloat 读它，calc 表达式读出来是 NaN */
+  --title-top:12px;
+  flex:0 0 auto;
+  width:0;
+  /* 雾带就压在面板内沿上，裁切留在 padding box 即可 */
+  overflow:hidden;
+  overflow:clip;
+  opacity:0;
+  /* 与图标栏之间那条 1px 竖直分割线：其余描边都不要，唯独这一条留着，
+     否则图标栏和卡片区糊成一片，展开后看不出边界 */
+  border-left:1px solid var(--border);
+  display:flex; flex-direction:column;
+  /* 宽度过渡：展开 0 → 521、收起 521 → 0，0.3s；透明度与横移交给脚本 */
+  transition:width .3s var(--ease);
+}
+/* 栏体挂在右边时，分割线翻到面板的另一侧，贴着图标栏那头 */
+.rail--right .rail__panel{
+  border-left:0;
+  border-right:1px solid var(--border);
+}
+.rail.is-open .rail__panel{
+  width:calc(min(var(--rail-expanded), 78vw) - var(--rail-w));
+  opacity:1;
+  /* 透明度交给脚本（panelOut / panelIn 两条曲线），这里只管宽度 */
+  transition:width .3s var(--ease);
+}
+/* 功能区域：面板内的内容滚动区（Pinned 的指令卡片从这里往下排）
+   面板不再单独放标题，标题只在 Pinned 视图里以组名出现 */
+.panel__body{
+  /* 首尾留白：静止时把第一张/最后一张卡片从边上让开。
+     也是 sticky 的基准 —— top:0 落在内容盒顶，即这条内边距的下沿 */
+  --pad-y:32px;
+  /* 不同指令区域之间的间距：上一组最后一张卡片的底边 → 下一组组名（标题盒）的顶边。
+     标题行盒 24 号字、line-height:1，字形上沿距行盒顶还有约 4–5px 的空白，
+     所以肉眼量出来的空白比 16 略大；要视觉正好 16，把这里降到 11–12 */
+  --group-gap:16px;
+  flex:1 1 auto;
+  min-height:0;
+  /* 纵向不留 margin：滚动视口的上下沿与面板上下沿完全重合，内容贴边才被裁，
+     而不是在离边 32 处提前消失。
+     首尾那 32 是 padding，不是 margin —— padding 属于滚动内容的一部分，
+     滚动时会跟着内容一起走掉，不会变成一条裁切线。横向仍留 --panel-pad */
+  margin:0;
+  padding:var(--pad-y) var(--panel-pad);
+  /* 横向永不成滚动容器：展开过程上面板还窄于内容，只写 overflow-y:auto 会让
+     横向一并变成 auto，过渡收尾那一刻浏览器的 scrollLeft 校正会把内容推一下 */
+  overflow-x:clip;
+  overflow-y:auto;
+  overscroll-behavior:contain;
+  scrollbar-width:none;          /* 不显示滚动条，靠上下滑动 */
+}
+.panel__body::-webkit-scrollbar{width:0; height:0}
+
+/* 滚动区首尾的雾化遮罩。
+   染色与模糊必须拆成两层：染色在下（绷在模糊层的 backdrop 里），模糊在上、由 mask 收口。
+   合在一层再用 mask 渐隐就会失效 —— mask 淡的是整层，连同染色一起淡掉，
+   底下那张没糊过的卡片便按 mask 的透明度原样透出来，淡到 50% 处就是「一半清晰」，
+   眼睛读到的不是雾，是「模糊根本没生效」。拆开之后 mask 只管模糊，染色始终满着。
+   挂在 .rail__panel（不滚动的那层）上：拖进滚动容器会跟着内容一起滚。
+   pointer-events:none —— 不吃滚动、不吃卡片 hover。 */
+.frost{
+  position:absolute; left:0; right:0;
+  height:var(--frost-h);
+  z-index:3;                          /* 压在 .panel__body 与卡片之上 */
+  pointer-events:none;
+  /* 染色浓度 --frost-a：颜色不能用 --panel 的 rgb 再套高浓度 —— --panel 自身是半透明的
+     （浅色 .75），直接按 rgb + .9 上色等于给底色再提一次亮，顶上一块更亮的方块，滚到边界
+     就成一条横线。这里先把 --panel 的色值按 75% 压到 --bg 上，得到面板**实际渲染出来的**
+     实色（浅色 247），再套 --frost-a：空白处雾带与底色一模一样，只有压到卡片或滚动内容上
+     才显出遮挡。改 --panel 的浓度时这里的 75% 要跟着改。
+     曲线是 (1-t)^1.4 的采样：从第一像素就开始退，斜率从头到尾一路变缓，末段几乎
+     平着收进清晰内容。若前段是平的、中段陡降，等于「先压死一块、再突然松开」，
+     读起来就是一条生硬的横带 */
+  --frost-base:color-mix(in srgb, rgb(from var(--panel) r g b) 75%, var(--bg));
+  --frost-c:rgb(from var(--frost-base) r g b / var(--frost-a));
+}
+/* 下缘：一条渐变直接从满浓度退到 0（左栏已移除，现用于右栏聊天页底部） */
+.frost--bottom{
+  /* 向下越出 --frost-over，多出来的部分在面板外，被 clip 裁掉。
+     盒高与渐变的 size/position 一起补偿，屏幕上的落点不变 */
+  bottom:calc(var(--frost-over) * -1);
+  height:calc(var(--frost-h) + var(--frost-over));
+  background:linear-gradient(to top,
+    var(--frost-c) 0%,
+    rgb(from var(--frost-base) r g b / calc(var(--frost-a) * .866)) 10%,
+    rgb(from var(--frost-base) r g b / calc(var(--frost-a) * .741)) 20%,
+    rgb(from var(--frost-base) r g b / calc(var(--frost-a) * .625)) 30%,
+    rgb(from var(--frost-base) r g b / calc(var(--frost-a) * .517)) 40%,
+    rgb(from var(--frost-base) r g b / calc(var(--frost-a) * .417)) 50%,
+    rgb(from var(--frost-base) r g b / calc(var(--frost-a) * .325)) 60%,
+    rgb(from var(--frost-base) r g b / calc(var(--frost-a) * .241)) 70%,
+    rgb(from var(--frost-base) r g b / calc(var(--frost-a) * .166)) 80%,
+    rgb(from var(--frost-base) r g b / calc(var(--frost-a) * .099)) 90%,
+    rgb(from var(--frost-base) r g b / calc(var(--frost-a) * .035)) 96%,
+    rgb(from var(--panel) r g b / 0) 100%);
+  background-size:100% var(--frost-h);
+  background-position:0 var(--frost-over);
+  background-repeat:no-repeat;
+}
+/* 上缘：先一段与渐隐同浓度的平台（高度 = --frost-head），平台之后才是
+   --frost-h 那段渐隐 —— 所以肉眼看到的「雾」是压住一小段之后才开始化开，
+   平台上的卡片被彻底盖住，不会浮出字形。
+   平台用第二层背景实现，不去改渐变的百分比：渐变的长度和位置由 background-size /
+   position 交给 --frost-h 那一段，两条曲线的接缝两边都是 --frost-c，看不出来。
+   总高就是 head + h = 48，再加下侧 --frost-over 的余量。首张卡片从 44 起（标题 12 + 24 + 8），
+   雾带的 0 点落在卡片内部而不是卡片顶边，收尾那半个色阶的落差压在卡片自己的底色上，
+   不会在空面板上留一条横线 */
+.frost--top{
+  /* 向上越出 --frost-over，平台层与渐隐层的位置一起 +over，
+     屏幕上平台仍是 0–16、渐隐仍是 16–48 */
+  top:calc(var(--frost-over) * -1);
+  height:calc(var(--frost-head) + var(--frost-h) + var(--frost-over));
+  background-image:
+    linear-gradient(to bottom, var(--frost-c) 0, var(--frost-c) 100%),
+    linear-gradient(to bottom,
+      var(--frost-c) 0%,
+      rgb(from var(--frost-base) r g b / calc(var(--frost-a) * .866)) 10%,
+      rgb(from var(--frost-base) r g b / calc(var(--frost-a) * .741)) 20%,
+      rgb(from var(--frost-base) r g b / calc(var(--frost-a) * .625)) 30%,
+      rgb(from var(--frost-base) r g b / calc(var(--frost-a) * .517)) 40%,
+      rgb(from var(--frost-base) r g b / calc(var(--frost-a) * .417)) 50%,
+      rgb(from var(--frost-base) r g b / calc(var(--frost-a) * .325)) 60%,
+      rgb(from var(--frost-base) r g b / calc(var(--frost-a) * .241)) 70%,
+      rgb(from var(--frost-base) r g b / calc(var(--frost-a) * .166)) 80%,
+      rgb(from var(--frost-base) r g b / calc(var(--frost-a) * .099)) 90%,
+      rgb(from var(--frost-base) r g b / calc(var(--frost-a) * .035)) 96%,
+      rgb(from var(--panel) r g b / 0) 100%);
+  background-size:100% var(--frost-head), 100% var(--frost-h);
+  background-position:0 var(--frost-over), 0 calc(var(--frost-head) + var(--frost-over));
+  background-repeat:no-repeat, no-repeat;
+}
+/* 模糊层：前 18% 满强度，之后 smoothstep 放到 0 ——
+   起步和落点斜率都接近 0，卡片是从雾里慢慢解析出来的，不是被一刀切开。
+   mask 只做透明度，不改颜色 */
+.frost::before{
+  content:''; position:absolute; inset:0;
+  -webkit-backdrop-filter:blur(var(--frost-blur));
+  backdrop-filter:blur(var(--frost-blur));
+  /* 这里**不能**加 transform:translateZ(0) / will-change:transform。
+     提成独立合成层后 Chrome 会把这条伪元素的 backdrop 采样掐掉 —— 只剩染色、
+     模糊完全不发生 */
+}

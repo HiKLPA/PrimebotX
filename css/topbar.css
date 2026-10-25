@@ -1,0 +1,242 @@
+/* ============================================================
+   Topbar
+   ============================================================ */
+.topbar{
+  position:fixed;
+  top:var(--edge); left:var(--edge); right:var(--edge);
+  height:var(--top-h);
+  display:flex; align-items:center; justify-content:space-between;
+  z-index:30;
+  pointer-events:none;
+}
+.topbar > *{pointer-events:auto}
+
+.brand{
+  width:40px; height:40px; display:grid; place-items:center;
+  border-radius:10px;
+}
+.brand svg{width:40px; height:40px; display:block}
+/* logo 的深浅两块跟主题走：前两笔是深色骨架，在 night 下必须提亮，
+   第三笔本来就是主题青。SVG 的 presentational 属性吃不到 var()，用 CSS 覆盖 */
+.brand svg polygon:nth-child(-n+2){fill:var(--text-primary)}
+.brand svg polygon:nth-child(3){fill:var(--theme)}
+
+.nav{display:flex; align-items:center; gap:var(--gap)}
+
+/* 分组托盘 —— 所有导航组同一套样式；组内按钮间距固定 8
+   padding 4 + 胶囊 40 = 48（不再画描边，靠留白把胶囊托住） */
+.group{
+  display:flex; align-items:center; gap:8px;
+  height:var(--top-h);
+  padding:4px;
+  border-radius:999px;
+  background:var(--panel);
+  /* 投影见上方 .group / .rail__surface / .user__surface 的共用定义（--sh） */
+  -webkit-backdrop-filter:blur(var(--blur));
+  backdrop-filter:blur(var(--blur));
+}
+
+/* 导航胶囊 */
+.pill{
+  appearance:none; -webkit-appearance:none;
+  position:relative;
+  width:var(--pill-w); height:var(--pill-h);
+  display:block;
+  padding:0 12px;
+  border:0; border-radius:999px;
+  background:transparent;
+  color:var(--text-reduced);   /* 未选中：内容物 text-reduced */
+  font-family:inherit; font-weight:var(--fw); font-size:var(--pill-fs);
+  letter-spacing:0; line-height:1;
+  cursor:pointer;
+  /* 只过渡字色：底色现在是有先后的（从圆心涨开 / 缩回），
+     字色若还是瞬切，涨开那 0.1s 里会出现浅底配浅字的空档。
+     进出成对镜像，和底片同长同时序 */
+  transition:color .1s cubic-bezier(.7,0,.84,.16);
+}
+/* 底色挂在伪元素上，本体不参与绘制；hover 只填这一层，文字与图标不跟
+   按下走 scale：本体没有边框占位了，底片与胶囊盒自然重合。
+   压入用等比缩放而不是 inset，四周按同一比例收，长边短边看起来一样深。
+   显隐不再靠 background 的开关：颜色常驻、静止 scale 0 不可见，
+   由 scale 从圆心涨满整盒。写成 transparent 的话，退场第一帧颜色就先跳没了，
+   后面那下收缩发生在看不见的色块上，等于没有原路返回 */
+.pill::before{
+  content:''; position:absolute; inset:0;
+  border-radius:inherit;
+  background:var(--theme);
+  border:0;
+  pointer-events:none;   /* 放大后不改变命中区域，否则边缘会反复 over/out 造成闪烁 */
+  scale:0;
+  transform-origin:50% 50%;
+  transform:scale(calc(1 - var(--press, 0) * var(--press-k)));
+  /* 两条通道各管各的：transform 服务按下压入（--press 由 GSAP 逐帧写，
+     见文件尾部脚本），scale 服务底色的开合。
+     出场用进场 ease-out 的镜像，色块沿原路缩回圆心 */
+  transition:transform .2s linear, scale .1s cubic-bezier(.7,0,.84,.16);
+}
+/* hover 不再改几何：底片始终铺满整盒，只靠 transform 等比缩放，按下才动 */
+.pill svg{fill:currentColor}
+/* 选中：底片放到满，字反白。进场曲线先快后慢，一笔铺开再贴住圆周 */
+.pill.is-active{color:var(--text-invert); transition:color .1s cubic-bezier(.16,.84,.3,1)}
+.pill.is-active::before{
+  scale:1;
+  transition:transform .2s linear, scale .1s cubic-bezier(.16,.84,.3,1);
+}
+
+/* 文字：默认居中，hover 时滑到右对齐。
+   位移只走 transform（不碰 left）：left 每帧都会让浏览器重排整条顶栏，
+   悬停一次几十帧就是几十次布局；transform 交给合成线程，与背景动画互不打扰。
+   胶囊宽度由 --pill-w 唯一确定，所以能直接用 calc 算出「右缘贴到内边距」的偏移 */
+.pill__label{
+  position:absolute; top:50%; left:50%;
+  transform:translate(-50%,-50%);
+  white-space:nowrap;
+  transition:transform var(--dur) var(--ease);
+}
+/* 箭头：hover 时从左侧浮现，尺寸等于行高 */
+.pill__arrow{
+  position:absolute; top:50%; left:12px;
+  width:1em; height:1em; display:block;
+  transform:translateY(-50%) translateX(-4px);
+  opacity:0;
+  transition:opacity var(--dur) var(--ease), transform var(--dur) var(--ease);
+}
+/* hover：底片照样从圆心涨满，字色同一拍提亮 */
+.pill:hover{color:var(--text-invert); transition:color .1s cubic-bezier(.16,.84,.3,1)}
+.pill:hover::before{
+  scale:1;
+  transition:transform .2s linear, scale .1s cubic-bezier(.16,.84,.3,1);
+}
+.pill:hover .pill__label{
+  /* 左缘从 centering 的 50% 挪到「按钮宽 − 12px − 自身宽」，右缘与内边距对齐 */
+  transform:translate(calc(var(--pill-w) / 2 - 12px - 100%), -50%);
+}
+.pill:hover .pill__arrow{opacity:1; transform:translateY(-50%) translateX(0)}
+/* 点击激活后：文字回到静止位置、箭头收起，hover 位移与提亮都不再生效 */
+.pill.is-active:hover::before{
+  scale:1;
+  transition:transform .2s linear, scale .1s cubic-bezier(.16,.84,.3,1);
+}
+.pill.is-active:hover .pill__label{transform:translate(-50%,-50%)}
+.pill.is-active:hover .pill__arrow{opacity:0; transform:translateY(-50%) translateX(-4px)}
+/* 按下期间几何由 GSAP 逐帧写 --press，这里关掉 transform 过渡：
+   否则每帧的新值都会被 0.2s 过渡再平滑一次，压弹会被抹平成拖沓的缓动。
+   只关 transform，scale 那条留着 —— 边按边在涨的底色不会在中途冻住 */
+.pill.is-press::before{transition:scale .1s cubic-bezier(.7,0,.84,.16)}
+.item.is-press .item__btn::before{transition:scale .1s cubic-bezier(.7,0,.84,.16)}
+
+/* 用户胶囊：宽度与 Camera / Modal 那个大胶囊一致；点击后上边界锚定，向下长成账号面板。
+   表面拆成 .user__surface 承担底色与圆角，外层保持 48 高，顶栏不重排。 */
+.user{
+  position:relative;
+  /* 托盘宽 = 两枚胶囊 + 组内间距 8 + 托盘 padding 4×2（描边已去掉），与 .group 逐项对齐，
+     --pill-w 是 clamp 出来的，这里跟着流体缩放，窄屏也不会错位 */
+  --user-w: calc(var(--pill-w) * 2 + 16px);
+  --user-half: calc(var(--pill-w) + 8px);   /* 半宽：头像收起态的横向位移要用 */
+  width:var(--user-w); height:var(--top-h);
+  flex:0 0 var(--user-w);
+  z-index:31;
+  /* 与栏体同一套形变变量；原点取上边界中点，鼓起时上边界不动、左右对称 */
+  --sx: 1;
+  --sy: 1;
+  scale: var(--sx) var(--sy);
+  transform-origin:50% 0%;
+}
+.user__surface{
+  position:absolute; top:0; left:0;
+  width:100%; height:var(--top-h);
+  border-radius:calc(var(--top-h) / 2);   /* 24 = 胶囊原圆角，展开后四角仍是同一曲率 */
+  background:var(--panel);
+  /* 投影见上方 .group / .rail__surface / .user__surface 的共用定义（--sh） */
+  overflow:hidden;
+  -webkit-backdrop-filter:blur(var(--blur));
+  backdrop-filter:blur(var(--blur));
+  /* 高度过渡：展开 48 → 246 + 名字行高，收起反向，都是 0.3s */
+  transition:height .3s var(--ease);
+}
+/* 1 描边 + 8 + 80 + 4 + 名字(fs+4) + 16 + 3×40+2×4 + 4 + 1 描边 */
+.user.is-open .user__surface{
+  height:calc(246px + var(--pill-fs));
+}
+
+/* 头像是固定 80 的盒子，收起态只靠 transform 缩到 40 再挪到左上角：
+   一个属性一条曲线，位置和大小不会各走各的；也不用碰 left/top/width/height，
+   展开时不必重排。收起态中心要落在 (24,24)，展开态中心是 (50%, 48)，
+   胶囊宽 --user-w 时即 (--user-half, 48) —— 所以左移 (--user-half − 24)、上移 24、缩到 0.5；
+   胶囊宽度是流体的，位移量跟着一起算，换视口头像照样落在左上角。
+   transform 的平移量在父级坐标里，不受后面 scale 影响，数值直接按视觉距离写。 */
+.avatar{
+  position:absolute; left:50%; top:8px; margin-left:-40px;
+  width:80px; height:80px; border-radius:999px;
+  background-color:var(--avatar);
+  background-image:url("../icon/default_avatar.png")   /* 相对 css/ 本身，故带 ../ 回项目根 */;
+  background-size:cover;
+  background-position:center;
+  background-repeat:no-repeat;
+  transform:translate(calc(24px - var(--user-half)), -24px) scale(.5);
+  transform-origin:50% 50%;
+  transition:transform var(--dur) var(--ease);
+}
+/* 展开：等比长到 80，水平居中，上边距 8 */
+.user.is-open .avatar{transform:none}
+
+.user__name{
+  position:absolute;
+  top:calc((var(--top-h) - var(--pill-fs)) / 2);
+  left:calc(100% - 24px); transform:translateX(-100%);   /* 右端 = 内边距 4 + 半个头像 20 */
+  max-width:calc(100% - 88px);
+  font-size:var(--pill-fs); line-height:var(--pill-fs); color:var(--text-primary);
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  text-align:right;
+  transition:top var(--dur) var(--ease), left var(--dur) var(--ease),
+             transform var(--dur) var(--ease), max-width var(--dur) var(--ease),
+             font-size var(--dur) var(--ease), line-height var(--dur) var(--ease);
+}
+/* 展开：名字滑到头像正下方，间距 4；字号上调一档 */
+.user.is-open .user__name{
+  top:92px;
+  left:50%; transform:translateX(-50%);
+  max-width:calc(100% - 16px);
+  font-size:calc(var(--pill-fs) + 4px);
+  line-height:calc(var(--pill-fs) + 4px);
+  text-align:center;
+}
+
+/* 三项菜单：名字下方 16，左右内边距 4 */
+.user__menu{
+  position:absolute; left:4px; right:4px;
+  top:calc(112px + var(--pill-fs));
+  display:flex; flex-direction:column; gap:4px;
+  opacity:0; pointer-events:none;
+  transition:opacity var(--dur) var(--ease);
+}
+.user.is-open .user__menu{opacity:1; pointer-events:auto; transition-delay:.06s}
+/* 菜单项沿用顶栏胶囊的全部样式，只把尺寸改成撑满、高 48；
+   未选中时文字左对齐（顶栏胶囊为居中），hover 右移箭头宽度 + 16 */
+.user__menu .pill{width:100%; height:40px; flex:0 0 40px}
+.user__menu .pill .pill__label{left:12px; transform:translateY(-50%)}
+.user__menu .pill:hover .pill__label{transform:translate(calc(1em + 16px), -50%)}
+.user__menu .pill.is-active:hover .pill__label{left:12px; transform:translateY(-50%)}
+
+/* 整块触发区：覆盖收起态的 240×48，键盘可达 */
+.user__trigger{
+  appearance:none; -webkit-appearance:none;
+  position:absolute; top:0; left:0;
+  width:100%; height:var(--top-h);
+  padding:0; border:0; background:none;
+  cursor:pointer;
+  z-index:2;
+}
+
+/* ============================================================
+   Stage（主内容区，留空）
+   ============================================================ */
+.stage{
+  position:fixed; inset:0;
+  z-index:1;
+  pointer-events:none;
+}
+/* 动态背景画布：铺满 stage，自身不吃事件。
+   画在 body 之上、所有内容之下，纹样会被面板与卡片的背景模糊吃到 */
+.bgfx{display:block; width:100%; height:100%}
+

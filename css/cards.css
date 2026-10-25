@@ -1,0 +1,322 @@
+/* 上缘的模糊层：整块满强度的平台，之后才是渐消 */
+.frost--top::before{
+  -webkit-mask-image:
+    linear-gradient(#000, #000),
+    linear-gradient(to bottom,
+      #000 0 18%, rgba(0,0,0,.973) 26%, rgba(0,0,0,.901) 34%,
+      rgba(0,0,0,.793) 42%, rgba(0,0,0,.662) 50%, rgba(0,0,0,.518) 58%,
+      rgba(0,0,0,.375) 66%, rgba(0,0,0,.238) 74%, rgba(0,0,0,.124) 82%,
+      rgba(0,0,0,.041) 90%, rgba(0,0,0,0) 100%);
+  mask-image:
+    linear-gradient(#000, #000),
+    linear-gradient(to bottom,
+      #000 0 18%, rgba(0,0,0,.973) 26%, rgba(0,0,0,.901) 34%,
+      rgba(0,0,0,.793) 42%, rgba(0,0,0,.662) 50%, rgba(0,0,0,.518) 58%,
+      rgba(0,0,0,.375) 66%, rgba(0,0,0,.238) 74%, rgba(0,0,0,.124) 82%,
+      rgba(0,0,0,.041) 90%, rgba(0,0,0,0) 100%);
+  -webkit-mask-size:100% var(--frost-head), 100% var(--frost-h);
+  -webkit-mask-position:0 var(--frost-over), 0 calc(var(--frost-head) + var(--frost-over));
+  -webkit-mask-repeat:no-repeat, no-repeat;
+  mask-size:100% var(--frost-head), 100% var(--frost-h);
+  mask-position:0 var(--frost-over), 0 calc(var(--frost-head) + var(--frost-over));
+  mask-repeat:no-repeat, no-repeat;
+}
+/* 下缘的模糊层：同一条 mask，只是方向朝上 */
+.frost--bottom::before{
+  -webkit-mask-image:linear-gradient(to top,
+    #000 0 18%, rgba(0,0,0,.973) 26%, rgba(0,0,0,.901) 34%,
+    rgba(0,0,0,.793) 42%, rgba(0,0,0,.662) 50%, rgba(0,0,0,.518) 58%,
+    rgba(0,0,0,.375) 66%, rgba(0,0,0,.238) 74%, rgba(0,0,0,.124) 82%,
+    rgba(0,0,0,.041) 90%, rgba(0,0,0,0) 100%);
+  mask-image:linear-gradient(to top,
+    #000 0 18%, rgba(0,0,0,.973) 26%, rgba(0,0,0,.901) 34%,
+    rgba(0,0,0,.793) 42%, rgba(0,0,0,.662) 50%, rgba(0,0,0,.518) 58%,
+    rgba(0,0,0,.375) 66%, rgba(0,0,0,.238) 74%, rgba(0,0,0,.124) 82%,
+    rgba(0,0,0,.041) 90%, rgba(0,0,0,0) 100%);
+  /* 盒高 = h + over×2，mask 必须显式写回 h 的高度并往下让 over，
+     否则渐变会被多出来的 4px 拉长、屏幕上的落点整体上移 */
+  -webkit-mask-size:100% var(--frost-h);
+  -webkit-mask-position:0 var(--frost-over);
+  -webkit-mask-repeat:no-repeat;
+  mask-size:100% var(--frost-h);
+  mask-position:0 var(--frost-over);
+  mask-repeat:no-repeat;
+}
+
+/* ---- 指令卡片：照 draft.fig 的 Shortcut 组件原尺寸铺开
+        240×150 / r24 / #FAFAFA 底 / 0.5 白描边；
+        编号 32、简介 24、时长 18，都在 #8.5 起排。
+        一行两张，栏宽仍由 --sc-w 算出（稳态每张正好 240），但列宽写成 1fr：
+        展开动画里卡片跟着面板一起伸缩，和右栏的输入框是同一套跟随方式，
+        不再是「卡片定宽、面板拉开遮住」的抽屉感；
+        hover 填该组系列色、文字全部反白 ---- */
+/* 视图切换：Pinned 三组全出、每组带组名；
+   Action / Dialog / Tendance 只出自己那一组，且不显示组名（按钮下方的标签已经说明了） */
+.panel__body[data-view="pinned"] .sc-group + .sc-group{
+  margin-top:var(--group-gap);   /* 不同指令区域上下间隔，默认 16 */
+}
+.panel__body[data-view="action"] .sc-group,
+.panel__body[data-view="dialog"] .sc-group,
+.panel__body[data-view="tendance"] .sc-group{display:none}
+.panel__body[data-view="action"] .sc-group--action,
+.panel__body[data-view="dialog"] .sc-group--dialog,
+.panel__body[data-view="tendance"] .sc-group--tendance{display:block}
+.panel__body[data-view="action"] .sc-group__title,
+.panel__body[data-view="dialog"] .sc-group__title,
+.panel__body[data-view="tendance"] .sc-group__title{display:none}
+.sc-group{
+  --sc: var(--series-green-light);              /* 默认组色，Action 用；Dialog / Tendance 在标签上覆盖 */
+  /* 组宽撑满栏宽，让下面的 .sc-grid 有整栏可以平分。
+     原来是 max-content（组宽跟着两张 240 的卡走），列宽改成 1fr 之后
+     那就成了死循环：容器先按内容收缩，1fr 再按这个收缩后的宽度分配，
+     卡片会停在文字的最小宽（实测 154），跟右栏的流式就对不上了 */
+  width:auto;
+}
+.sc-group__title{
+  /* 吸顶位置由 --title-top 决定（12 = 顶部遮罩的竖直中线）。Chrome 的 sticky 偏移
+     以滚动区内容盒为基准，而内容盒已被 --pad-y(32) 的上下留白推开，所以实际写下去的
+     top 要减掉这段留白：top:-32 时标题盒顶边正好落在 0
+     （实测 -32→0、-16→16、0→32、16→48，是线性平移）。
+     标题盒高 24、顶边 12、中心 24，与遮罩中线重合。
+     z-index:4 压过雾带（3），卡片从标题底下滑过时标题是清晰的 */
+  position:sticky;
+  top:calc(var(--title-top) - var(--pad-y));
+  z-index:4;
+  /* 24 号字的行盒比字形底部多出约 3px 的降部留白，行盒下留 8 时字形到卡片约 11；
+     这里给 8 的行盒间距，标题字形到卡片 = 8 + 3 的降部，视觉留白不挤 */
+  margin:0 0 8px;
+  font-size:24px; line-height:1; letter-spacing:.4px; font-weight:var(--fw);
+  color:var(--text-secondary);   /* 组标题用次级文字色，压在雾带上也够实 */
+}
+/* 第一枚标题的初始位置与吸顶位置对齐，都是 --title-top（遮罩竖直中线）。
+   正文自带 --pad-y(32) 的上留白，这里用同样的差值把它抵掉，
+   后面的卡片跟着一起上移，标题与首张卡片之间那 8px 的节奏不变 */
+.panel__body > .sc-group:first-child > .sc-group__title{
+  margin-top:calc(var(--title-top) - var(--pad-y));
+}
+/* 其余三个视图把标题 display:none 掉了，卡片会往上顶 32px。
+   这里补一段等价的上留白：标题盒 24 + 下间距 8，减去被负 margin 抵掉的那段，
+   首张卡片因此和 pinned 一样落在 44 处（12 + 24 + 8），切页时卡片顶边不跳 */
+.panel__body[data-view="action"] .sc-group--action,
+.panel__body[data-view="dialog"] .sc-group--dialog,
+.panel__body[data-view="tendance"] .sc-group--tendance{
+  padding-top:calc(24px + 8px + var(--title-top) - var(--pad-y));
+}
+.sc-grid{
+  display:grid;
+  /* 一行两张，列宽平分而不是锁 240：面板拉伸时卡片跟着变宽变窄。
+     minmax(0, 1fr) 里的 0 是必须的 —— 网格项默认 min-width:auto，
+     会被卡内 32px 的编号撑住，那样压不下去 */
+  grid-template-columns:repeat(2, minmax(0, 1fr));
+  gap:var(--sc-gap);                            /* 卡片左右、上下都是 8 */
+}
+.sc{
+  position:relative;
+  min-width:0;                  /* 同上，允许被列宽压窄 */
+  isolation:isolate;   /* 填充层与卡面自成一组，不跟栏体的背景模糊互相干扰 */
+  height:150px;
+  padding:8px;
+  border-radius:24px;
+  background:var(--card);
+  overflow:hidden;     /* 填充层按圆角裁，边缘不外溢 */
+  display:flex; flex-direction:column; align-items:flex-start;
+}
+/* hover 的整卡填色改由覆盖层画：只动 opacity（合成器上做），
+   卡面底色和文字绘制都不参与，也不会每帧去跟背后那层模糊重新混合，
+   所以进出卡片时不会闪 */
+.sc::before{
+  content:''; position:absolute; inset:0; z-index:0;
+  border-radius:inherit;
+  background:var(--sc);
+  opacity:0;
+  transform:translateZ(0);   /* 常驻自己一层，避免 hover 进出时临时提层/落层闪一下 */
+  transition:opacity .1s linear;
+  pointer-events:none;
+}
+.sc > span:not(.sc__go){
+  position:relative; z-index:1;   /* 三行文字压在填充层之上 */
+  margin-left:4px;                /* 文字比卡片内边距再右移 4，左边距合计 12 */
+  /* 卡片宽度是跟着面板走的，窄的时候宁可把右边裁掉，也不让三行字折成六行 ——
+     折行会让展开动画里文字上下乱跳，和右栏输入框的单行裁切不是一种手感 */
+  white-space:nowrap;
+}
+.sc:hover::before{opacity:1}
+/* 右下角箭头圆钮：hover 前整枚不存在，圆与箭头只在悬停时落色。
+   常态不给底色也不给内容物颜色，避免淡入的那 0.1s 里透出系列色底 */
+.sc__go{
+  position:absolute; right:8px; bottom:8px; z-index:1;
+  width:32px; height:32px; border-radius:999px;
+  display:grid; place-items:center;
+  opacity:0;
+  transition:opacity .1s linear;
+  pointer-events:none;   /* 不参与命中判定，卡片 hover 只认卡本身 */
+}
+.sc__go svg{
+  width:20px; height:20px; display:block; fill:currentColor;
+  transform:translateX(1px);   /* 尖头视觉重心偏左，右移一点才是圆内居中 */
+}
+/* 悬停才落色：底取反白（与卡片文字反白同一支），箭头回到该组的系列色 */
+.sc:hover .sc__go{opacity:1; background:var(--text-invert); color:var(--sc)}
+.sc__id{
+  margin-top:2px;                /* 文字块比卡片内边距再下移 2 */
+  font-size:32px; line-height:1; letter-spacing:.2px;
+  color:var(--sc);
+  transition:color .1s linear;
+}
+.sc__brief{
+  margin-top:8px;                               /* 编号与简介的间距 */
+  font-size:24px; line-height:1;
+  color:var(--sc);
+  transition:color .1s linear;
+}
+.sc__time{
+  margin-top:4px;                               /* 简介与时长按 24 / 18 的字号差收一点 */
+  font-size:18px; line-height:1;
+  color:var(--text-reduced);
+  transition:color .1s linear;
+}
+.sc:hover .sc__id,
+.sc:hover .sc__brief,
+.sc:hover .sc__time{color:var(--text-invert)}
+
+/* 卡片左下角的图钉：24×24 触控区，图标 16（触控区不变，图标大小可单独调 .sc__pin svg）。
+   和右下圆钮一样，静止态收起、hover 卡片才浮现；隐藏时不接收点击，
+   免得在卡片下沿误触到看不见的按钮。键盘聚焦时单独浮出。
+   图标整体向右下斜 45°；未钉 text-muted，钉住后 text-reduced，并在图上压一道斜杠，
+   形态本身也变了，不只靠颜色区分 */
+.sc__pin{
+  position:absolute; left:8px; bottom:8px; z-index:2;
+  width:24px; height:24px;
+  display:grid; place-items:center;
+  margin:0; padding:0; border:0; border-radius:8px;
+  background:none; appearance:none; -webkit-appearance:none;
+  color:var(--text-muted);
+  cursor:pointer;
+  opacity:0;
+  pointer-events:none;
+  transition:opacity .1s linear;   /* 浮现与整卡填色同拍；换色仍是瞬时 */
+}
+.sc__pin:focus-visible{opacity:1; pointer-events:auto}
+.sc__pin svg{
+  width:16px; height:16px; display:block; fill:currentColor;
+  transform:rotate(-45deg);   /* 针尖朝右下；要朝左下就改成 45deg */
+}
+/* 钉住后压一道 "/" 斜杠：横杆逆时针转 45°，跨过整个图标，读作「已钉」 */
+.sc__pin::after{
+  content:''; position:absolute;
+  left:50%; top:50%; margin:-1px 0 0 -9px;   /* 绝对定位子元素在 grid 里不参与居中，这里手动对中 */
+  width:18px; height:2px; border-radius:1px;
+  background:currentColor;
+  opacity:0;
+  transform:rotate(-45deg);
+}
+.sc__pin:hover,
+.sc.is-pinned .sc__pin{color:var(--text-reduced)}
+.sc.is-pinned .sc__pin::after{opacity:1}
+
+/* 取消钉要两步：已钉的卡片第一次点只是换成对勾（确认取消），再点一次才真取钉。
+   对勾用 mask 画在 ::before 上，颜色仍走 currentColor，hover 反色一并生效；
+   进确认态时把图钉本体和斜杠淡出，只留一个对勾 */
+.sc__pin::before{
+  content:''; position:absolute; inset:0;
+  background:currentColor;
+  -webkit-mask:url("data:image/svg+xml;charset=utf-8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M5.5 12.6 10 17 18.5 7' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/></svg>") center / 15px 15px no-repeat;
+  mask:url("data:image/svg+xml;charset=utf-8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M5.5 12.6 10 17 18.5 7' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/></svg>") center / 15px 15px no-repeat;
+  opacity:0;
+  transform:scale(.82);
+}
+.sc.is-confirm-unpin .sc__pin::before{opacity:1; transform:none}
+.sc.is-confirm-unpin .sc__pin svg,
+.sc.is-confirm-unpin .sc__pin::after{opacity:0}
+/* 卡片 hover 时图钉一并浮现并反色，与编号 / 简介同一个 --text-invert；钉住态也一样反，
+   写在 .sc.is-pinned 之后，同特异性靠顺序压过去 */
+.sc:hover .sc__pin{opacity:1; pointer-events:auto; color:var(--text-invert)}
+
+/* 深色下卡片把常态与 hover 这两套配色整组对掉。
+   浅色是「浅卡面 + 系列色字」，hover 翻成「系列色实底 + 反白字」；
+   深色反过来：平时就压满系列色、字用 --text-primary（深色下是亮字），
+   hover 退回与面板同色的暗卡面，字再回到系列色那一支。
+   hover 的底不能直接用 --card —— 它是半透明白，叠在系列色上还是系列色，
+   所以取面板与页面底按同一比例混出的实色，并显式把 alpha 置 1
+   （rgb(from …) 省略 alpha 时会继承 --panel 的 .8，混出来是半透明的）。
+
+   这里不再用 ::before 覆盖，改成给卡面自己的 background-color 做补间：
+   深色下卡面是不透明的满色，和 hover 的暗色差得远，子层哪怕 inset:0、
+   border-radius 全继承，圆角抗锯齿和磁吸的 3D 变换也会让底下那层系列色
+   从边缘渗出细细一圈；整卡一起变色就没有这个夹层。卡面是实色、也不带
+   backdrop-filter，过渡期间重绘的只是这张卡，不会牵动面板背后的模糊 */
+:root[data-theme="dark"] .sc{
+  background:var(--sc);
+  transition:background-color .1s linear;
+}
+:root[data-theme="dark"] .sc:hover{
+  background:color-mix(in srgb, rgb(from var(--panel) r g b / 1) 75%, var(--bg));
+}
+/* 覆盖层在深色下停用，避免它又以 opacity 淡入一层盖在卡面上 */
+:root[data-theme="dark"] .sc::before{opacity:0; transition:none}
+:root[data-theme="dark"] .sc__id,
+:root[data-theme="dark"] .sc__brief{color:var(--text-primary)}
+/* 第三行也走同一支：系列色本来就偏中明度，18px 再压一档透明度就掉到 3 以下了，
+   层次交给字号，不靠减淡 */
+:root[data-theme="dark"] .sc__time{color:var(--text-primary)}
+/* hover 态：系列色在暗底上直接当字色会太沉（蓝组尤其），往亮字方向提一档，
+   仍是各组的色系，只是浓度降下来。右下圆钮与图钉跟着对调成系列色 */
+:root[data-theme="dark"] .sc:hover .sc__id,
+:root[data-theme="dark"] .sc:hover .sc__brief,
+:root[data-theme="dark"] .sc:hover .sc__pin{color:color-mix(in srgb, var(--sc) 62%, var(--text-primary))}
+:root[data-theme="dark"] .sc:hover .sc__time{color:var(--text-reduced)}
+:root[data-theme="dark"] .sc:hover .sc__go{background:var(--sc); color:var(--text-primary)}
+
+/* Pinned 视图只留钉住的卡片：未钉的整张收起，一组里一张都没钉就连标题一起收，
+   不留空壳。其余视图（Action / Dialog / Tendance）照旧全列 */
+.panel__body[data-view="pinned"] .sc:not(.is-pinned){display:none}
+.panel__body[data-view="pinned"] .sc-group.is-vacant{display:none}
+/* 一张都没钉时给一句提示，免得面板空白得像坏了 */
+.panel__body[data-view="pinned"][data-pin-empty="1"]::after{
+  content:'Nothing pinned yet';
+  display:block;
+  margin-top:calc(var(--title-top) - var(--pad-y));   /* 与组标题同一位置 */
+  font-size:var(--fs-14); line-height:1; letter-spacing:.2px;
+  color:var(--text-muted);
+}
+
+.sc-group--action{--sc:var(--series-green-light)}
+.sc-group--dialog{--sc:var(--series-blue-light)}
+.sc-group--tendance{--sc:var(--series-pink-light)}
+
+/* 窄屏放不下两张 240 并排：卡片退回一列，栏宽也跟着收 */
+/* 居中弹窗：Connect / Preference / Advance / Settings 共用的一块空面板。
+   宽高比 3:2（宽 = 高 × 1.5），高取侧栏高减 48，比侧栏略矮；
+   内边距 16，里面暂时没有任何内容物。
+   宽度写成 min()：视口不够宽时按可用宽反推高度，比例始终是 3:2，
+   不会出现「宽度被 max-width 压扁、比例走形」 */
+.modal{
+  position:fixed; inset:0;
+  z-index:50;                 /* 压过顶栏(30/31)与栏体(20) */
+  display:grid; place-items:center;
+  visibility:hidden;          /* 由脚本切换，动画开始前不闪 */
+  pointer-events:none;        /* 空白不吃点击：弹窗开着也能点到底下的页面 */
+}
+.modal__panel{
+  --modal-w:min(
+    calc((var(--rail-h) - 48px) * 3 / 2),
+    calc(100vw - 48px),
+    calc((100vh - 48px) * 3 / 2)
+  );
+  width:var(--modal-w);
+  height:calc(var(--modal-w) / 1.5);   /* 3:2 由这一行保证 */
+  --modal-pad:16px;                    /* 面板内边距：Settings 那条分割线要外扩这个量 */
+  padding:var(--modal-pad);
+  display:flex; flex-direction:column;  /* 标题区在上、页脚贴底，中间是列表 */
+  gap:16px;                            /* 标题区 / 列表 / 按钮区之间各隔 16 */
+  border-radius:var(--rail-r);
+  background:var(--panel);
+  -webkit-backdrop-filter:blur(var(--blur));
+  backdrop-filter:blur(var(--blur));
+  /* 与栏体同一套柔光：--sh / --sh-a 是 @property 注册过的，取到的是初始值 16px / .1；
+     展开时脚本把它们补到 32px / .2 再弹回，收回时归位 */
+  box-shadow:0 0 var(--sh) rgba(var(--shadow), calc(var(--sh-a) * var(--sh-k)));
+  transform-origin:50% 50%;            /* 从正中撑开，不是从某个角 */
+  pointer-events:auto;                 /* 面板自己吃点击，用来判断「点里面」 */
+}
+
