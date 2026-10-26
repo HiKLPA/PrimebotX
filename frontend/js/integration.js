@@ -61,11 +61,8 @@
       document.querySelectorAll('[data-api-log-view]').forEach(function (el) { el.textContent = panel.querySelector('[data-api-logs]').textContent; });
     } catch (e) {
       ready = false; say('后端不可用：' + e.message);
-      var hud = $('[data-api-state], .hud__state--ready');
-      if (hud) { hud.dataset.apiState = ''; hud.textContent = '后端不可用'; }
-      var text = $('.hud__batt-num'), level = $('[data-hud-batt-level]');
-      if (text) text.textContent = '--';
-      if (level) level.setAttribute('width', 0);
+      /* HUD 不跟着写：后端没起是常态，左下角保持 HTML 里那份占位值，
+         不把 Ready 与电量改成后端不可用 */
     } finally { polling = false; controls(); }
   }
   async function run(path, method, body) {
@@ -85,16 +82,11 @@
   panel.querySelector('[data-api-audio]').onclick = function () { run('/audio', 'PUT', {volume:Number(panel.querySelector('[data-api-volume]').value), muted:panel.querySelector('[data-api-mute]').checked}); };
   var modal = $('#modal');
   if (modal) modal.addEventListener('modal:confirm', function (e) { if (e.detail.name === 'Connect') connect(); });
-  document.querySelectorAll('[data-dir], .dock__btn--play, .chat__btn--history').forEach(function (b) { b.disabled = true; b.title = '尚未实现'; });
+  /* 只标两个真正没有实现的入口。九宫格那八个方向键今天已接上按压反馈，
+     不再整块置灰；左侧栏三组分卡片也保持原样，不被联调面板改写 */
+  document.querySelectorAll('.dock__btn--play, .chat__btn--history').forEach(function (b) { b.disabled = true; b.title = '尚未实现'; });
   var chat = $('[data-chat-input]');
   if (chat) { chat.disabled = true; chat.placeholder = 'AI 聊天未实现；TTS 请使用联调面板'; }
-  ['dialog','tendance'].forEach(function (kind) {
-    var group = $('.sc-group--' + kind);
-    if (group) {
-      group.querySelectorAll(':scope > :not(.sc-group__title)').forEach(function (el) { el.remove(); });
-      group.querySelector('.sc-group__title').textContent = kind + ' · 尚未实现';
-    }
-  });
   var logBody = $('#rail-tools [data-panel-body]');
   if (logBody) {
     var logView = document.createElement('pre'); logView.dataset.apiLogView = '';
@@ -106,26 +98,13 @@
     controls();
     try {
       var results = await Promise.all([api('/robots'), api('/capabilities')]); robots = results[0];
-      var list = $('[data-model-list]');
-      if (list) {
-        list.replaceChildren();
-        robots.forEach(function (robot, i) {
-          var row = document.createElement('div'); row.className = 'mrow' + (i ? '' : ' is-sel'); row.dataset.model = robot.name;
-          var b = document.createElement('button'); b.className = 'mrow__pill'; b.type = 'button'; b.textContent = robot.name + '（模拟）';
-          row.appendChild(b); list.appendChild(row);
-        });
-      }
-      var group = $('.sc-group--action');
-      if (group) {
-        group.querySelectorAll(':scope > :not(.sc-group__title)').forEach(function (el) { el.remove(); });
-        group.querySelector('.sc-group__title').textContent = 'Action · 模拟动作';
-        var names = {'q1.wave':'挥手', 'q1.heart':'比心', 'q1.cheer':'加油'};
-        results[1].actions.forEach(function (action) {
-          var b = document.createElement('button'); b.className = 'sc'; b.type = 'button'; b.dataset.apiAction = action.id;
-          b.textContent = (names[action.id] || action.id) + ' · 模拟';
-          b.onclick = function () { run('/actions', 'POST', {action_id:action.id}); }; group.appendChild(b);
-        });
-      }
+      /* 机型列表交给 models.js 统一渲染：这里只派名字，
+         这样改/置顶按钮、工具条、选中高亮都还在，不会被联调面板换成纯文字行 */
+      document.dispatchEvent(new CustomEvent('api:devices', {
+        detail: robots.map(function (robot) { return robot.name; })
+      }));
+      /* 动作卡片保持左侧栏原有的四张占位卡，不往里插模拟按钮：
+         那一组的行高与分栏宽度都是按四张排的，加一个就换行 */
       say('后端已就绪；请选择“连接模拟设备”。所有功能仅模拟。');
       await refresh();
     } catch (e) { say('初始化失败，请刷新重试：' + e.message); controls(); }

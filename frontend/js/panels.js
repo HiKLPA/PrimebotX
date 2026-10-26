@@ -71,9 +71,10 @@
   function peakY() { return COMPACT.matches ? 1.01 : PEAK_Y; }
 
   /* 只在栏体与底部面板上补内容通道：账号面板的名字与菜单本来就有 CSS 位移 / 淡入，
-     再叠一层会打架 */
+     再叠一层会打架。面板这一层从 .dock__pad 换成 .dock__body —— 九宫格与左右两列
+     卡片现在同一个容器里，升降时得整块一起淡、一起滑 */
   function contentOf(node) {
-    if (node.classList.contains('dock')) return node.querySelector('.dock__pad');
+    if (node.classList.contains('dock')) return node.querySelector('.dock__body');
     return node.classList.contains('rail') ? node.querySelector('.rail__panel') : null;
   }
   /* 内容从栏根一侧滑进来：左栏从左、右栏从右，底部面板自下往上。
@@ -216,9 +217,14 @@
     var cs = window.getComputedStyle(dock);
     var curS = parseFloat(cs.getPropertyValue('--hide-s'));
     var curD = parseFloat(cs.getPropertyValue('--hide-d'));
+    /* 面板高度是 auto，CSS 里的兜底位移写成高度的百分比（.825h + edge），
+       读不成数字；这时按元素当前的开合状态换算出像素值 —— 注意看的是
+       类而不是 open 参数：起点要取它此刻真实所在的位置，否则收起态第一次
+       展开会从 0 起步、动画还没开始就已经跳到位 */
+    if (isNaN(curD)) curD = dock.classList.contains('is-open') ? 0 : dockHide(dock);
     gsap.set(dock, {
       '--hide-s': isNaN(curS) ? 1 : curS,
-      '--hide-d': (isNaN(curD) ? 0 : curD) + 'px'
+      '--hide-d': curD + 'px'
     });
     dock.classList.toggle('is-open', open);
     gsap.to(dock, {

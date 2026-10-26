@@ -36,8 +36,11 @@
     { sel: '.user__surface', persp: 1200, tiltX: 4, tiltY: 6, lift: 6 },
     { sel: '.rail__surface', persp: 900,  tiltX: 2, tiltY: 4, lift: 4 },
     /* 卡片小、每条边都短，透视得拉近才看得出一块板子朝光标翻；
-       面积小也压得住，倾斜和浮起都可以比大面板放开一档 */
-    { sel: '.sc',            persp: 800,  tiltX: 6, tiltY: 6, lift: 10 }
+       面积小也压得住，倾斜和浮起都可以比大面板放开一档。
+       底部面板左右两列的动作卡沿用同一组参数，只是更小更扁，
+       倾斜收一档、浮起保留，抬起来时不至于翻出面板边界 */
+    { sel: '.sc',            persp: 800,  tiltX: 6, tiltY: 6, lift: 10 },
+    { sel: '.dock__card',    persp: 600,  tiltX: 5, tiltY: 5, lift: 8 }
   ];
 
   var items = [];
@@ -88,6 +91,14 @@
          父级的缩放与卡片的透视叠在一起，两层每帧各自重投影，边线会跳。
          等 --sx/--sy 稳在 1，is-popping 摘掉再吸 */
       if (isCard && rail.classList.contains('is-popping')) { t.RX = t.RY = t.Z = 0; return; }
+    }
+
+    /* 底部面板的动作卡同理：面板收着的时候卡片已经被压到屏外，
+       判定盒却仍是布局位置，光标扫过底部会莫名翻起一张；
+       升降过程中的 scale 也会和透视打架，这两段里一律不吸 */
+    var dock = t.el.closest('.dock');
+    if (dock && (!dock.classList.contains('is-open') || dock.classList.contains('is-popping'))) {
+      t.RX = t.RY = t.Z = 0; return;
     }
 
     /* 命中留 1px 余量，避免贴边时在矩形内外反复抖 */
@@ -210,7 +221,7 @@
 
   /* 卡片在滚动区里会自己滑走：光标停着不动、判定盒却已经换了位置，
      不重算的话浮起的那张卡会停在旧坐标上。滚动即重算 */
-  document.querySelectorAll('.panel__body').forEach(function (el) {
+  document.querySelectorAll('.panel__body, .dock__scroll').forEach(function (el) {
     el.addEventListener('scroll', reaim, { passive: true });
   });
 
@@ -218,7 +229,8 @@
      展开过程中面板会先歪一下再回正），class 一变就重算 */
   if (window.MutationObserver) {
     var mo = new MutationObserver(reaim);
-    document.querySelectorAll('.rail').forEach(function (el) {
+    /* 底部面板也要看：is-open 与 is-popping 一变，卡片该不该吸就跟着变 */
+    document.querySelectorAll('.rail, .dock').forEach(function (el) {
       mo.observe(el, { attributes: true, attributeFilter: ['class'] });
     });
   }

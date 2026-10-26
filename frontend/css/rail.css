@@ -100,24 +100,33 @@ body:has(.rail--right.is-open) .rail__toggle[data-rail="right"]{
 
 /* ============================================================
    Dock —— 底部控制面板
-   宽度取页面的一半，高度由内部九宫格撑开；默认只把高度的 1/8
-   露在底边外，点上方那枚箭头整块升起来。位移与缩放和左右栏
-   共用同一对通道（--hide-s / --hide-d），脚本补的也是同一组弹性参数
+   宽高都不写死：面板是 fixed + 宽度 auto，由两列 64 的正方形卡与
+   中间九宫格撑出自身尺寸，所以改按钮、改卡片、改间隔，面板自动跟上。
+   页面打开时就是展开态（HTML 上带 is-open），点上方那枚箭头收起来，
+   只把高度的 1/8 露在底边外。
+   位移与缩放和左右栏共用同一对通道（--hide-s / --hide-d），
+   脚本补的也是同一组弹性参数
    ============================================================ */
 .dock{
   position:fixed;
   left:50%; bottom:var(--edge);
-  width:var(--dock-w); height:var(--dock-h);
+  width:auto; height:auto;
   z-index:18;
   /* 原点取底边中点：缩小时底边钉住不动、只有上沿往下走，
      translate 写百分比的部分是自宽的 -50%，负责横向居中；
      纵向那段由 --hide-d 补间。
      展开后底边离视口底 --edge，和左右栏的左右边距是同一个值 */
+  /* 下面这两条是收起态的值：页面默认带 is-open，那条规则会把它们
+     覆盖成展开态，所以首屏看到的是整块升起的面板；
+     这里留着是为了无脚本时点箭头切类也有正确的几何 */
   --hide-s:.95;
   /* 收起位移 = 缩放压低的 (.95h) 再减去要留在屏内的 h/8，
      还要加上底边本身让出的 --edge —— 面板不再贴死视口底，
-     整个坐标起点抬高了这一段，不多让就多露一截 */
-  --hide-d:calc(var(--dock-h) * .825 + var(--edge));
+     整个坐标起点抬高了这一段，不多让就多露一截。
+     高度是 auto，写不出 px，所以用百分比：translate 的纵向百分比
+     正好对着元素自身高度，.825h + edge 与脚本按 offsetHeight 算的
+     那个像素值等价，内容一变两边一起变 */
+  --hide-d:calc(82.5% + var(--edge));
   /* 开合形变与栏体同一套：--sx/--sy 由 pop() 补到 1.02 再弹回 1，
      乘在整体缩量上，两轴同值就是等比胀开 */
   --sx:1;
@@ -132,17 +141,18 @@ body:has(.rail--right.is-open) .rail__toggle[data-rail="right"]{
    收起态那组数不是随手取的比例：缩放把上沿压低了 (1 − .95) × 高，
    位移取 .95h − h/8 = .825h 正好把这压低的一段补回去，
    再加上底边让出的 --edge，留在视口里的仍恰好是原高的 1/8。
-   高度由内容撑、不随宽度变，这条 calc 直接就是准的；
-   脚本那边的 dockHide() 按 offsetHeight 与算出来的 bottom 算，
-   以后改按钮尺寸、内边距或边距也会自己跟上 */
+   高度是 auto，所以上面那条兜底写成高度的百分比；脚本接管后
+   按 offsetHeight 换成像素，两边的换算完全一致 */
 .dock.is-open{ --hide-s:1; --hide-d:0px }
 
 /* 面板表面：承载底色、圆角与投影，和栏体同一层意思。
-   层级压在栏体（20）之下 —— 它只在底部中间，不该盖过两侧展开的栏 */
+   层级压在栏体（20）之下 —— 它只在底部中间，不该盖过两侧展开的栏。
+   自身不设尺寸，宽高都从 .dock__body 透上来：max-content 让宽度
+   严格按内部三段相加，不被视口或父级拉伸 */
 .dock__surface{
   position:relative;
-  width:100%; height:100%;
-  display:grid; place-items:center;
+  width:max-content; height:auto;
+  display:flex;
   background:var(--panel);
   border-radius:var(--rail-r);
   overflow:hidden;
@@ -150,6 +160,115 @@ body:has(.rail--right.is-open) .rail__toggle[data-rail="right"]{
   -webkit-backdrop-filter:blur(var(--blur));
   backdrop-filter:blur(var(--blur));
 }
+
+/* 面板内容：左 Gestures、中九宫格、右 Emotions。
+   两列各按 --dock-col-w 定宽（四张 64 的卡 + 三道 8），九宫格按自身 160
+   定宽不参与伸缩；面板宽度就是这三段加上间隔与内边距的和，所以两列不需要
+   再靠 1fr 去分剩下的宽度 —— 分了反而会把 280 缩成 276.99 之类的小数，
+   末一张卡的圆角被裁掉一丝。
+   这里同样不写宽高：横向由三段加间隔撑出，纵向由九宫格撑出 ——
+   align-items:stretch 让两列跟着最后一行的内容高等高。
+   纵向不留内边距：两列从面板上沿一直到下沿，滚动区正好贴住上下边界；
+   九宫格靠自身的上下外边距把那 8 让出来，视觉上仍离边 8 */
+.dock__body{
+  display:flex; align-items:stretch;
+  gap:var(--dock-gap);
+  padding:0 var(--dock-pad);
+  min-width:0;
+}
+/* 一列 = 顶部雾带 + 一条滚动区。雾带照左栏的做法挂在**不滚动**的那层
+   （.dock__col，position:relative）上，拖进滚动容器就会跟着内容一起滚走。
+   参数与左栏 .rail__panel 同一组：平台 16、渐隐 32、模糊 16、浓度 .9、
+   外扩 2（贴边放置时避免 backdrop 采样被边界切断） */
+.dock__col{
+  position:relative;   /* 雾带与滚动区的定位基准 */
+  --frost-h:32px;
+  --frost-head:16px;
+  --frost-blur:16px;
+  --frost-a:.9;
+  --frost-over:2px;
+  flex:0 0 var(--dock-col-w);
+  width:var(--dock-col-w); min-width:0;
+  /* 高度不写：靠 stretch 跟面板内高走，面板多高它就多高 */
+  display:flex; flex-direction:column;
+}
+/* 雾带要沿面板的顶边走，不能缩在列里：
+   列本身就比面板窄 8（.dock__body 的左右内边距），带子的方角落在离面板
+   边 8 的位置，而面板顶上是一段 24 的圆角 —— 弧线比带子高，带子上沿就
+   像矮了一截，看着没跟面板上端对齐。把贴面板外沿的那一侧撑出这段内边距，
+   带子一直铺到面板边上，圆角交给 .dock__surface 的 clip 裁，观感与左栏
+   那条贴住栏顶的雾带一致。内侧不动，中间九宫格那块不铺雾 */
+.dock__col:first-child .frost{left:calc(var(--dock-pad) * -1)}
+.dock__col:last-child .frost{right:calc(var(--dock-pad) * -1)}
+/* 滚动区贴住列的上下沿：绝对定位铺满整列，卡片再多也只在自己框里滚，
+   不反过来把列撑高 —— 面板高度因此仍然只由中间九宫格决定；
+   滚动条不显示，滚到头的回弹不外传 */
+.dock__scroll{
+  position:absolute; inset:0;
+  overflow-y:auto;
+  overflow-x:clip;
+  overscroll-behavior:contain;
+  scrollbar-width:none;
+}
+.dock__scroll::-webkit-scrollbar{width:0; height:0}
+/* 分栏标题：字面与左栏的 .sc-group__title 同一套（600、text-secondary），
+   竖直方向落在雾带的中线上 —— 雾带总高 = --frost-head 16 + --frost-h 32 = 48，
+   中线 24。字 16、行高 1 时字盒 16 高，盒顶取 16 时盒心正好在中线，
+   但行高 1 的着墨区（cap 顶到基线）中心比字盒中心低 1px —— 字体的上伸部
+   比下伸部长，行盒按上下伸居中、字身却贴着基线，所以盒顶取 15 才能让字形
+   落在 24 上。
+   标题区总高取 32 而不是 40：两行卡片 64 + 8 + 64 = 136，加上 32 正好是 168，
+   面板内高 176 减掉它剩下的 8 就是面板自己的内边距 —— 初始状态下第二行
+   卡片的底边因此离面板下沿也是 8，和左右两侧一样，四周留白成同一个数。
+   下距只剩 1px 不碍事：标题底下这段本来就被雾带的渐隐盖住。
+   卡片从下面滑过时被雾带化掉，标题压在最上层（z-index 4 > 雾带 3），
+   所以这里不自己铺底色 */
+.dock__title{
+  position:sticky; top:15px; z-index:4;
+  margin:15px 0 1px;
+  font-size:var(--fs-16); line-height:1; letter-spacing:.4px; font-weight:var(--fw);
+  color:var(--text-secondary);
+}
+/* 右列标题靠右：标题盒与卡片同宽（列内无左右内边距），
+   所以右端正好落在第四张卡片的右沿 */
+.dock__title--end{text-align:right}
+/* 卡片网格：一行四张正方形（--card-w × --card-h，64×64），列间与行间都是
+   --card-gap（8），与九宫格同一档节奏。轨道宽度写死成 --card-w，不用 1fr 去摊 ——
+   摊出来的宽度会随面板宽度变，正方形就保不住了。
+   底上补一圈 --dock-pad：滚到最后一行时，它离面板下沿也留出和左右、
+   和初始状态一样的那 8；初始位置不受影响（第三行本来就落在视口外） */
+.dock__grid{
+  flex:0 0 auto;
+  display:grid;
+  grid-template-columns:repeat(4, var(--card-w));
+  gap:var(--card-gap);
+  align-content:start;
+  padding-bottom:var(--dock-pad);
+}
+/* 动作卡片：正方形圆角卡，底与指令卡同一支 --card。
+   标题区 32 + 行一 64 + 间距 8 + 行二 64 = 168，面板内高 176 还余 8：
+   初始位置里第二行卡片的下沿离面板下沿正好是 --dock-pad，
+   与左右两侧同一圈留白；第三行连同它上面那道 8 的行距都落在视口外，
+   往上滑才看到。
+   hover 的填色覆盖层照 .sc 的做法只动 opacity（合成器上做），
+   3D 悬浮交给磁吸脚本（js/magnet.js 的 .dock__card 那一条） */
+.dock__card{
+  position:relative; isolation:isolate;
+  width:var(--card-w); height:var(--card-h); min-width:0;
+  border-radius:16px;
+  background:var(--card);
+  overflow:hidden;
+}
+.dock__card::before{
+  content:''; position:absolute; inset:0; z-index:0;
+  border-radius:inherit;
+  background:var(--theme);
+  opacity:0;
+  transform:translateZ(0);
+  transition:opacity .1s linear;
+  pointer-events:none;
+}
+.dock__card:hover::before{opacity:1}
 
 /* 升降箭头：面板上沿往上 8。它放在 .dock 里，跟着整块一起上下走，
    不用像栏体那样另算一套位置；箭头本身只是 32 的透明钮 */
@@ -179,19 +298,24 @@ body:has(.rail--right.is-open) .rail__toggle[data-rail="right"]{
 .dock__toggle svg path{transform:translate(1.5px, 0)}
 
 /* 九宫格：八向箭头围着一枚主按钮。
-   按钮与左右栏图标钮同尺寸（--btn），行内与行间一律 8，
-   外面再留一圈 --dock-pad，面板高度就是这三行加出来的，
-   九宫格在面板里横纵都居中 */
+   按钮与左右栏图标钮同尺寸（--btn），行内与行间一律 8。
+   它是面板高度的来源：3 × 48 + 2 × 8 = 160，加上上下各 8 的外边距
+   就是 176，两列跟着 stretch 到同一高度；左右不用外边距，横向由
+   .dock__body 的内边距给出那 8。按钮尺寸一变，面板高度自动跟着变 */
 .dock__pad{
   display:grid;
   grid-template-columns:repeat(3, var(--dock-btn));
   grid-template-rows:repeat(3, var(--dock-btn));
   gap:var(--dock-gap);
   place-content:center;
+  flex:0 0 auto;          /* 定宽 160（3 × 48 + 2 × 8），不被两列分走 */
+  align-self:center;      /* 纵向按内容居中，不再靠容器的 height 撑 */
+  margin-block:var(--dock-pad);
 }
 /* 收起态整块不出现：只留面板上沿那一条。脚本接管时用同一件事的补间版
-   （pop 的内容通道把 opacity 从 0 补到 1），这里只是没有脚本时的样子 */
-.dock:not(.is-open) .dock__pad{opacity:0}
+   （pop 的内容通道把 opacity 从 0 补到 1），这里只是没有脚本时的样子。
+   作用在 .dock__body 上，九宫格、两列卡片一起淡 */
+.dock:not(.is-open) .dock__body{opacity:0}
 
 /* 圆钮：与侧栏图标钮同一套 —— 底色常驻、静止 scale 0，
    hover 时从圆心涨满，按下交给尾部的 --press 通道压一层 */
@@ -499,34 +623,38 @@ body:has(.rail--right.is-open) .rail__toggle[data-rail="right"]{
 /* 上缘：先一段与渐隐同浓度的平台（高度 = --frost-head），平台之后才是
    --frost-h 那段渐隐 —— 所以肉眼看到的「雾」是压住一小段之后才开始化开，
    平台上的卡片被彻底盖住，不会浮出字形。
-   平台用第二层背景实现，不去改渐变的百分比：渐变的长度和位置由 background-size /
-   position 交给 --frost-h 那一段，两条曲线的接缝两边都是 --frost-c，看不出来。
+   平台与渐隐写在**同一条渐变**里，交界处用一对同色硬停止断开。
+   早先这里是两层背景：平台一层、渐隐一层，各自用 background-size / position
+   摆到自己的位置。问题是两层各自绘制、各自按设备像素对齐 —— 雾带的盒子落在半个
+   像素上时（面板位置是小数、或系统缩放 125% / 150%），平台层按一个方向取整、
+   渐隐层按另一个方向取整，交界处就空出一整行，屏幕上正是上块与下块之间那条缝。
+   一条渐变只绘制一次，中途没有拼接，缝不起来。
    总高就是 head + h = 48，再加下侧 --frost-over 的余量。首张卡片从 44 起（标题 12 + 24 + 8），
    雾带的 0 点落在卡片内部而不是卡片顶边，收尾那半个色阶的落差压在卡片自己的底色上，
    不会在空面板上留一条横线 */
 .frost--top{
-  /* 向上越出 --frost-over，平台层与渐隐层的位置一起 +over，
-     屏幕上平台仍是 0–16、渐隐仍是 16–48 */
+  /* 向上越出 --frost-over，屏幕上平台仍是 0–head、渐隐仍是 head–head+h */
   top:calc(var(--frost-over) * -1);
   height:calc(var(--frost-head) + var(--frost-h) + var(--frost-over));
-  background-image:
-    linear-gradient(to bottom, var(--frost-c) 0, var(--frost-c) 100%),
-    linear-gradient(to bottom,
-      var(--frost-c) 0%,
-      rgb(from var(--frost-base) r g b / calc(var(--frost-a) * .866)) 10%,
-      rgb(from var(--frost-base) r g b / calc(var(--frost-a) * .741)) 20%,
-      rgb(from var(--frost-base) r g b / calc(var(--frost-a) * .625)) 30%,
-      rgb(from var(--frost-base) r g b / calc(var(--frost-a) * .517)) 40%,
-      rgb(from var(--frost-base) r g b / calc(var(--frost-a) * .417)) 50%,
-      rgb(from var(--frost-base) r g b / calc(var(--frost-a) * .325)) 60%,
-      rgb(from var(--frost-base) r g b / calc(var(--frost-a) * .241)) 70%,
-      rgb(from var(--frost-base) r g b / calc(var(--frost-a) * .166)) 80%,
-      rgb(from var(--frost-base) r g b / calc(var(--frost-a) * .099)) 90%,
-      rgb(from var(--frost-base) r g b / calc(var(--frost-a) * .035)) 96%,
-      rgb(from var(--panel) r g b / 0) 100%);
-  background-size:100% var(--frost-head), 100% var(--frost-h);
-  background-position:0 var(--frost-over), 0 calc(var(--frost-head) + var(--frost-over));
-  background-repeat:no-repeat, no-repeat;
+  /* 停止点写成「平台高度 + 渐隐的百分比」，与原先两层时的落点逐像素一致：
+     硬停止两端的颜色都是 --frost-c，平台与渐隐接得上，看不出分界 */
+  background-image:linear-gradient(to bottom,
+    var(--frost-c) 0,
+    var(--frost-c) var(--frost-head),
+    rgb(from var(--frost-base) r g b / calc(var(--frost-a) * .866)) calc(var(--frost-head) + var(--frost-h) * .1),
+    rgb(from var(--frost-base) r g b / calc(var(--frost-a) * .741)) calc(var(--frost-head) + var(--frost-h) * .2),
+    rgb(from var(--frost-base) r g b / calc(var(--frost-a) * .625)) calc(var(--frost-head) + var(--frost-h) * .3),
+    rgb(from var(--frost-base) r g b / calc(var(--frost-a) * .517)) calc(var(--frost-head) + var(--frost-h) * .4),
+    rgb(from var(--frost-base) r g b / calc(var(--frost-a) * .417)) calc(var(--frost-head) + var(--frost-h) * .5),
+    rgb(from var(--frost-base) r g b / calc(var(--frost-a) * .325)) calc(var(--frost-head) + var(--frost-h) * .6),
+    rgb(from var(--frost-base) r g b / calc(var(--frost-a) * .241)) calc(var(--frost-head) + var(--frost-h) * .7),
+    rgb(from var(--frost-base) r g b / calc(var(--frost-a) * .166)) calc(var(--frost-head) + var(--frost-h) * .8),
+    rgb(from var(--frost-base) r g b / calc(var(--frost-a) * .099)) calc(var(--frost-head) + var(--frost-h) * .9),
+    rgb(from var(--frost-base) r g b / calc(var(--frost-a) * .035)) calc(var(--frost-head) + var(--frost-h) * .96),
+    rgb(from var(--panel) r g b / 0) calc(var(--frost-head) + var(--frost-h)));
+  background-size:100% calc(var(--frost-head) + var(--frost-h));
+  background-position:0 var(--frost-over);
+  background-repeat:no-repeat;
 }
 /* 模糊层：前 18% 满强度，之后 smoothstep 放到 0 ——
    起步和落点斜率都接近 0，卡片是从雾里慢慢解析出来的，不是被一刀切开。

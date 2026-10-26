@@ -26,7 +26,8 @@
   <link rel="stylesheet" href="css/cards.css">
   <link rel="stylesheet" href="css/modal.css">
   <link rel="stylesheet" href="css/chat.css">
-<link rel="stylesheet" href="css/integration.css">
+  <!-- Q1 管理联调面板（浮层，MOCK 模拟）：样式与脚本各一支 -->
+  <link rel="stylesheet" href="css/integration.css">
 </head>
 <body>
 
@@ -212,14 +213,26 @@
 <!-- ===================== 底部：控制面板 =====================
      半页宽、高度由内容撑开的面板，默认只露高度的 1/8；上方 8px 那枚箭头管升 / 降，
      它与面板同处一个 .dock 里，跟着整块一起上下走。
-     九宫格是八向箭头围着一枚播放键，圆钮与左右栏同尺寸（48），间距一律 8，
-     只做样式，没有具体功能 -->
-<section class="dock" aria-label="Playback controls">
-  <button class="dock__toggle" type="button" aria-label="Expand panel" aria-expanded="false">
+     面板里三块并列：左列 Gestures、正中九宫格、右列 Emotions。
+     九宫格是八向箭头围着一枚播放键，圆钮与左右栏同尺寸（48），间距一律 8；
+     两列各铺若干张圆角矩形空卡（一行四张、上下可滚），卡片由尾部脚本注入 -->
+<section class="dock is-open" aria-label="Playback controls">
+  <button class="dock__toggle" type="button" aria-label="Collapse panel" aria-expanded="true">
     <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3.3.3.79,0,1.09l-4.35,4.35c-.3.3-.54.89-.54,1.31v3.9c0,.42.35.77.77.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3.79-.79,1.09-1.09l4.35-4.35Z" fill="currentColor"/></svg>
   </button>
 
   <div class="dock__surface">
+    <div class="dock__body">
+      <!-- 左右两列动作卡片：左 Gestures、右 Emotions。
+           九宫格留在正中，两列各占剩余宽度的一半，谁也不压谁；
+           卡片由尾部脚本按 12 张（三行 × 四列）铺成空白占位 -->
+      <div class="dock__col">
+        <span class="frost frost--top" aria-hidden="true"></span>
+        <div class="dock__scroll">
+          <div class="dock__title">Gestures</div>
+          <div class="dock__grid" data-dock-grid="gestures"></div>
+        </div>
+      </div>
     <div class="dock__pad">
       <button class="dock__btn" type="button" data-dir="up-left" aria-label="Up left">
         <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3.3.3.79,0,1.09l-4.35,4.35c-.3.3-.54.89-.54,1.31v3.9c0,.42.35.77.77.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3.79-.79,1.09-1.09l4.35-4.35Z"/></svg>
@@ -251,6 +264,14 @@
       <button class="dock__btn" type="button" data-dir="down-right" aria-label="Down right">
         <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3.3.3.79,0,1.09l-4.35,4.35c-.3.3-.54.89-.54,1.31v3.9c0,.42.35.77.77.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3.79-.79,1.09-1.09l4.35-4.35Z"/></svg>
       </button>
+    </div>
+      <div class="dock__col">
+        <span class="frost frost--top" aria-hidden="true"></span>
+        <div class="dock__scroll">
+          <div class="dock__title dock__title--end">Emotions</div>
+          <div class="dock__grid" data-dock-grid="emotions"></div>
+        </div>
+      </div>
     </div>
   </div>
 </section>
@@ -327,11 +348,16 @@
 <div class="modal" id="modal" aria-hidden="true">
   <div class="modal__panel" role="dialog" aria-modal="true" aria-label="Connect">
     <!-- 顶部 64 为标题区：左列标题 + 说明，右列标题 + 说明；
-         文案由尾部脚本按所点的胶囊写入，这里放 Connect 一套做初始值 -->
+         文案由尾部脚本按所点的胶囊写入，这里放 Connect 一套做初始值。
+         Connect 的三个工具按钮（搜索 / 新增 / 刷新）挂在左列标题下方，
+         所以它一出现这一列就比右列高，标题区改成由内容撑高 -->
     <div class="modal__head">
       <div class="modal__col">
         <div class="modal__title" data-modal-title>Connect</div>
         <div class="modal__sub" data-modal-sub>2 available</div>
+        <!-- 三个 32 方形紧密相接、贴标题左基线；无底色，hover 只换图标颜色。
+             只在 Connect 里出现，其余弹窗由脚本按 data-connect-only 收掉 -->
+        <div class="modal__tools" data-model-tools data-connect-only hidden></div>
       </div>
       <div class="modal__col modal__col--end" data-head-end>
         <div class="modal__title" data-modal-title>Q1_RandomName</div>
@@ -340,7 +366,7 @@
     </div>
 
     <!-- 机型列表：外层只负责占位与裁剪，里层 .modal__list 才是滚动容器。
-         行由尾部脚本按 MODELS 数组生成，这里只留空壳 -->
+         工具条已移到标题区，这里只剩列表本体 -->
     <div class="modal__body" data-connect-only hidden>
       <div class="modal__list" data-model-list></div>
     </div>
@@ -407,11 +433,12 @@
 
 <script src="js/models.js"></script>
 
-<!-- AI Chat is disabled until a real chat adapter is implemented. -->
+<script src="js/chat.js"></script>
 
 <!-- ===================== 背景动效 ===================== -->
 <script src="js/background.js"></script>
-
+<!-- Q1 管理联调面板：轮询 /api/v1，后端没起时只在浮层里报错，不改页面其它部分 -->
 <script src="js/integration.js"></script>
+
 </body>
 </html>

@@ -1,4 +1,5 @@
-/* 弹窗顶部 64 是标题区：左右各一列，上为标题（28 / 主文字色）、
+/* 弹窗顶部是标题区（基线 64，Connect 有工具条时由内容撑高）：
+   左右各一列，上为标题（28 / 主文字色）、
    下为一行说明（14 / 次级文字色）。两列顶端对齐，右列靠右，
    所以中间留白随弹窗宽度自适应，不写死任何列宽 */
 .modal__head{
@@ -6,8 +7,10 @@
   align-items:flex-start;    /* 两列都从标题区顶端起排；想整体垂直居中改成 center */
   justify-content:space-between;
   gap:16px;
-  height:64px;               /* 标题区高度，内容之后从 64 起算 */
-  flex:0 0 64px;             /* 面板是竖向 flex：这一区不参与压缩 */
+  /* Connect 的左列在说明行下面还挂着一行 32 高的工具按钮，
+     这一列比右列高，所以标题区的高度交给内容撑（min-height 保住旧基线 64） */
+  min-height:64px;
+  flex:0 0 auto;
 }
 /* Settings 不用这层：标题搬进了它的左区。类选择器会把 [hidden] 的
    UA display:none 盖掉，所以这里得显式补一条 */
@@ -117,8 +120,10 @@
 .set__body{padding:0}
 /* 三选一：未选中时无描边、无底色，只有一层会随按压内缩的底片。
    文字未选中走 text-reduced；hover 与选中都跟顶栏胶囊同一套——
-   底片瞬时填满主题色、文字反白，颜色不做渐变；按下时 --press 由尾部
-   按压脚本补间，底片向内收一格再用 elastic 弹回 */
+   底片从圆心涨满主题色、文字反白；按下时 --press 由尾部按压脚本补间，
+   底片向内收一格再用 elastic 弹回。
+   底色与缩放各走一条通道：scale 管开合（0 → 1），transform 管按压，
+   两条通道互不覆盖，才能边涨开边被按住 */
 .seg{display:flex; width:100%; gap:8px}
 .seg__opt{
   position:relative; isolation:isolate;   /* 底片压在本体背景之上、文字之下 */
@@ -130,22 +135,27 @@
   line-height:1; letter-spacing:.2px; text-align:center;
   white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
   color:var(--text-reduced); cursor:pointer;
-  transition:none;                        /* 换色瞬时落地，与顶栏胶囊一致 */
+  transition:color .1s cubic-bezier(.7,0,.84,.16);   /* 退场与底片同步缩回 */
 }
 .seg__opt::before{
   content:''; position:absolute; inset:0; z-index:-1;
-  border-radius:inherit; background:transparent;
+  border-radius:inherit; background:var(--theme);
   pointer-events:none;                    /* 缩放后不改命中区域 */
+  scale:0;                                /* 静止不可见：靠缩放藏起来，颜色常驻 */
   transform-origin:50% 50%;
   transform:scale(calc(1 - var(--press, 0) * var(--press-k)));
-  transition:transform .2s linear;
+  transition:transform .2s linear, scale .1s cubic-bezier(.7,0,.84,.16);
 }
-.seg__opt:hover{color:var(--text-invert)}
-.seg__opt:hover::before{background:var(--theme)}
-.seg__opt.is-sel{color:var(--text-invert)}
-.seg__opt.is-sel::before{background:var(--theme)}
-/* 按下期间几何由 GSAP 逐帧写，关掉 inset 过渡，否则压弹会被二次缓动抹平 */
-.seg__opt.is-press::before{transition:none}
+.seg__opt:hover{color:var(--text-invert); transition:color .1s cubic-bezier(.16,.84,.3,1)}
+.seg__opt.is-sel{color:var(--text-invert); transition:color .1s cubic-bezier(.16,.84,.3,1)}
+.seg__opt:hover::before,
+.seg__opt.is-sel::before{
+  scale:1;
+  transition:transform .2s linear, scale .1s cubic-bezier(.16,.84,.3,1);
+}
+/* 按下期间几何由 GSAP 逐帧写，关掉 inset 过渡，否则压弹会被二次缓动抹平；
+   只关 transform，scale 那条留着，边按边涨的底色不会中途冻住 */
+.seg__opt.is-press::before{transition:scale .1s cubic-bezier(.7,0,.84,.16)}
 /* 文字与箭头：与顶栏胶囊同一套位移 —— 平时文字居中，hover 时滑到右端、
    箭头从左侧淡入并归位；选中那枚保持静止，和顶栏已激活的胶囊一样不再滑。
    这里同样只动 transform：按钮宽度是由 flex 分出来的，没法写死 px，
@@ -182,17 +192,47 @@
 }
 
 /* ── Connect 机型列表 ─────────────────────────────────────────────
-   标题区 64 之下、页脚之上的整块空间装列表：里层滚动，外层不滚，
+   标题区之下、页脚之上的整块空间装列表：里层滚动，外层不滚，
    首尾各留 8 的空白（padding 属于滚动内容，会跟着一起滚走），
    行与行之间也是 8。列表不带渐变遮罩，滚出视口的行由自身的裁切硬切 */
+/* 列表上方的工具条已经搬进标题区左列（见下面的 .modal__tools），
+   这里只剩列表本体：内层滚动、外层不滚 */
 .modal__body{
   position:relative;
+  display:flex; flex-direction:column;
   flex:1 1 auto;
   min-height:0;
   overflow:clip;
 }
+/* display:flex 会盖掉 [hidden] 自带的 display:none，这里补回来：
+   否则切到 Preference / Advance / Settings 时，机型列表照样占着中间那块，
+   机器人的名字会一直挂在 Connect 以外的弹窗里 */
+.modal__body[hidden]{display:none}
+/* 标题区左列底下的工具条：搜索（按 SDN）/ 新增（按 SDN）/ 刷新附近识别。
+   三个 32 方形彼此无间隔，左端与标题同一条基线，离说明行 8。
+   这一组刻意不铺底片：hover 与按下都只换图标颜色，行内那两枚才用主题色底片 */
+.modal__tools{
+  display:flex; align-items:center;
+  flex:0 0 32px; height:32px;
+  margin-top:8px;
+  min-width:96px;
+}
+.modal__tools[hidden]{display:none}   /* 类选择器会盖掉 [hidden] 的 display:none */
+.modal__tools .mrow__btn::before{display:none}
+.modal__tools .mrow__btn{transition:color .1s cubic-bezier(.16,.84,.3,1)}
+.modal__tools .mrow__btn:hover{color:var(--theme)}
+/* 要输 SDN 时整条让给输入框：就地输入，不弹系统对话框。
+   这一列宽度是收缩出来的，输入框得自己定宽 */
+.modal__tools.is-input{display:block}
+.modal__tools .modal__sdn{
+  width:208px; height:32px;
+  font-size:var(--fs-18); letter-spacing:.2px;
+  border-bottom:1px solid var(--theme);
+}
+.modal__tools .modal__sdn::placeholder{color:var(--text-muted)}
 .modal__list{
-  height:100%;
+  flex:1 1 auto;
+  min-height:0;
   padding:8px 16px;    /* 头尾空白 8，左右各 16 */
   overflow-y:auto;
   overflow-x:clip;
@@ -214,9 +254,12 @@
   line-height:1; letter-spacing:.2px;
   color:var(--text-secondary);   /* 未选中：只有 text-secondary 的字，没有底色 */
   text-align:left; cursor:pointer;
-  /* 选中换色是瞬时切换，不做颜色渐变 */
-  transition:none;
+  transition:color .1s cubic-bezier(.7,0,.84,.16);
 }
+/* 名称只换字色，不铺底片：hover 亮成主题色，选中也是主题色，
+   两者用的是同一个色值，所以 hover 在已选中的行上看不出跳变 */
+.mrow__pill:hover,
+.mrow__pill:focus-visible{color:var(--theme); transition:color .1s cubic-bezier(.16,.84,.3,1)}
 .mrow__label{min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
 /* 就地改名：输入框与原来的字同一套字面，只有一根主题色的插入符露出来 */
 .mrow__input{
@@ -229,27 +272,31 @@
 }
 /* 进入改名时整段文字会被 select() 选中；选区配色已由文件开头的全局
    ::selection 统一给出，这里不再单独声明 */
-/* 选中：仍是透明底，只把名字染成主题色 */
-.mrow.is-sel .mrow__pill{background:transparent; color:var(--theme)}
+/* 选中：仍是透明底，只把名字染成主题色；hover 过来也只是同一个主题色，
+   所以选中行没有额外的底色与反白变化 */
+.mrow.is-sel .mrow__pill,
+.mrow.is-sel .mrow__pill:hover{background:transparent; color:var(--theme)}
 .mrow__acts{display:flex; align-items:center; gap:8px; flex:0 0 auto}
 /* 行内按钮：32×32 正方形触控区，与名称矩形无缝相接，
-   底片挂在 ::before 上，--press 由尾部按压脚本逐帧写 */
+   底片挂在 ::before 上，--press 由尾部按压脚本逐帧写；
+   填充色同样走 scale 通道，与按压那条 transform 各管各的 */
 .mrow__btn{
   position:relative; width:32px; height:32px; flex:0 0 32px;
   display:grid; place-items:center;
   padding:0; border:0; border-radius:0; background:transparent;
   color:var(--text-muted); cursor:pointer;
-  transition:none;   /* hover 换色瞬时落地 */
+  transition:color .1s cubic-bezier(.7,0,.84,.16);
 }
 .mrow__btn::before{
   content:''; position:absolute; inset:0;
-  border-radius:inherit; background:transparent;
+  border-radius:inherit; background:var(--theme);
   pointer-events:none;
+  scale:0;
   transform-origin:50% 50%;
   transform:scale(calc(1 - var(--press, 0) * var(--press-k)));
-  transition:transform .2s linear;
+  transition:transform .2s linear, scale .1s cubic-bezier(.7,0,.84,.16);
 }
-.mrow__btn.is-press::before{transition:none}
+.mrow__btn.is-press::before{transition:scale .1s cubic-bezier(.7,0,.84,.16)}
 .mrow__btn svg{
   position:relative; width:24px; height:24px; display:block;
   fill:currentColor;
@@ -258,10 +305,11 @@
    按 24 画会比编辑的铅笔小一圈，所以放一档到 26（约 18×13），
    按钮盒只有 32，再大就贴边了 */
 .mrow__btn[data-act="top"] svg{width:26px; height:26px}
-/* hover 与「已置顶」都只换字色，不铺底，一律取主题色：
-   未选中行也在此刻亮成 theme，与选中行的名字同色 */
-.mrow__btn:hover,
+/* hover 时底片涨满、图标转反白；「已置顶」本身只染主题色、不铺底，
+   被 hover 时才跟着反白（否则主题色图标压在主题色底上就糊了） */
 .mrow__btn.is-on{color:var(--theme)}
+.mrow__btn:hover{color:var(--text-invert); transition:color .1s cubic-bezier(.16,.84,.3,1)}
+.mrow__btn:hover::before{scale:1; transition:transform .2s linear, scale .1s cubic-bezier(.16,.84,.3,1)}
 
 /* Connect 弹窗的页脚：底部靠右一对胶囊，左取消、右确认，间距 32。
    margin-top:auto 把它们压到面板底部（面板是竖向 flex，内边距仍是 16） */.modal__foot{
@@ -284,11 +332,11 @@
   font-size:var(--fs-18);
   letter-spacing:.2px;
 }
-/* 左：取消。未 hover 时底片全不出现、字 text-reduced；
-   hover 只把字染成主题色，底片留在圆心、文字不平移、箭头也不出 */
+/* 左：取消。未 hover 时字 text-reduced、底片缩在圆心；
+   hover 时底片照顶栏那套从圆心涨满、字转反白，只是不做文字滑移与箭头
+   （面板里两枚胶囊是 flex 等分的，宽度不等于 --pill-w，滑移算不准） */
 .modal__foot .pill[data-act="cancel"]{color:var(--text-reduced)}
-.modal__foot .pill[data-act="cancel"]:hover{color:var(--theme)}
-.modal__foot .pill[data-act="cancel"]:hover::before{scale:0}
+.modal__foot .pill[data-act="cancel"]:hover{color:var(--text-invert)}
 .modal__foot .pill[data-act="cancel"]:hover .pill__label{left:50%; transform:translate(-50%,-50%)}
 .modal__foot .pill[data-act="cancel"]:hover .pill__arrow{opacity:0; transform:translateY(-50%) translateX(-4px)}
 /* 右：确认。常态就是主题色底片 + 反白字，所以 scale 直接给满，
