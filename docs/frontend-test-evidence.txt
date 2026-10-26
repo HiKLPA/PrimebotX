@@ -1,0 +1,7 @@
+2026-10-26
+Backend: GCC build passed; CTest api_integration 1/1 passed.
+Windows -> WSL: localhost HTTP health passed.
+Chromium headless: page load, mock connect, q1.wave, TTS, volume37+muted,
+logs, disconnect, battery unavailable after disconnect, unsupported controls
+disabled; passed with no uncaught page exceptions in final run.
+No real robot/ROS business control, no git commit/push, no other-PC validation.

@@ -1,0 +1,8 @@
+Internal ctest changing into directory: /home/truth/primebot_ws/backend-build
+Test project /home/truth/primebot_ws/backend-build
+    Start 1: api_integration
+1/1 Test #1: api_integration ..................   Passed    0.10 sec
+
+100% tests passed, 0 tests failed out of 1
+
+Total Test time (real) =   0.10 sec

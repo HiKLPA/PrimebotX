@@ -1,0 +1,116 @@
+PRETTY_NAME="Ubuntu 22.04.5 LTS"
+NAME="Ubuntu"
+VERSION_ID="22.04"
+VERSION="22.04.5 LTS (Jammy Jellyfish)"
+VERSION_CODENAME=jammy
+ID=ubuntu
+ID_LIKE=debian
+HOME_URL="https://www.ubuntu.com/"
+SUPPORT_URL="https://help.ubuntu.com/"
+BUG_REPORT_URL="https://bugs.launchpad.net/ubuntu/"
+PRIVACY_POLICY_URL="https://www.ubuntu.com/legal/terms-and-policies/privacy-policy"
+UBUNTU_CODENAME=jammy
+Linux LAPTOP-13IH5KMD 6.18.33.2-microsoft-standard-WSL2 #1 SMP PREEMPT_DYNAMIC Thu Jun 18 21:54:43 UTC 2026 x86_64 x86_64 x86_64 GNU/Linux
+g++ (Ubuntu 11.4.0-1ubuntu1~22.04.3) 11.4.0
+cmake version 3.22.1
+ROS_DISTRO=
+libcpp-httplib-dev:amd64	0.10.3+ds-1
+nlohmann-json3-dev	3.10.5-2
+ros-humble-rmw-fastrtps-cpp	6.2.10-1jammy.20260907.210327
+ros-humble-ros-base	0.10.0-1jammy.20260915.225919
+CommonRequest header
+	RequestHeader header
+		builtin_interfaces/Time stamp
+			int32 sec
+			uint32 nanosec
+
+PlayTtsRequest tts_req
+	string text
+	TtsPriorityLevel priority_level
+		uint8 value
+		uint8  UNKNOWN = 0x00
+		uint8  BACKGROUND_L1 = 0x01
+		uint8  SERVICE_L2 = 0x02
+		uint8  MISSION_L4 = 0x04
+		uint8  INTERACTION_L6 = 0x06
+		uint8  WARNING_L8 = 0x08
+		uint8  SAFETY_L10 = 0x0a
+	uint32 priority_weight
+	string domain
+	string trace_id
+	bool is_interrupted
+
+# ---------------------------------------------------- req
+---
+# ---------------------------------------------------  resp
+
+CommonResponse header
+	ResponseHeader header
+		builtin_interfaces/Time stamp
+			int32 sec
+			uint32 nanosec
+		int64 code
+	CommonState status
+		int32 value
+		int32 UNKNOWN = 0
+		int32 SUCCESS = 1
+		int32 FAILURE = 2
+		int32 ABORTED = 3
+		int32 TIMEOUT = 4
+		int32 INVALID = 5
+		int32 IN_MANUAL = 6
+		int32 NOT_READY = 100
+		int32 PENDING = 200
+		int32 CREATED = 300
+		int32 RUNNING = 400
+		uint32 reason
+		uint32 REASON_SUCCESS          = 0   #
+		uint32 REASON_OPENBOX          = 1   #
+		uint32 REASON_STARTUP_CHECK    = 2   #
+		uint32 REASON_SHUTDOWN         = 3   #
+		uint32 REASON_FROM             = 4   #
+		uint32 REASON_LOW_BATTERY      = 5   #
+		uint32 REASON_CHARGE           = 6   #
+		uint32 REASON_NO_WHITELIST     = 7   #
+		uint32 REASON_HDS              = 8   #
+		uint32 REASON_ACTION           = 9   #
+		uint32 REASON_OBSTACLE_FORWARD = 10  #
+		uint32 REASON_OBSTACLE_BACK    = 11  #
+		uint32 REASON_OBSTACLE_LEFT    = 12  #
+		uint32 REASON_OBSTACLE_RIGHT   = 13  #
+		uint32 REASON_OBSTACLE_UP      = 14  #
+		uint32 REASON_TASK_RUNNING     = 15  #
+		uint32 REASON_TARGET_STATE     = 16  #
+		uint32 REASON_NOT_FOUND            = 17   #
+		uint32 REASON_NO_SKILL_LIST        = 18   #
+		uint32 REASON_FORM_MIS_MATCH       = 19   #
+		uint32 REASON_ACTION_NOT_MATCH     = 20   #
+		uint32 REASON_ACTION_BLACKLISTED   = 21   #
+		uint32 REASON_NO_TRANSFER_PATH     = 22   #
+		uint32 REASON_NO_ELIGIBLE_SKILL    = 23   #
+		uint32 REASON_INDOOR_WHOLE_BODY    = 24   #
+		uint32 REASON_ENGINE_NOT_READY     = 25   #
+		uint32 REASON_NOT_SUPPORTED        = 26   #
+		uint32 REASON_STAND_UP_IN_PROGRESS = 27   #
+		uint32 REASON_NOT_INTERRUPTIBLE    = 28   #
+		uint32 REASON_INTERRUPT_INVALID    = 29   #
+		uint32 REASON_TRANSFORM_CONDITION  = 30   #
+	string message
+
+PlayTtsResponse tts_resp
+	string text
+	TtsPriorityLevel priority_level
+		uint8 value
+		uint8  UNKNOWN = 0x00
+		uint8  BACKGROUND_L1 = 0x01
+		uint8  SERVICE_L2 = 0x02
+		uint8  MISSION_L4 = 0x04
+		uint8  INTERACTION_L6 = 0x06
+		uint8  WARNING_L8 = 0x08
+		uint8  SAFETY_L10 = 0x0a
+	uint32 priority_weight
+	string domain
+	string trace_id
+	bool is_success
+	string error_message
+	uint32 estimated_duration

@@ -1,0 +1,13 @@
+{
+  "verified_existing_sources": [
+    "backend/CMakeLists.txt",
+    "backend/README.md",
+    "backend/src/main.cpp",
+    "backend/tests/api_test.py",
+    "scripts/build_workspace.sh",
+    "scripts/setup_ros_humble.sh",
+    "scripts/verify_ros_local.py"
+  ],
+  "intentional_change": "backend/src/main.cpp: same-origin static hosting",
+  "canonical": "/home/truth/primebot_ws/project"
+}

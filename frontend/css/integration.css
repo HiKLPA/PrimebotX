@@ -1,0 +1,7 @@
+
+.integration {position:fixed;top:80px;right:24px;z-index:1000;max-width:min(430px,90vw);background:var(--surface,#fff);color:var(--text,#222);border:1px solid #8886;border-radius:16px;padding:12px;box-shadow:0 4px 24px #0002;font:14px/1.5 sans-serif}
+.integration summary {cursor:pointer;font-weight:600}
+.integration button,.integration input {font:inherit;margin:4px;padding:5px}
+.integration label {display:block}.integration pre {max-height:180px;overflow:auto;white-space:pre-wrap;font:12px/1.5 monospace}
+.integration [role=status] {max-width:390px;overflow-wrap:anywhere}
+button:disabled {opacity:.4;cursor:not-allowed}

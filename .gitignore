@@ -18,3 +18,59 @@ node_modules/
 
 # 本地备份
 *.backup*.html
+
+# Management backend build and credentials
+# Build outputs, whether built inside this repository or copied from workspace
+build/
+backend-build/
+install/
+log/
+cmake-build-*/
+CMakeFiles/
+CMakeCache.txt
+Testing/
+compile_commands.json
+*.o
+*.a
+*.so
+*.so.*
+*.exe
+
+# Python / editor / OS caches
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+*.swp
+
+# Credentials and local configuration; examples may be committed
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+id_rsa*
+id_ed25519*
+.git-credentials
+config/local.*
+
+# Backups, virtual disks, and generated runtime data
+*.tar
+*.tar.gz
+*.zip
+*.vhdx
+*.db
+*.sqlite*
+*.log
+evidence/
+# Curated docs/*-evidence.txt intentionally remain trackable.
+
+# Frontend personal tool history
+.workbuddy/
+
+# Local archives and migration leftovers
+back/
