@@ -20,6 +20,25 @@
   min-width:0;               /* 允许长名字省略，不把另一列挤出去 */
 }
 .modal__col--end{align-items:flex-end; text-align:right}
+/* 右列讲的是「当前机型」，Settings 与 Advance 都用不上。类选择器会把 [hidden]
+   的 UA display:none 盖掉，所以这里必须显式补一条，否则那两个弹窗照旧渲染
+   Q1_RandomName / current */
+.modal__col[hidden]{display:none}
+/* Advance 标题区右上角的主动作：与机型名占同一个位置，只在这个弹窗里出现 */
+.modal__act{display:flex; flex:0 0 auto}
+.modal__act[hidden]{display:none}
+/* 比工具条里的次级按钮亮一档：实心主题色，一眼能找到入口 */
+.modal__act-btn{
+  height:34px; padding:0 18px;
+  border:1px solid var(--theme); border-radius:999px;
+  background:var(--theme); color:var(--text-invert);
+  font-family:inherit; font-weight:var(--fw); font-size:var(--fs-14);
+  letter-spacing:.2px; line-height:1; cursor:pointer;
+  transition:opacity .12s linear, transform .12s ease-out;
+}
+.modal__act-btn:hover:not(:disabled){opacity:.86}
+.modal__act-btn:active:not(:disabled){transform:translateY(1px)}
+.modal__act-btn:disabled{opacity:.4; cursor:not-allowed}
 /* 右列那行标题（Q1_RandomName）走主题色：它指的是当前生效的那一个，
    与左列纯黑的主标题区分开，颜色由 --theme 统一控制 */
 .modal__col--end .modal__title{color:var(--theme)}

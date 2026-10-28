@@ -309,7 +309,12 @@
 .modal{
   position:fixed; inset:0;
   z-index:50;                 /* 压过顶栏(30/31)与栏体(20) */
-  display:grid; place-items:center;
+  display:grid;
+  /* 水平居中不变；竖直不再居中，改为顶边贴住左右侧栏的上沿。
+     面板高是侧栏高 - 48，两者都居中时面板顶边会比栏低 24，这里把这 24 补掉：
+     padding-top 取 --rail-top（栏体上沿），视口太矮时退到 24 的保底间距 */
+  place-items:start center;
+  padding-top:max(24px, var(--rail-top));
   visibility:hidden;          /* 由脚本切换，动画开始前不闪 */
   pointer-events:none;        /* 空白不吃点击：弹窗开着也能点到底下的页面 */
 }
@@ -319,6 +324,7 @@
     calc(100vw - 48px),
     calc((100vh - 48px) * 3 / 2)
   );
+  position:relative;                   /* 外挂块按 right:100% / left:100% 贴到面板外侧 */
   width:var(--modal-w);
   height:calc(var(--modal-w) / 1.5);   /* 3:2 由这一行保证 */
   --modal-pad:16px;                    /* 面板内边距：Settings 那条分割线要外扩这个量 */

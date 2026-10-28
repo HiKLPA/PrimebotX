@@ -1,0 +1,204 @@
+/* Advance 弹窗里的 MuJoCo 仿真面板。
+   中间是画面与调节区，左侧面板外挂参数栏、右侧面板外挂工具按钮（见 .modal__stats / .adv__rail）。
+   只负责摆位与控件尺寸，颜色一律取弹窗那套变量，深浅主题自动跟随。 */
+.adv{gap:10px; min-height:0}
+
+/* ---------- 工具按钮：挂到面板右边框外 8px，一行一个 ---------- */
+
+/* 与左侧参数栏对称：挂在面板右边框外 8px，同材质同尺寸（178 宽、上下贴边）。
+   按钮一行一个，默认无底色无描边，只有 hover 才浮出胶囊 */
+.adv__rail{
+  position:absolute; left:calc(100% + 8px); top:0; bottom:0; width:178px;
+  display:flex; flex-direction:column; gap:2px;
+  padding:14px 12px; overflow-y:auto; scrollbar-width:thin;
+  border-radius:var(--rail-r); background:var(--panel);
+  -webkit-backdrop-filter:blur(var(--blur)); backdrop-filter:blur(var(--blur));
+  box-shadow:0 0 var(--sh) rgba(var(--shadow), calc(var(--sh-a) * var(--sh-k)));
+}
+/* display:flex 会盖掉 [hidden] 自带的 display:none，必须显式补一条 */
+.adv__rail[hidden]{display:none}
+.adv__rail::-webkit-scrollbar{width:6px}
+.adv__rail::-webkit-scrollbar-thumb{border-radius:999px; background:rgb(136 136 136 / .32)}
+.adv__btn{
+  width:100%; height:30px; padding:0 10px;
+  border:1px solid transparent; border-radius:999px;
+  background:transparent; color:var(--text-reduced);
+  font-family:inherit; font-weight:var(--fw); font-size:var(--fs-14);
+  letter-spacing:.2px; line-height:1; cursor:pointer; white-space:nowrap;
+  transition:color .12s linear, background-color .12s linear, border-color .12s linear, opacity .12s linear;
+}
+.adv__btn:hover:not(:disabled){color:var(--text-invert); background:var(--theme); border-color:var(--theme)}
+.adv__btn:disabled{opacity:.35; cursor:not-allowed}
+
+/* 动作倍率：影响手势与步态的快慢，也放大关节限速。
+   放在右侧调节区最后一行，标签宽度与「姿态/动作/步态」对齐 */
+.adv__speed{
+  display:flex; align-items:center; gap:8px; flex:0 0 auto; padding-top:2px;
+  font-size:12px; color:var(--text-reduced); white-space:nowrap;
+}
+.adv__speed input[type=range]{flex:1 1 auto; min-width:0; height:16px; margin:0; accent-color:var(--theme)}
+.adv__speed b{min-width:32px; font-weight:var(--fw); color:var(--text-primary); text-align:right}
+/* 这里与滑块同排居中，不要那 5px 的下沉补偿 */
+.adv__speed .adv__row-lab{padding-top:0}
+
+/* ---------- 主区：画面 + 侧栏 ---------- */
+
+.adv__grid{display:flex; gap:14px; flex:1 1 auto; min-height:0}
+.adv__stage{margin:0; display:flex; flex-direction:column; gap:8px; flex:1 1 54%; min-width:0; min-height:0}
+.adv__viewport{
+  position:relative; flex:1 1 auto; min-height:0;
+  display:flex; align-items:center; justify-content:center;
+  border-radius:12px; overflow:hidden; background:rgb(0 0 0 / .32);
+  cursor:grab; touch-action:none;
+}
+.adv__viewport:active{cursor:grabbing}
+/* 画面按桥返回的 640×480 等比缩放，不裁切也不拉变形 */
+.adv__frame{display:block; max-width:100%; max-height:100%; object-fit:contain; pointer-events:none}
+.adv__frame[data-offline]{opacity:.3}
+.adv__hint{
+  position:absolute; right:8px; bottom:6px; padding:2px 8px;
+  border-radius:999px; background:rgb(0 0 0 / .46); color:rgb(255 255 255 / .72);
+  font-size:11px; line-height:1.5; pointer-events:none;
+}
+
+.adv__side{
+  flex:1 1 46%; min-width:0; min-height:0;
+  display:flex; flex-direction:column; gap:8px;
+  overflow-y:auto; scrollbar-width:thin;
+}
+.adv__side::-webkit-scrollbar{width:6px}
+.adv__side::-webkit-scrollbar-thumb{border-radius:999px; background:rgb(136 136 136 / .32)}
+
+/* 关节分组：手臂 8 个、腰 2 个、腿 12 个，分开展示免得一屏塞满 */
+.adv__tabs{display:flex; gap:4px; flex:0 0 auto}
+.adv__tab{
+  height:26px; padding:0 12px;
+  border:1px solid transparent; border-radius:999px; background:transparent;
+  color:var(--text-reduced); font-family:inherit; font-weight:var(--fw);
+  font-size:12px; line-height:1; cursor:pointer;
+  transition:color .12s linear, background-color .12s linear;
+}
+.adv__tab:hover:not(.is-sel){color:var(--text-primary)}
+.adv__tab.is-sel{color:var(--text-invert); background:var(--theme)}
+.adv__tab:disabled{opacity:.35; cursor:not-allowed}
+
+.adv__joints{
+  display:grid; grid-template-columns:repeat(2, minmax(0, 1fr));
+  gap:6px 14px; align-content:start;
+  max-height:196px; overflow-y:auto; scrollbar-width:none;
+}
+.adv__joints::-webkit-scrollbar{width:0; height:0}
+.adv__joint{display:flex; flex-direction:column; gap:2px}
+.adv__joint span{font-size:12px; line-height:1.3; color:var(--text-reduced); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.adv__joint input[type=range]{width:100%; height:16px; margin:0; accent-color:var(--theme)}
+
+/* 姿态 / 动作 / 步态：一行标签加一排小胶囊 */
+.adv__row{display:flex; align-items:flex-start; gap:8px; flex:0 0 auto}
+.adv__row-lab{
+  flex:0 0 28px; padding-top:5px;
+  font-size:12px; line-height:1.3; color:var(--text-reduced);
+}
+.adv__chips{display:flex; flex-wrap:wrap; gap:5px; min-width:0}
+.adv__chip{
+  height:26px; padding:0 11px;
+  border:1px solid rgb(136 136 136 / .34); border-radius:999px; background:transparent;
+  color:var(--text-reduced); font-family:inherit; font-weight:var(--fw);
+  font-size:12px; line-height:1; cursor:pointer;
+  transition:color .12s linear, background-color .12s linear, border-color .12s linear, opacity .12s linear;
+}
+.adv__chip:hover:not(:disabled){color:var(--text-invert); background:var(--theme); border-color:var(--theme)}
+.adv__chip:disabled{opacity:.35; cursor:not-allowed}
+/* 正在跑的动作/步态加实心，和旁边未激活的分得开 */
+.adv__chip.is-on{color:var(--text-invert); background:var(--theme); border-color:var(--theme)}
+.adv__chips[data-empty]{display:none}
+
+.adv__msg{
+  flex:0 0 auto; margin:0; padding-top:8px; border-top:1px solid rgb(136 136 136 / .22);
+  font-size:12px; line-height:1.5; color:var(--text-reduced);
+}
+/* 参数显示：贴到弹窗面板外侧左边（面板 position:relative，这里 right:100% 顶出去），
+   top/bottom 同时贴边，所以高度与面板一致；每行一项，左标签右数值，放不下就在内部滚 */
+.modal__stats{
+  /* 参数一律 12px 思源黑体：中文、英文、数字同一套字，本地装了就用本地，
+     没有则走 Google Fonts 的 Noto Sans SC（思源黑体的开源分发名），最后退回雅黑 */
+  --stat-font:"Source Han Sans SC", "Source Han Sans CN", "思源黑体 CN", "思源黑体",
+              "Noto Sans SC", "Noto Sans CJK SC", "Microsoft YaHei", sans-serif;
+  position:absolute; top:0; bottom:0; right:calc(100% + 16px); width:178px;
+  display:flex; flex-direction:column; gap:8px;
+  padding:14px 12px; overflow:hidden;
+  border-radius:var(--rail-r); background:var(--panel);
+  -webkit-backdrop-filter:blur(var(--blur)); backdrop-filter:blur(var(--blur));
+  box-shadow:0 0 var(--sh) rgba(var(--shadow), calc(var(--sh-a) * var(--sh-k)));
+  color:var(--text-secondary);
+  font-family:var(--stat-font); font-size:12px;
+}
+/* display:flex 会盖掉 [hidden] 自带的 display:none，必须显式补一条 */
+.modal__stats[hidden]{display:none}
+/* 行在这层里滚，提示固定在列底 */
+.adv__stats-list{
+  flex:1 1 auto; min-height:0; overflow-y:auto; scrollbar-width:thin;
+  display:flex; flex-direction:column; gap:3px;
+}
+.adv__stats-list::-webkit-scrollbar{width:6px}
+.adv__stats-list::-webkit-scrollbar-thumb{border-radius:999px; background:rgb(136 136 136 / .32)}
+.adv__stat{display:flex; align-items:baseline; justify-content:space-between; gap:8px; white-space:nowrap}
+.adv__stat span{
+  flex:0 0 auto; font-size:12px; line-height:1.6; color:var(--text-reduced);
+}
+.adv__stat b{
+  min-width:0; font-family:var(--stat-font); font-size:12px; line-height:1.6;
+  font-weight:var(--fw); color:var(--text-primary); text-align:right;
+  /* 去掉等宽字体后靠 tabular-nums 让数字列对齐，读数跳动时不会左右晃 */
+  font-variant-numeric:tabular-nums;
+  overflow:hidden; text-overflow:ellipsis;
+}
+
+/* Advance 面板左右都挂了同尺寸的底板：左边参数栏 178+16，右边按钮栏 178+8。
+   margin 让「参数栏 + 面板 + 按钮栏」整体居中，面板自身宽度不因此变小；
+   视口宽度那一项同步减去 428，窄视口下才真正收窄，保证两侧都放得下 */
+.modal__panel.is-advance{
+  margin-left:194px; margin-right:186px;
+  --modal-w:min(
+    calc((var(--rail-h) - 48px) * 3 / 2),
+    calc(100vw - 428px),
+    calc((100vh - 48px) * 3 / 2)
+  );
+}
+
+@media (max-width:860px){
+  /* 宽度不够摆两条外挂底板：按钮退回面板内部，横排一行、底板一并去掉。
+     rail 在 DOM 里排在 .adv 之后，靠 order 提到标题区下面 */
+  .modal__panel.is-advance .modal__head{order:0}
+  .adv__rail{
+    position:static; order:1; width:auto; flex-direction:row; flex-wrap:wrap; gap:6px;
+    padding:0; overflow:visible;
+    background:none; border-radius:0; box-shadow:none;
+    -webkit-backdrop-filter:none; backdrop-filter:none;
+  }
+  .modal__panel.is-advance .adv{order:2}
+  .adv__rail .adv__btn{width:auto; padding:0 14px}
+  .modal__panel.is-advance{
+    margin-right:0;
+    --modal-w:min(
+      calc((var(--rail-h) - 48px) * 3 / 2),
+      calc(100vw - 242px),
+      calc((100vh - 48px) * 3 / 2)
+    );
+  }
+}
+
+@media (max-width:700px){
+  .adv__grid{flex-direction:column}
+  .adv__viewport{flex:0 0 auto; aspect-ratio:4 / 3}
+  .adv__side{flex:0 1 auto; max-height:46%; overflow-y:auto}
+  .adv__joints{max-height:none}
+  .modal__stats{display:none}
+  .modal__panel.is-advance{
+    margin-left:0; margin-right:0;
+    --modal-w:min(
+      calc((var(--rail-h) - 48px) * 3 / 2),
+      calc(100vw - 48px),
+      calc((100vh - 48px) * 3 / 2)
+    );
+  }
+}

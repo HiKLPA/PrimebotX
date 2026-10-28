@@ -56,6 +56,10 @@
   --press-k: .02;
   --rail-w: 80px;
   --rail-h: 512px;
+  /* 栏体上沿：.rail 是 fixed + top:50% + translateY(-50%)，高 --rail-h，
+     所以它的顶边落在 (100vh - rail-h) / 2 这条线上。弹窗顶边要贴同一根线，
+     见 cards.css 里 .modal 的 align-start 与 padding-top */
+  --rail-top: calc((100vh - var(--rail-h)) / 2);
   --rail-r: 24px;
   /* 指令卡片：fig 原尺寸 240×150，一行两张，卡间距 8，面板内边距 16
      栏的展开宽度直接由这三个数算出来，卡片多大、栏就多宽 */

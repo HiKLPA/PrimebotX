@@ -6,7 +6,7 @@
 <title>Primebot</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;600&display=swap" rel="stylesheet">
 <script>
 /* 明暗模式在首帧之前定下来。色值全挂在 :root 的那套变量上，
    晚一步再改 data-theme 会先按浅色画一遍、再整屏跳到深色。
@@ -23,11 +23,13 @@
   <link rel="stylesheet" href="css/topbar.css">
   <link rel="stylesheet" href="css/rail.css">
   <link rel="stylesheet" href="css/hud.css">
-  <link rel="stylesheet" href="css/cards.css">
-  <link rel="stylesheet" href="css/modal.css">
+  <link rel="stylesheet" href="css/cards.css?v=7">
+  <link rel="stylesheet" href="css/modal.css?v=2">
   <link rel="stylesheet" href="css/chat.css">
-  <!-- Q1 管理联调面板（浮层，MOCK 模拟）：样式与脚本各一支 -->
-  <link rel="stylesheet" href="css/integration.css">
+  <!-- Q1 管理联调（MOCK 浮层）已停用，改用 Advance 里的 MuJoCo 仿真面板。
+       两个文件保留在仓库里，需要回退时把下面两行放回来即可 -->
+  <!-- <link rel="stylesheet" href="css/integration.css"> -->
+  <link rel="stylesheet" href="css/sim.css?v=13">
 </head>
 <body>
 
@@ -363,12 +365,76 @@
         <div class="modal__title" data-modal-title>Q1_RandomName</div>
         <div class="modal__sub" data-modal-sub>current</div>
       </div>
+      <!-- Advance 的主动作挂在标题区右上角：连接仿真只在仿真面板里有意义，
+           放这里比塞进下面那排工具按钮更醒目。其余弹窗由脚本按 data-advance-only 收掉 -->
+      <div class="modal__act" data-advance-only hidden>
+        <button class="modal__act-btn" type="button" data-sim-connect>连接仿真</button>
+      </div>
     </div>
 
     <!-- 机型列表：外层只负责占位与裁剪，里层 .modal__list 才是滚动容器。
          工具条已移到标题区，这里只剩列表本体 -->
     <div class="modal__body" data-connect-only hidden>
       <div class="modal__list" data-model-list></div>
+    </div>
+
+    <!-- Advance：MuJoCo 仿真联调的全部操作都在这里，页面上不再有右下角浮层。
+         结构只摆位，事件与轮询由 js/sim.js 绑定；与机型列表、Settings 互斥，
+         脚本按 data-advance-only 切 hidden -->
+    <div class="modal__body adv" data-advance-only hidden>
+      <div class="adv__grid">
+        <figure class="adv__stage">
+          <div class="adv__viewport" data-sim-viewport>
+            <img class="adv__frame" data-sim-frame alt="MuJoCo 仿真画面" data-offline>
+            <span class="adv__hint">拖动旋转 · 滚轮缩放</span>
+          </div>
+        </figure>
+        <div class="adv__side">
+          <div class="adv__tabs" role="tablist" aria-label="关节分组">
+            <button class="adv__tab is-sel" type="button" role="tab" aria-selected="true" data-joint-group="arm">手臂</button>
+            <button class="adv__tab" type="button" role="tab" aria-selected="false" data-joint-group="waist">腰</button>
+            <button class="adv__tab" type="button" role="tab" aria-selected="false" data-joint-group="leg">腿</button>
+          </div>
+          <div class="adv__joints" data-sim-joints></div>
+          <div class="adv__row">
+            <span class="adv__row-lab">姿态</span>
+            <div class="adv__chips" data-sim-presets></div>
+          </div>
+          <div class="adv__row">
+            <span class="adv__row-lab">动作</span>
+            <div class="adv__chips" data-sim-gestures></div>
+          </div>
+          <div class="adv__row">
+            <span class="adv__row-lab">步态</span>
+            <div class="adv__chips" data-sim-gaits></div>
+          </div>
+          <!-- 速度放在调节区最下面一行：跟着动作/步态一起改，位置比工具条更顺手 -->
+          <div class="adv__speed">
+            <span class="adv__row-lab">速度</span>
+            <input type="range" min="0.3" max="2.5" step="0.1" value="1" data-sim-speed>
+            <b data-sim-speed-val>1.0x</b>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 参数实时显示：挂在面板外侧左边（绝对定位到 right:100%），
+         高度与面板齐平，逐行一项；最底部那条是操作提示 -->
+    <div class="modal__stats" role="group" aria-label="仿真参数" data-advance-only hidden>
+      <div class="adv__stats-list" data-sim-state></div>
+      <p class="adv__msg" role="status" data-sim-message>先启动 sim/mujoco_bridge.py，再点连接仿真。</p>
+    </div>
+
+    <!-- 工具按钮：与左侧参数栏同尺寸的底板，挂在面板右边框外 8px。
+         一行一个，未 hover 时无底色无描边 -->
+    <div class="adv__rail" data-advance-only hidden>
+      <button class="adv__btn" type="button" data-sim-reset>重置姿态</button>
+      <button class="adv__btn" type="button" data-sim-stop>急停</button>
+      <button class="adv__btn" type="button" data-sim-mode>切到动力学</button>
+      <button class="adv__btn" type="button" data-sim-turn="-0.8" title="按住左转">左转</button>
+      <button class="adv__btn" type="button" data-sim-turn="0.8" title="按住右转">右转</button>
+      <button class="adv__btn" type="button" data-sim-cam-reset title="复位视角">复位视角</button>
+      <button class="adv__btn" type="button" data-sim-shot title="把当前画面存成图片">存图</button>
     </div>
 
     <!-- Settings：左区标题与选项目录，右区放选中项对应的页面。
@@ -429,16 +495,19 @@
   </div>
 </div>
 
-<script src="js/modal.js"></script>
+<script src="js/modal.js?v=3"></script>
 
-<script src="js/models.js"></script>
+<script src="js/models.js?v=2"></script>
 
 <script src="js/chat.js"></script>
 
 <!-- ===================== 背景动效 ===================== -->
 <script src="js/background.js"></script>
-<!-- Q1 管理联调面板：轮询 /api/v1，后端没起时只在浮层里报错，不改页面其它部分 -->
-<script src="js/integration.js"></script>
+<!-- Q1 管理联调面板（MOCK）已停用：它的浮层、机型拉取与 /status 轮询都交给下面的
+     sim.js 与 models.js。需要回退时取消下一行注释，并恢复上面的 integration.css -->
+<!-- <script src="js/integration.js"></script> -->
+<!-- MuJoCo 仿真：操作面板在 Advance 弹窗内（.adv），这里只绑事件与轮询 -->
+<script src="js/sim.js?v=8"></script>
 
 </body>
 </html>

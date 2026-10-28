@@ -44,6 +44,11 @@ try:
     logs=call('GET','/logs')[1]['data']['items']
     assert sum(x['operation_id']==op for x in logs)==1
     assert call('POST','/motion/target',{'forward_velocity_mps':.2})[0]==422
+    assert call('GET','/sim/state')[0]==422 # 未给 --sim-url 时仿真接口一律 422，不伪装成可用
+    assert call('POST','/control/joints',{'joints':{'left_elbow_joint':0.1}})[0]==422
+    for path in ('/sim/preset','/sim/gait','/sim/camera','/sim/speed'): # 新增的仿真操作同样不能假装可用
+        assert call('POST',path,{'name':'walk','speed':1.2,'azimuth':120})[0]==422
+    assert call('POST','/connections',{'robot_id':'q1-sim','mode':'sim'})[0]==422
     assert call('GET','/cameras')[0]==422
     assert call('DELETE','/connection')[0]==200
     assert call('GET','/status')[1]['data']['battery'] is None

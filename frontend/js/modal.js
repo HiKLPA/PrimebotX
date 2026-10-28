@@ -18,7 +18,7 @@
   var META = {
     Connect:    { sub: '2 available', right: 'Q1_RandomName', rightSub: 'current' },
     Preference: { sub: '3 available', right: 'Q1_RandomName', rightSub: 'current' },
-    Advance:    { sub: '1 available', right: 'Q1_RandomName', rightSub: 'current' },
+    Advance:    { sub: 'MuJoCo simulation' },
     /* Settings 左列只有标题和当前选项；右列（已确认的机型）与它无关，整列收掉 */
     Settings:   { sub: 'Appearance' }
   };
@@ -85,12 +85,16 @@
     var m = META[name] || {};
     titleL[0].textContent = name;
     subL[0].textContent   = m.sub || '';
-    if (confirmed === null) {
+    if (confirmed === null && m.right) {
       var sel0 = document.querySelector('[data-model-list] .mrow.is-sel');
-      confirmed = (sel0 && sel0.dataset.model) || m.right || '';
+      confirmed = (sel0 && sel0.dataset.model) || m.right;
     }
-    paintDevice(confirmed);
-    subL[1].textContent   = m.rightSub || '';
+    /* Advance 没有「当前设备」这一列：整列跳过，别把 confirmed 初始化成空串，
+       否则先开一次 Advance 就会把 HUD 上的机型名一起刷空 */
+    if (m.right !== undefined) {
+      paintDevice(confirmed);
+      subL[1].textContent = m.rightSub || '';
+    }
     panel.setAttribute('aria-label', name);
     /* 从一个弹窗直接换到另一个时，先把上一个胶囊那组还原：
        不然从 Settings 切到 Connect、再关窗，Settings 那枚会一直亮着。
@@ -102,6 +106,13 @@
     Array.prototype.forEach.call(panel.querySelectorAll('[data-connect-only]'), function (el) {
       el.hidden = name !== 'Connect';
     });
+    /* Advance 只装仿真面板（结构在 HTML 里，事件由 js/sim.js 绑），
+       换到别的弹窗时整块收掉，连画面轮询也会跟着停 */
+    Array.prototype.forEach.call(panel.querySelectorAll('[data-advance-only]'), function (el) {
+      el.hidden = name !== 'Advance';
+    });
+    /* Advance 的面板外侧左边挂着参数列，面板要让位（CSS 里 .is-advance 加 margin-left） */
+    panel.classList.toggle('is-advance', name === 'Advance');
     /* Settings 是另一种版式：标题在左区，整块顶部标题区收掉，
        原来的 64px 让给左右两栏 */
     var isSet = name === 'Settings';
@@ -109,7 +120,14 @@
       el.hidden = !isSet;
     });
     if (head) head.hidden = isSet;
-    headEnd.hidden = isSet;   /* 右上那列讲的是机型，Settings 用不上 */
+    /* 右上那列讲的是当前机型：Settings 用不上，Advance 里那一位已经让给
+       「连接仿真」按钮，也用不上。hidden 之外再把两行字清空 —— 只靠 hidden 的话，
+       CSS 还没重新加载（浏览器缓存住旧 modal.css）时那一列会照旧显示 */
+    headEnd.hidden = isSet || name === 'Advance';
+    if (name === 'Advance') {
+      titleL[1].textContent = '';
+      subL[1].textContent = '';
+    }
   }
 
   /* cubic-bezier(x1,y1,x2,y2) → x 到 y 的查表函数；y 允许越出 0~1（过冲就靠它） */

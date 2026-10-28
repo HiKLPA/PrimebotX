@@ -158,6 +158,8 @@
   .modal__panel{
     --modal-w:min(calc(100vw - 48px), calc(52vh * 1.5));
   }
+  /* 这一档没有居中的侧栏可对齐（栏体贴底、顶栏竖排变高），弹窗回到视口居中 */
+  .modal{place-items:center; padding-top:0}
 }
 
 @media (max-width:1100px){
@@ -168,7 +170,7 @@
 
 /* 移动端：栏贴底、横向排布 */
 @media (max-width:640px){
-  :root{--rail-h:auto; --rail-w:64px; --rail-r:20px}
+  :root{--rail-h:auto; --rail-top:0px; --rail-w:64px; --rail-r:20px}
   .topbar{flex-direction:column; align-items:flex-start; gap:12px; height:auto}
   .rail{
     top:auto; bottom:12px; translate:0 0;

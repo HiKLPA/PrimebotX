@@ -49,8 +49,9 @@
         panel.querySelector('[data-api-mute]').checked = audio.muted;
       }
       var hud = $('.hud__state--ready, [data-api-state]');
-      if (hud) { hud.dataset.apiState = ''; hud.textContent = ready ? '模拟已连接' : '未连接'; }
-      var name = ready ? 'Q1 模拟设备' : '未连接设备';
+      var simMode = status.mode === 'sim';   /* HUD 文案只由这里一处决定，仿真面板不再改写 */
+      if (hud) { hud.dataset.apiState = ''; hud.textContent = ready ? (simMode ? '仿真已连接' : '模拟已连接') : '未连接'; }
+      var name = ready ? (simMode ? 'Q1 仿真设备' : 'Q1 模拟设备') : '未连接设备';
       if (window.hudName) window.hudName(name);
       var text = $('.hud__batt-num'), level = $('[data-hud-batt-level]');
       if (text) text.textContent = status.battery ? status.battery.percent : '--';

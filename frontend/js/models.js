@@ -117,18 +117,22 @@
     var sel0 = list.querySelector('.mrow.is-sel');
     if (!sel0 || !sel0.dataset.model) return;
     var right = document.querySelectorAll('[data-modal-title]')[1];
+    /* Advance 的右上角留给「连接仿真」，不写机型名：这时列表可能刚好被
+       api:devices 重画，若不拦一下就会把那行名字又写回标题区 */
+    var panel = document.querySelector('.modal__panel');
+    var onAdvance = panel && panel.getAttribute('aria-label') === 'Advance';
     if (window.hudName) window.hudName(sel0.dataset.model);
     else {
       var hud = document.querySelector('[data-hud-device]');
       if (hud) hud.textContent = sel0.dataset.model;
     }
-    if (right) right.textContent = sel0.dataset.model;
+    if (right && !onAdvance) right.textContent = sel0.dataset.model;
   }
   render();
 
-  /* 联调面板从 /api/v1/robots 拿到机型名之后派 api:devices，
-     这一列整列重画。渲染仍然走同一个 render()，改/置顶按钮与工具条都由这里生成，
-     面板那边只提供名字，不自己拼 DOM */
+  /* 机型名原本由 js/integration.js 从 /api/v1/robots 拉回来之后派 api:devices，
+     那套 mock 联调已停用，现在没人派这个事件，列表就停在 FALLBACK 那份占位名上。
+     监听留着：以后接真机型列表时，照旧发 api:devices 就能整列换掉 */
   document.addEventListener('api:devices', function (e) {
     var names = e.detail;
     if (!names || !names.length) return;
