@@ -396,8 +396,9 @@
 /* 右：确认。常态就是主题色底片 + 反白字，所以 scale 直接给满，
    不参与开合（它是常驻填充，不是 hover 才出现的底）；hover 保持填充不变，
    只走顶栏那套内容动画 —— 文字滑向右端、左侧箭头浮现。
-   按下不压弹（data-no-press 由尾部脚本跳过），color 与底片的过渡也关掉，
-   免得抬手时出现补偿性的淡出 */
+   按压与其它胶囊同一套（--press 逐帧写、底片等比内收再弹回）；
+   这里 transition 仍是 none，--press 每帧直接落到 transform 上，
+   不再叠一层 CSS 补间，抬手时也就没有补偿性的淡出 */
 .modal__foot .pill[data-act="confirm"]{color:var(--text-invert); transition:none}
 .modal__foot .pill[data-act="confirm"]::before{background:var(--theme); inset:0; scale:1; transition:none}
 

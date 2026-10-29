@@ -21,15 +21,15 @@
 </script>
   <link rel="stylesheet" href="css/base.css">
   <link rel="stylesheet" href="css/topbar.css">
-  <link rel="stylesheet" href="css/rail.css?v=2">
+  <link rel="stylesheet" href="css/rail.css?v=4">
   <link rel="stylesheet" href="css/hud.css">
   <link rel="stylesheet" href="css/cards.css?v=14">
-  <link rel="stylesheet" href="css/modal.css?v=9">
+  <link rel="stylesheet" href="css/modal.css?v=10">
   <link rel="stylesheet" href="css/chat.css?v=16">
   <!-- Q1 管理联调（MOCK 浮层）已停用，改用 Advance 里的 MuJoCo 仿真面板。
        两个文件保留在仓库里，需要回退时把下面两行放回来即可 -->
   <!-- <link rel="stylesheet" href="css/integration.css"> -->
-  <link rel="stylesheet" href="css/sim.css?v=52">
+  <link rel="stylesheet" href="css/sim.css?v=58">
 </head>
 <body>
 
@@ -395,7 +395,7 @@
 <script src="lib/gsap.min.js"></script>
 <!-- 滚动驱动：ScrollTrigger 与 GSAP 同版本，组标题的交接淡出挂在这上面 -->
 <script src="lib/ScrollTrigger.min.js"></script>
-<script src="js/press.js?v=5"></script>
+<script src="js/press.js?v=6"></script>
 
 <script src="js/panels.js"></script>
 
@@ -460,10 +460,22 @@
           <!-- 联动与三个关节分组并列：点它，下方内容区从关节滑块换成
                姿态 / 动作 / 步态三行胶囊，宽度和滑块区一致，不再挤在侧栏底部 -->
           <div class="adv__tabs" role="tablist" aria-label="调节分组">
-            <button class="adv__tab is-sel" type="button" role="tab" aria-selected="true" data-joint-group="arm">手臂</button>
-            <button class="adv__tab" type="button" role="tab" aria-selected="false" data-joint-group="waist">腰</button>
-            <button class="adv__tab" type="button" role="tab" aria-selected="false" data-joint-group="leg">腿</button>
-            <button class="adv__tab" type="button" role="tab" aria-selected="false" data-joint-group="link">联动</button>
+            <button class="adv__tab is-sel" type="button" role="tab" aria-selected="true" data-joint-group="arm">
+              <span class="adv__label">手臂</span>
+              <svg class="adv__arrow" viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3.3.3.79,0,1.09l-4.35,4.35c-.3.3-.54.89-.54,1.31v3.9c0,.42.35.77.77.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3.79-.79,1.09-1.09l4.35-4.35Z"/></svg>
+            </button>
+            <button class="adv__tab" type="button" role="tab" aria-selected="false" data-joint-group="waist">
+              <span class="adv__label">腰</span>
+              <svg class="adv__arrow" viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3.3.3.79,0,1.09l-4.35,4.35c-.3.3-.54.89-.54,1.31v3.9c0,.42.35.77.77.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3.79-.79,1.09-1.09l4.35-4.35Z"/></svg>
+            </button>
+            <button class="adv__tab" type="button" role="tab" aria-selected="false" data-joint-group="leg">
+              <span class="adv__label">腿</span>
+              <svg class="adv__arrow" viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3.3.3.79,0,1.09l-4.35,4.35c-.3.3-.54.89-.54,1.31v3.9c0,.42.35.77.77.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3.79-.79,1.09-1.09l4.35-4.35Z"/></svg>
+            </button>
+            <button class="adv__tab" type="button" role="tab" aria-selected="false" data-joint-group="link">
+              <span class="adv__label">联动</span>
+              <svg class="adv__arrow" viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3.3.3.79,0,1.09l-4.35,4.35c-.3.3-.54.89-.54,1.31v3.9c0,.42.35.77.77.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3.79-.79,1.09-1.09l4.35-4.35Z"/></svg>
+            </button>
           </div>
           <div class="adv__joints" data-sim-joints></div>
           <div class="adv__link" data-sim-link hidden>
@@ -556,7 +568,7 @@
         <span class="pill__label">CANCEL</span>
         <svg class="pill__arrow" viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3,.3,.3,.79,0,1.09l-4.35,4.35c-.3,.3-.54,.89-.54,1.31v3.9c0,.42,.35,.77,.77,.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3,.79-.79,1.09-1.09l4.35-4.35Z"/></svg>
       </button>
-      <button class="pill" type="button" data-act="confirm" data-no-press>
+      <button class="pill" type="button" data-act="confirm">
         <span class="pill__label">CONFIRM</span>
         <svg class="pill__arrow" viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3,.3,.3,.79,0,1.09l-4.35,4.35c-.3,.3-.54,.89-.54,1.31v3.9c0,.42,.35,.77,.77,.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3,.79-.79,1.09-1.09l4.35-4.35Z"/></svg>
       </button>
@@ -576,7 +588,7 @@
      sim.js 与 models.js。需要回退时取消下一行注释，并恢复上面的 integration.css -->
 <!-- <script src="js/integration.js"></script> -->
 <!-- MuJoCo 仿真：操作面板在 Advance 弹窗内（.adv），这里只绑事件与轮询 -->
-<script src="js/sim.js?v=17"></script>
+<script src="js/sim.js?v=18"></script>
 
 </body>
 </html>

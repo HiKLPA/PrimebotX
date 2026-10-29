@@ -75,8 +75,8 @@
     if (e.button !== 0) return;
     var el = e.target.closest && e.target.closest(SEL);
     if (!el || el.disabled) return;
-    /* data-no-press：这类胶囊不要按压回弹（如 Connect 弹窗的 Confirm），
-       直接不接管，--press 不会被写上，几何保持不动 */
+    /* data-no-press：逐例豁免。当前没有胶囊用它 —— 页面上带胶囊底片的按钮
+       全部接入按压；留着这个开关是为了以后某枚确实不该动的按钮 */
     if (el.hasAttribute('data-no-press')) return;
     /* 已激活的按钮（点第二次只是收起 / 取消）不重播压弹，直接放行 */
     if (activated(el)) return;

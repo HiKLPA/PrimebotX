@@ -599,31 +599,50 @@
     'up-left': [0.3, 0.3, 0], 'up-right': [0.3, -0.3, 0],
     'down-left': [-0.3, 0.3, 0], 'down-right': [-0.3, -0.3, 0]
   };
-  var holdTimer = null;
+  var holdTimer = null, holdSource = null;
 
   /* 按住期间每 100ms 续一次；桥那边 0.5s 收不到指令就自动清零，
-     所以浏览器崩溃或断网时机器人不会一直走 */
-  function startHold(vec) {
+     所以浏览器崩溃或断网时机器人不会一直走。
+     source 记住是谁在驱动底盘，松手时只停这一条，见 stopHold 的说明 */
+  function startHold(vec, source) {
     if (!connected || dynamic) return;
-    stopHold();
+    /* 直接换掉上一条，不发停止请求：紧接着就会写新速度，
+       中间夹一次归零只会让机器人顿一下 */
+    if (holdTimer) { clearInterval(holdTimer); holdTimer = null; }
+    holdSource = source || null;
     var send = function () {
       api('/motion/base', 'POST', { vx: vec[0], vy: vec[1], wz: vec[2] })
-        .catch(function (e) { say('底盘指令失败：' + e.message); stopHold(); });
+        .catch(function (e) { say('底盘指令失败：' + e.message); stopHold(true); });
     };
     send();
     holdTimer = setInterval(send, 100);
   }
 
-  function stopHold() {
+  /* 两种停法必须分开：
+     松手只是底盘速度归零，发 /motion/base 全零；/motion/stop 是急停，
+     桥那边连着正在跑的手势和步态一起清掉（sim.stop() 里 gesture / gait 都置 None）。
+     原来松手走的是急停，所以光标扫过左转、右转（pointerleave 不按也会触发）
+     就把正在做的动作掐掉了 —— 这正是 hover 到那几个按钮动作停下的原因。
+     source 给了就只认同一条来源：键盘按着 W 走路时，鼠标划过转向钮
+     触发的 pointerleave 不该把键盘那条也停掉 */
+  function stopHold(force, source) {
+    if (source !== undefined && holdSource !== source) return;
+    var wasHolding = !!holdTimer;
     if (holdTimer) { clearInterval(holdTimer); holdTimer = null; }
-    if (connected) api('/motion/stop', 'POST', {}).catch(function () {});
+    holdSource = null;
+    if (!connected) return;
+    if (force) { api('/motion/stop', 'POST', {}).catch(function () {}); return; }
+    if (!wasHolding) return;
+    api('/motion/base', 'POST', { vx: 0, vy: 0, wz: 0 }).catch(function () {});
   }
 
   document.querySelectorAll('.dock__btn[data-dir]').forEach(function (button) {
     var vec = DIRS[button.dataset.dir];
-    button.addEventListener('pointerdown', function () { startHold(vec); });
+    button.addEventListener('pointerdown', function () { startHold(vec, button); });
+    /* 包一层再传 button：直接挂 stopHold 会把事件对象当进 force 参数，
+       每次 pointerleave 都发急停 */
     ['pointerup', 'pointerleave', 'pointercancel'].forEach(function (event) {
-      button.addEventListener(event, stopHold);
+      button.addEventListener(event, function () { stopHold(false, button); });
     });
   });
 
@@ -631,10 +650,10 @@
     var wz = parseFloat(button.dataset.simTurn);
     button.addEventListener('pointerdown', function (event) {
       event.preventDefault();
-      startHold([0, 0, wz]);
+      startHold([0, 0, wz], button);
     });
     ['pointerup', 'pointerleave', 'pointercancel'].forEach(function (event) {
-      button.addEventListener(event, stopHold);
+      button.addEventListener(event, function () { stopHold(false, button); });
     });
   });
 
@@ -650,21 +669,22 @@
     if (!connected || pane.hidden) return;
     var tag = (event.target && event.target.tagName) || '';
     if (/INPUT|TEXTAREA|SELECT/.test(tag)) return;
-    if (event.code === 'Space') { event.preventDefault(); stopHold(); return; }
+    if (event.code === 'Space') { event.preventDefault(); stopHold(true); return; }
     var vec = KEYS[event.code];
     if (!vec || held[event.code]) return;
     event.preventDefault();
     held[event.code] = true;
-    startHold(vec);
+    startHold(vec, 'key');
   });
   document.addEventListener('keyup', function (event) {
     if (!held[event.code]) return;
     delete held[event.code];
-    stopHold();
+    stopHold(false, 'key');
   });
 
-  window.addEventListener('blur', function () { held = {}; stopHold(); });
-  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') stopHold(); });
+  /* 失焦和 Esc 是真急停：连动作一起收 */
+  window.addEventListener('blur', function () { held = {}; stopHold(true); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') stopHold(true); });
 
   /* HUD 那个连接状态原先由 js/integration.js 轮询 /status 统一写，那套 mock 联调
      已经停用，这里接手同一块文本：只写状态，电量与信号保持页面里的占位值 */

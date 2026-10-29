@@ -51,15 +51,19 @@
 /* ---------- 主区：画面 + 侧栏 ---------- */
 
 .adv__grid{display:flex; gap:14px; flex:1 1 auto; min-height:0}
+/* 画面列占面板内容宽（左右内边距之间）的 3/8，右侧调节列吃掉剩下的。
+   basis 用 0 增长改成定值：37.5% 是相对 .adv__grid 的内容宽算的，
+   不受 gap 影响 —— gap 那 14 从右侧那列的余量里出，画面列宽度就是准的 3/8 */
 .adv__stage{
   margin:0; display:flex; flex-direction:column; align-items:center; justify-content:center;
-  gap:8px; flex:1 1 54%; min-width:0; min-height:0;
+  gap:8px; flex:0 0 37.5%; min-width:0; min-height:0;
 }
-/* 正方形画面容器：高度先撑满内容区，宽度按 1:1 由高度算出来并水平居中，
-   所以宽高相等、上下顶到内边距；画面用 cover 裁掉两侧多余部分 */
+/* 画面容器：高度仍是撑满内容区那一档，宽度跟着列走（面板内容宽的 3/8），
+   所以 3/8 列下它是竖的一块 —— 画面用 cover 裁掉左右多余部分，机器人不变形。
+   不再用 aspect-ratio 反算宽度：那是宽高相等的老布局，列收窄后会被拉成竖条 */
 .adv__viewport{
   position:relative; flex:1 1 auto; min-height:0;
-  width:auto; max-width:100%; aspect-ratio:1 / 1; align-self:center;
+  width:100%;
   display:flex; align-items:center; justify-content:center;
   border-radius:12px; overflow:hidden; background:none;
   cursor:grab; touch-action:none;
@@ -81,7 +85,9 @@
 .adv.is-offline .adv__viewport{background:var(--text-muted)}
 .adv.is-offline .adv__frame{visibility:hidden}
 .adv__side{
-  flex:1 1 46%; min-width:0; min-height:0;
+  /* 吃掉画面列剩下的 5/8（再减掉 14 的 gap）：basis 归 auto、由 flex-grow 分配，
+     所以窗口拉宽时多出来的宽度全落在右列，画面那 3/8 的比例始终成立 */
+  flex:1 1 auto; min-width:0; min-height:0;
   display:flex; flex-direction:column; gap:8px;
   overflow-y:auto; scrollbar-width:thin;
 }
@@ -102,11 +108,23 @@
    内边距让给文字居中，窄到放不下就省略号而不是挤成两行 */
 .adv__tab{
   flex:1 1 0; min-width:0; padding:0 4px;
-  height:26px; text-align:center; overflow:hidden; text-overflow:ellipsis;
+  height:32px; text-align:center; overflow:hidden;
   border:1px solid transparent; border-radius:999px; background:transparent;
   color:var(--text-reduced); font-family:inherit; font-weight:var(--fw);
   font-size:var(--fs-14); line-height:1; cursor:pointer;
+  /* 文字右移那步要按自身宽度算（50cqw），四枚是等分的 flex 1 1 0，宽度随时在变 */
+  container-type:inline-size;
 }
+/* tab 里的文字与工具按钮同一套动画：居中 → 悬停右滑到右缘留 12，左侧浮出箭头。
+   已选中的那枚不再播（它本来就带着底片，再滑一次字会离开底色中心），同顶栏胶囊 */
+.adv__tab:hover:not(:disabled) .adv__label{
+  transform:translateX(calc(50cqw - 12px - 50%));
+}
+.adv__tab:hover:not(:disabled) .adv__arrow{
+  opacity:1; transform:translateY(-50%) translateX(0);
+}
+.adv__tab.is-sel:hover .adv__label{transform:none}
+.adv__tab.is-sel:hover .adv__arrow{opacity:0; transform:translateY(-50%) translateX(-4px)}
 .adv__tab:disabled{opacity:.35; cursor:not-allowed}
 
 /* 行距 8 与侧栏的其它间距统一：速度行、tab 行、每组滑块之间都是同一条节奏；
@@ -146,10 +164,16 @@
   -webkit-appearance:none; appearance:none; box-sizing:border-box;
   width:12px; height:12px; margin-top:-2px;
   border:0; box-shadow:none; border-radius:50%;
-  background:var(--theme);
-  transition:margin-top .12s linear;
+  /* 静止时取次级文字的弱一档（--text-reduced）的反色：三条通道各自 255 减一次，
+     深浅两版主题自动对调；拖动时换成主题色，跟轨道那截已拖过的颜色连成一体。
+     相对颜色直接写在 background 里，不必另开变量 */
+  background:rgb(from var(--text-reduced) calc(255 - r) calc(255 - g) calc(255 - b));
+  transition:margin-top .12s linear, background-color .12s linear;
 }
-.adv input[type=range]:active::-webkit-slider-thumb{margin-top:0}
+.adv input[type=range]:active::-webkit-slider-thumb{
+  margin-top:0;
+  background:var(--theme);
+}
 /* Firefox 自己会把圆点垂直居中，不需要 margin 补偿 */
 .adv input[type=range]::-moz-range-track{
   height:8px; border:0; border-radius:999px;
@@ -161,8 +185,10 @@
 .adv input[type=range]::-moz-range-thumb{
   box-sizing:border-box; width:12px; height:12px;
   border:0; box-shadow:none; border-radius:50%;
-  background:var(--theme);
+  background:rgb(from var(--text-reduced) calc(255 - r) calc(255 - g) calc(255 - b));
+  transition:background-color .12s linear;
 }
+.adv input[type=range]:active::-moz-range-thumb{background:var(--theme)}
 
 /* 「联动」内容区：和关节滑块共用同一块地方，点第四个 tab 时它上来、滑块区收起。
    三行胶囊按自然高度排，不设内滚动——侧栏本身会滚，多一层滚动条反而难拖 */
@@ -367,7 +393,10 @@
 }
 
 @media (max-width:700px){
+  /* 这一档改成上下排：横排的 3/8 没有意义（主轴变纵轴，37.5% 会被读成高度），
+     画面列回到「占满宽度、吃掉剩余高度」，右列按内容高度走、最多 46% */
   .adv__grid{flex-direction:column}
+  .adv__stage{flex:1 1 auto; width:100%}
   .adv__viewport{flex:0 0 auto; width:100%; aspect-ratio:1 / 1}
   .adv__side{flex:0 1 auto; max-height:46%; overflow-y:auto}
   .adv__joints{max-height:none}

@@ -77,9 +77,10 @@
   transition:opacity .1s linear,
              left var(--dur) var(--ease), right var(--dur) var(--ease);
 }
-/* 栏在屏内时贴栏外侧 8；栏收走后贴屏边 4，留一点可点的边距 */
-.rail__toggle[data-rail="left"]{left:calc(var(--edge) + var(--rail-w) + 8px)}
-.rail__toggle[data-rail="right"]{right:calc(var(--edge) + var(--rail-w) + 8px)}
+/* 展开与收起两档都贴 4：栏在屏内时贴栏外侧 4，栏收走后贴屏边 4，
+   按钮始终紧挨着它要开合的那块面板，中间的缝不随状态变 */
+.rail__toggle[data-rail="left"]{left:calc(var(--edge) + var(--rail-w) + 4px)}
+.rail__toggle[data-rail="right"]{right:calc(var(--edge) + var(--rail-w) + 4px)}
 body:has(.rail--left.is-hidden) .rail__toggle[data-rail="left"]{left:4px}
 body:has(.rail--right.is-hidden) .rail__toggle[data-rail="right"]{right:4px}
 .rail__toggle svg{
@@ -270,12 +271,12 @@ body:has(.rail--right.is-open) .rail__toggle[data-rail="right"]{
 }
 .dock__card:hover::before{opacity:1}
 
-/* 升降箭头：面板上沿往上 8。它放在 .dock 里，跟着整块一起上下走，
+/* 升降箭头：展开时贴面板上沿 4。它放在 .dock 里，跟着整块一起上下走，
    不用像栏体那样另算一套位置；箭头本身只是 32 的透明钮 */
 .dock__toggle{
   appearance:none; -webkit-appearance:none;
   position:absolute;
-  left:50%; bottom:calc(100% + 8px);
+  left:50%; bottom:calc(100% + 4px);
   translate:-50% 0;
   width:32px; height:32px;
   display:grid; place-items:center;
@@ -286,6 +287,13 @@ body:has(.rail--right.is-open) .rail__toggle[data-rail="right"]{
   transition:opacity .1s linear, color .1s linear;
 }
 .dock__toggle:hover{opacity:1; color:var(--theme)}
+/* 收起后按钮不再跟着面板沉下去：面板这时只露 1/8 在屏内，按钮要停在离屏底 4 的地方，
+   等于换了一个定位基准。面板此时被 scale .95 压过（原点在底边），所以 bottom 值
+   得把这一档除回来：.95 × bottom − .825h = 4  →  bottom = 82.5%/.95 + 4px/.95，
+   百分比按面板自身高度算，面板长高长矮两边一起变，4 始终是 4 */
+.dock:not(.is-open) .dock__toggle{
+  bottom:calc(82.5% / .95 + 4px / .95);
+}
 .dock__toggle svg{
   width:20px; height:20px; display:block;
   fill:currentColor;
