@@ -30,6 +30,14 @@
   /* 参数列挂在面板外侧（不在 .adv 里），所以按文档查 */
   var readout = document.querySelector('[data-sim-state]');
   var modeBtn = rail.querySelector('[data-sim-mode]');
+  /* 按钮里的文字被包进 .adv__label（为的是复用顶栏胶囊那套 hover 文字动画），
+     直接写按钮的 textContent 会把标签和箭头一起抹掉，这里统一走标签节点 */
+  function setModeLabel(text) {
+    if (!modeBtn) return;
+    var lab = modeBtn.querySelector('.adv__label');
+    if (lab) lab.textContent = text;
+    else modeBtn.textContent = text;
+  }
   var speedInput = pane.querySelector('[data-sim-speed]');
   var speedVal = pane.querySelector('[data-sim-speed-val]');
   var camResetBtn = rail.querySelector('[data-sim-cam-reset]');
@@ -41,6 +49,9 @@
   var connectBtn = document.querySelector('[data-sim-connect]');
 
   var connected = false, busy = false, showFrame = true;
+  /* 已连接后再点第一下进入的确认态：底色转 warning、文案变「断连」，
+     第二下才真的断开。没有第二下就等满 3 秒自己退回，中途不移开就早退 */
+  var armed = false, armTimer = null;
   var sliders = {};                 // name -> input 元素
   var dragging = {};                // name -> 是否正在拖
   var pending = {};                 // 待发送的关节目标
@@ -87,12 +98,41 @@
     return result.data;
   }
 
+  /* 连接按钮三种样子：未连接（只剩文字）、已连接（主题色底、反白）、
+     已连接且点了第一下（warning 底、文案「断连」）。
+     全部由 connected / armed / busy 三个量推出来，不散在流程里手改 */
+  function paintConnect() {
+    if (!connectBtn) return;
+    connectBtn.disabled = busy;
+    connectBtn.textContent = !connected ? '连接仿真' : (armed ? '断连' : '已连接');
+    connectBtn.classList.toggle('is-on', connected && !armed);
+    connectBtn.classList.toggle('is-arm', connected && armed);
+  }
+
+  function armDisconnect() {
+    if (!connected || armed || busy) return;
+    armed = true;
+    paintConnect();
+    /* 固定 3 秒：确认态就该是「等一下再点」，指针挪开不提前收回 ——
+       鼠标滑出去就退回的话，3 秒这个时长等于形同虚设 */
+    if (armTimer) clearTimeout(armTimer);
+    armTimer = setTimeout(disarm, 3000);
+  }
+
+  function disarm() {
+    if (armTimer) { clearTimeout(armTimer); armTimer = null; }
+    if (!armed) return;
+    armed = false;
+    paintConnect();
+  }
+
   function controls() {
     /* 未连接时右侧只留一句「请先连接仿真」：其余操作全部收起，
        靠 CSS 的 .adv.is-offline 规则隐藏，这里只管切类 */
     pane.classList.toggle('is-offline', !connected);
-    /* 连接按钮在标题区右上角，不在 pane 里，所以从 document 抓 */
-    if (connectBtn) connectBtn.disabled = busy || connected;
+    /* 连接按钮在标题区右上角，不在 pane 里，所以从 document 抓。
+       它同时是断开开关，文案与配色统一交给 paintConnect */
+    paintConnect();
     ['reset', 'stop', 'mode', 'shot'].forEach(function (key) {
       rail.querySelector('[data-sim-' + key + ']').disabled = busy || !connected;
     });
@@ -330,8 +370,10 @@
     if (connected) scheduleFrame(FRAME_GAP);
   });
   frame.addEventListener('error', function () {
-    /* 取不到画面：退到 1.5s 一次重试，避免把 502 刷满；提示只说一次 */
     frameLoading = false;
+    /* 断开时主动清掉 src 也会触发这里：不是取不到画面，只是收工，别弹提示 */
+    if (!connected) return;
+    /* 取不到画面：退到 1.5s 一次重试，避免把 502 刷满；提示只说一次 */
     frame.dataset.offline = '';
     if (frameMiss++ === 0) {
       say('没有画面：仿真桥可能跑在窗口模式，或离屏渲染不可用；数值与滑块仍可正常驱动。');
@@ -343,6 +385,8 @@
   if (window.MutationObserver) {
     new MutationObserver(function () {
       if (!pane.hidden && connected) scheduleFrame(0);
+      /* 切到别的弹窗时顺手退出确认态，免得回来还挂着「断连」 */
+      if (pane.hidden && armed) disarm();
     }).observe(pane, { attributes: true, attributeFilter: ['hidden'] });
   }
 
@@ -419,7 +463,7 @@
       var state = await api('/sim/state');
       lastState = state;
       dynamic = state.mode === 'dynamic';
-      modeBtn.textContent = dynamic ? '切到运动学' : '切到动力学';
+      setModeLabel(dynamic ? '切到运动学' : '切到动力学');
       if (state.camera) cam = state.camera;
       Object.keys(sliders).forEach(function (name) {
         if (dragging[name] || !(name in state.joints)) return;
@@ -452,13 +496,57 @@
       pollState();
       pollFrame();
       stateTimer = setInterval(pollState, 500);
-      if (connectBtn) connectBtn.textContent = '已连接';
       hudState('仿真已连接');
     } catch (e) {
-      if (connectBtn) connectBtn.textContent = '连接仿真';
       hudState('未连接');
       say(step + '失败：' + e.message + '。仿真桥没起的话先在终端看 8090 是否在监听');
     } finally { busy = false; controls(); }
+  }
+
+  /* 断开：清定时器、停取帧、读数回横杠，面板退回「请先连接仿真」。
+     后端 DELETE /connection 会顺手给桥发一次急停，机器人先停止再收工 */
+  async function disconnect() {
+    if (busy || !connected) return;
+    if (armTimer) { clearTimeout(armTimer); armTimer = null; }
+    busy = true; controls();
+    try {
+      await api('/connection', 'DELETE');
+    } catch (e) {
+      say('断开失败：' + e.message);
+      busy = false; controls();
+      return;
+    }
+    connected = false;
+    armed = false;        /* armed 留到这一刻才清：请求飞行途中不闪一下「已连接」 */
+    teardown();
+    hudState('未连接');
+    say('已断开仿真。要接着调就在右上角再点一次「连接仿真」。');
+    busy = false; controls();
+  }
+
+  /* 收工：跟随连接起来的定时器、排队中的指令、选中态与上一帧全部清掉，
+     免得断开后面板还挂着旧读数，或者连回去的一瞬间先闪一张旧画面。
+     关节与按钮不用手动删，重连时 renderJoints / buildActions 会整块重建 */
+  function teardown() {
+    if (armTimer) { clearTimeout(armTimer); armTimer = null; }
+    armed = false;
+    if (stateTimer) { clearInterval(stateTimer); stateTimer = null; }
+    if (frameTimer) { clearTimeout(frameTimer); frameTimer = null; }
+    if (camTimer) { clearTimeout(camTimer); camTimer = null; }
+    frameLoading = false;
+    frameMiss = 0;
+    showFrame = true;
+    pending = {};
+    dragging = {};
+    lastState = null;
+    joints = [];
+    cam = null;
+    dynamic = false;
+    activeGesture = activeGait = activePreset = null;
+    /* 只摘 src 不置空串：空串会按当前地址再请求一次 */
+    frame.removeAttribute('src');
+    Object.keys(statVals).forEach(function (key) { statVals[key].textContent = '-'; });
+    if (modeBtn) setModeLabel('切到动力学');
   }
 
   async function run(path, body, label) {
@@ -472,7 +560,14 @@
     finally { busy = false; controls(); }
   }
 
-  if (connectBtn) connectBtn.onclick = connect;
+  /* 同一枚按钮三态：没连→连上，已连接→先进确认态，确认态→真断 */
+  if (connectBtn) {
+    connectBtn.addEventListener('click', function () {
+      if (!connected) { connect(); return; }
+      if (!armed) { armDisconnect(); return; }
+      disconnect();
+    });
+  }
   rail.querySelector('[data-sim-reset]').onclick = function () {
     activeGesture = activeGait = activePreset = null;
     markOn(gaitsBox, 'simGait', null);

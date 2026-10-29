@@ -27,18 +27,57 @@
 /* Advance 标题区右上角的主动作：与机型名占同一个位置，只在这个弹窗里出现 */
 .modal__act{display:flex; flex:0 0 auto}
 .modal__act[hidden]{display:none}
-/* 比工具条里的次级按钮亮一档：实心主题色，一眼能找到入口 */
+/* 与顶栏胶囊同一套：静止只留文字，底色挂在 ::before 上藏进 scale:0，
+   悬停时从圆心涨满主题色、字同一拍反白；按住由 press.js 逐帧写 --press，
+   底片等比内收再 elastic 弹回。原来这里是实心主按钮、靠 opacity 表示明暗，
+   现在和面板里的工具按钮同一种表达，按下有压弹而不是下沉 1px。
+   isolation + z-index:-1 让底片落在文字之下 —— 按钮的字是裸文本，不是子元素 */
+/* 定长 128：文案在「连接仿真」与「已连接」之间切换时按钮不会忽宽忽窄，
+   标题右列的对齐也就不会跟着跳。文案居中对齐，左右各留出约 36 的余量 */
 .modal__act-btn{
-  height:34px; padding:0 18px;
-  border:1px solid var(--theme); border-radius:999px;
-  background:var(--theme); color:var(--text-invert);
+  position:relative; isolation:isolate;
+  width:128px; padding:0; box-sizing:border-box;
+  height:34px;
+  white-space:nowrap;
+  border:1px solid transparent; border-radius:999px;
+  background:transparent; color:var(--text-reduced);
   font-family:inherit; font-weight:var(--fw); font-size:var(--fs-14);
   letter-spacing:.2px; line-height:1; cursor:pointer;
-  transition:opacity .12s linear, transform .12s ease-out;
+  transition:color .1s cubic-bezier(.7,0,.84,.16), opacity .12s linear;
 }
-.modal__act-btn:hover:not(:disabled){opacity:.86}
-.modal__act-btn:active:not(:disabled){transform:translateY(1px)}
-.modal__act-btn:disabled{opacity:.4; cursor:not-allowed}
+/* inset 取 -1px 是为了连那 1px 透明描边一起盖住，涨满时不会在边上留一道亮边 */
+.modal__act-btn::before{
+  content:''; position:absolute; inset:-1px; z-index:-1;
+  border-radius:inherit; background:var(--theme);
+  pointer-events:none;                 /* 放大后不改命中区域，免得边缘反复 over/out 闪 */
+  scale:0;
+  transform-origin:50% 50%;
+  transform:scale(calc(1 - var(--press, 0) * var(--press-k)));
+  /* 换色也过渡一下：确认态是从主题色直接切到 warning，硬切会闪 */
+  transition:transform .2s linear, scale .1s cubic-bezier(.7,0,.84,.16),
+             background-color .15s linear;
+}
+.modal__act-btn:hover:not(:disabled){color:var(--text-invert); transition:color .1s cubic-bezier(.16,.84,.3,1)}
+.modal__act-btn:hover:not(:disabled)::before{
+  scale:1;
+  transition:transform .2s linear, scale .1s cubic-bezier(.16,.84,.3,1),
+             background-color .15s linear;
+}
+/* 按下期间几何由 GSAP 逐帧写，只关 transform 那条过渡，scale 留着 ——
+   边按边涨的底色不会在中途冻住 */
+.modal__act-btn.is-press::before{transition:scale .1s cubic-bezier(.7,0,.84,.16)}
+.modal__act-btn:disabled{opacity:.35; cursor:not-allowed}
+
+/* 连上之后底片不再收回去：它此刻表达的是「已连接」，一直铺着主题色、
+   字保持反白，和顶栏已选中的胶囊同一个样子 */
+.modal__act-btn.is-on{color:var(--text-invert)}
+.modal__act-btn.is-on::before{scale:1}
+/* 已连接时底片已经铺满，hover 的涨开看不出变化，改用提亮一档给一点反馈 */
+.modal__act-btn.is-on:hover:not(:disabled)::before{background:var(--theme-hover)}
+/* 已连接再点一下先进入确认态：底片换 warning、文案变「断连」，
+   再点一次才真的断开；3 秒内没有第二下才退回已连接 */
+.modal__act-btn.is-arm{color:var(--text-invert)}
+.modal__act-btn.is-arm::before{scale:1; background:var(--warning)}
 /* 右列那行标题（Q1_RandomName）走主题色：它指的是当前生效的那一个，
    与左列纯黑的主标题区分开，颜色由 --theme 统一控制 */
 .modal__col--end .modal__title{color:var(--theme)}
@@ -62,26 +101,22 @@
    Settings 这个标题移进左区，和选项目录同一列，上面是弹窗名、下面是选项。
    左右之间一条竖直分割线，与左栏（.rail__panel）那条同一条 --border：
    1px 实线、纯白（深色主题走 --border 的另一档），并且要跟左栏一样顶天立地——
-   从上内边距一直落到下内边距。.set 只占面板的内容盒，所以线用伪元素画，
-   上下各外扩一个面板内边距（16px），高度才等于整块面板。 */
+   从上内边距一直落到下内边距。 */
 .set{display:flex; flex:1 1 auto; min-height:0}
 .set[hidden]{display:none}
+/* 分割线用 border-right 画，不用伪元素：.set 只占面板的内容盒，所以这一列
+   上下各外扩一个面板内边距（负外边距把盒子顶到面板内沿，内边距再把内容推回原位），
+   线的高度自然等于整块面板。
+   之前那条 1px 的绝对定位伪元素是个独立的合成盒子，面板开合时整块在做 scale、
+   又套着一层 backdrop-filter 的背板重采样，它偶尔会晚一帧才贴上去，露出来的
+   就是一道闪一下主题色的竖线；border 跟盒子同一次绘制，不存在这条缝。 */
 .set__nav{
-  position:relative;                 /* 分割线的定位基准 */
   flex:0 0 25%;                      /* 左区内宽，700 以下由媒体查询放宽到 34% */
   display:flex; flex-direction:column; align-items:stretch;
-  padding:0 8px 8px 0;
+  margin:calc(-1 * var(--modal-pad, 16px)) 0;
+  padding:var(--modal-pad, 16px) 8px calc(var(--modal-pad, 16px) + 8px) 0;
+  border-right:1px solid var(--border);
   overflow:visible;
-}
-/* 分割线：1px 纯白，上下各探出面板内边距，落在面板的上、下沿 */
-.set__nav::after{
-  content:'';
-  position:absolute;
-  top:calc(-1 * var(--modal-pad, 16px));
-  bottom:calc(-1 * var(--modal-pad, 16px));
-  right:0; width:1px;
-  background:var(--border);
-  pointer-events:none;
 }
 /* 弹窗名：与原来顶部那行 28 号标题同规格，只是搬到了左区 */
 .set__title{

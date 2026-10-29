@@ -22,7 +22,7 @@ bash scripts/run_sim_stack.sh                # 起桥(8090) + 后端(8080)
 
 Windows 不想记 Git Bash 的路径就直接双击 `scripts\run_sim_stack.cmd`，或者在 cmd 里跑它：脚本会自己找 `C:\Program Files\Git\bin\bash.exe` 并转交给 `run_sim_stack.sh`（这条路径保留 Ctrl+C 收尾）；机器上没装 Git Bash 时，它退化成用 `python` 直接起桥、再用 `backend-build\primebot_backend.exe` 起后端，两个窗口各自独立，关掉前端窗口时会顺带把桥的窗口一起收掉。`PORT` / `SIM_PORT` / `SIM_MODE` / `PYTHON` / `PRIMEBOT_BIN` 照样认。
 
-浏览器打开 http://127.0.0.1:8080/ui/PrrimebotX.html ，点顶栏 Advance，点弹窗标题区右上角的「连接仿真」。
+浏览器打开 http://127.0.0.1:8080/ui/PrrimebotX.html ，点顶栏 Advance，点弹窗标题区右上角的「连接仿真」。连上之后这枚按钮变成「已连接」并保持主题色底，点一下先转成 warning 色的「断连」（确认态，3 秒内不再点一下会退回已连接），再点一下才真正断开（走 `DELETE /connection`，会先给桥发一次急停），面板退回「请先连接仿真」。
 
 弹窗里能做的事：左侧画面（拖动旋转、滚轮缩放、右下角有操作提示），右侧顶部是全局速度条（不分分区、四个 tab 共用），下面是「手臂 / 腰 / 腿 / 联动」四个等宽 tab——前三个出关节滑块，联动出姿态、动作、步态三排按钮；面板外侧左边是一列工具（重置姿态、急停、切换驱动模式、左右转、复位视角、存图），右边是参数栏（逐行读数，底部是状态提示）。键盘也能开：WASD 平移、Q/E 转向、空格急停，焦点在滑块上时不抢按键。页面左侧那个九宫格方向键照旧驱动底盘。
 

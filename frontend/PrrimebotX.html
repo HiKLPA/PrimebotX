@@ -21,15 +21,15 @@
 </script>
   <link rel="stylesheet" href="css/base.css">
   <link rel="stylesheet" href="css/topbar.css">
-  <link rel="stylesheet" href="css/rail.css">
+  <link rel="stylesheet" href="css/rail.css?v=2">
   <link rel="stylesheet" href="css/hud.css">
-  <link rel="stylesheet" href="css/cards.css?v=8">
-  <link rel="stylesheet" href="css/modal.css?v=2">
-  <link rel="stylesheet" href="css/chat.css">
+  <link rel="stylesheet" href="css/cards.css?v=14">
+  <link rel="stylesheet" href="css/modal.css?v=9">
+  <link rel="stylesheet" href="css/chat.css?v=16">
   <!-- Q1 管理联调（MOCK 浮层）已停用，改用 Advance 里的 MuJoCo 仿真面板。
        两个文件保留在仓库里，需要回退时把下面两行放回来即可 -->
   <!-- <link rel="stylesheet" href="css/integration.css"> -->
-  <link rel="stylesheet" href="css/sim.css?v=46">
+  <link rel="stylesheet" href="css/sim.css?v=52">
 </head>
 <body>
 
@@ -105,6 +105,16 @@
         </span>
         <span class="item__label">Tendance</span>
       </button>
+
+      <!-- 编辑入口：和上面四个一样是左栏自己的图标项，
+           点开就是本栏左侧那块面板，面板里切到 data-view="edit" 显示表单 -->
+      <button class="item item--edit" type="button" data-panel="Edit"
+              aria-expanded="false" aria-controls="panel-shortcuts">
+        <span class="item__btn">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+        </span>
+        <span class="item__label">Edit</span>
+      </button>
     </div>
   </div>
 
@@ -112,6 +122,56 @@
     <span class="frost frost--top" aria-hidden="true"></span>
     <!-- 底部那条渐隐遮罩按需求删掉：面板底沿直接露出内容，不再做化开 -->
     <div class="panel__body" data-panel-body data-view="pinned">
+      <!-- 一张都没钉时的空态：两段之间留一行空行，整块在面板里居中，见 .panel__empty -->
+      <div class="panel__empty">
+        <span>暂无已标记卡片</span>
+        <span>请点击 动作 / 语言 / 照护类 卡片左下角的标记按钮以添加</span>
+      </div>
+
+      <!-- 编辑页：左栏 Edit 钮把本面板切到 data-view="edit" 时出现。
+           先选类型（对应下面三组卡片），再填名字与简介；提交后追加到该组末尾，
+           编号自动续，绑定与持久化见 js/rails.js 的卡片那段 -->
+      <div class="edit" data-edit-only>
+        <div class="edit__fields">
+          <div class="edit__field">
+            <span class="edit__lab">Type</span>
+            <div class="edit__types" role="group" aria-label="Card type">
+              <button class="edit__type is-active" type="button" data-edit-type="action" aria-pressed="true">
+                <span class="edit__label">Action</span>
+                <svg class="edit__arrow" viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3.3.3.79,0,1.09l-4.35,4.35c-.3.3-.54.89-.54,1.31v3.9c0,.42.35.77.77.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3.79-.79,1.09-1.09l4.35-4.35Z"/></svg>
+              </button>
+              <button class="edit__type" type="button" data-edit-type="dialog" aria-pressed="false">
+                <span class="edit__label">Dialog</span>
+                <svg class="edit__arrow" viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3.3.3.79,0,1.09l-4.35,4.35c-.3.3-.54.89-.54,1.31v3.9c0,.42.35.77.77.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3.79-.79,1.09-1.09l4.35-4.35Z"/></svg>
+              </button>
+              <button class="edit__type" type="button" data-edit-type="tendance" aria-pressed="false">
+                <span class="edit__label">Tendance</span>
+                <svg class="edit__arrow" viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3.3.3.79,0,1.09l-4.35,4.35c-.3.3-.54.89-.54,1.31v3.9c0,.42.35.77.77.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3.79-.79,1.09-1.09l4.35-4.35Z"/></svg>
+              </button>
+            </div>
+          </div>
+          <label class="edit__field">
+            <span class="edit__lab">Name</span>
+            <input class="edit__input" data-edit-name type="text" placeholder="Card name"
+                   maxlength="24" autocomplete="off">
+          </label>
+          <label class="edit__field">
+            <span class="edit__lab">Intro</span>
+            <input class="edit__input" data-edit-brief type="text" placeholder="One-line intro"
+                   maxlength="40" autocomplete="off">
+          </label>
+        </div>
+        <div class="edit__acts">
+          <button class="edit__reset" data-edit-reset type="button">
+            <span class="edit__label">Reset</span>
+            <svg class="edit__arrow" viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3.3.3.79,0,1.09l-4.35,4.35c-.3.3-.54.89-.54,1.31v3.9c0,.42.35.77.77.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3.79-.79,1.09-1.09l4.35-4.35Z"/></svg>
+          </button>
+          <button class="edit__add" data-edit-add type="button">
+            <span class="edit__label">Add</span>
+            <svg class="edit__arrow" viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3.3.3.79,0,1.09l-4.35,4.35c-.3.3-.54.89-.54,1.31v3.9c0,.42.35.77.77.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3.79-.79,1.09-1.09l4.35-4.35Z"/></svg>
+          </button>
+        </div>
+      </div>
       <section class="sc-group sc-group--action">
         <h3 class="sc-group__title">Action</h3>
         <div class="sc-grid">
@@ -329,17 +389,17 @@
 
 <script src="js/hud.js"></script>
 
-<script src="js/rails.js"></script>
+<script src="js/rails.js?v=6"></script>
 
 <!-- 按压反馈：GSAP 3.12.5（本地库，与 STRCAT 同版本） -->
 <script src="lib/gsap.min.js"></script>
 <!-- 滚动驱动：ScrollTrigger 与 GSAP 同版本，组标题的交接淡出挂在这上面 -->
 <script src="lib/ScrollTrigger.min.js"></script>
-<script src="js/press.js?v=2"></script>
+<script src="js/press.js?v=5"></script>
 
 <script src="js/panels.js"></script>
 
-<script src="js/magnet.js"></script>
+<script src="js/magnet.js?v=3"></script>
 
 <script src="js/sticky.js"></script>
 
@@ -433,14 +493,17 @@
 
     <!-- 工具按钮：与右侧参数栏同尺寸的底板，挂在面板左边框外 8px。
          一行一个，未 hover 时无底色无描边 -->
+    <!-- 工具按钮：文字包在 .adv__label 里、另带一枚 .adv__arrow，
+         为的是复用顶栏胶囊那套 hover 文字动画（字右滑、箭头左侧浮出），
+         所以 sim.js 改写文案时写的是 .adv__label，不能直接写按钮的 textContent -->
     <div class="adv__rail" data-advance-only hidden>
-      <button class="adv__btn" type="button" data-sim-reset>重置姿态</button>
-      <button class="adv__btn" type="button" data-sim-stop>急停</button>
-      <button class="adv__btn" type="button" data-sim-mode>切到动力学</button>
-      <button class="adv__btn" type="button" data-sim-turn="-0.8">左转</button>
-      <button class="adv__btn" type="button" data-sim-turn="0.8">右转</button>
-      <button class="adv__btn" type="button" data-sim-cam-reset>复位视角</button>
-      <button class="adv__btn" type="button" data-sim-shot>存图</button>
+      <button class="adv__btn" type="button" data-sim-mode><span class="adv__label">切到动力学</span><svg class="adv__arrow" viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3.3.3.79,0,1.09l-4.35,4.35c-.3.3-.54.89-.54,1.31v3.9c0,.42.35.77.77.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3.79-.79,1.09-1.09l4.35-4.35Z"/></svg></button>
+      <button class="adv__btn" type="button" data-sim-reset><span class="adv__label">重置姿态</span><svg class="adv__arrow" viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3.3.3.79,0,1.09l-4.35,4.35c-.3.3-.54.89-.54,1.31v3.9c0,.42.35.77.77.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3.79-.79,1.09-1.09l4.35-4.35Z"/></svg></button>
+      <button class="adv__btn" type="button" data-sim-cam-reset><span class="adv__label">复位视角</span><svg class="adv__arrow" viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3.3.3.79,0,1.09l-4.35,4.35c-.3.3-.54.89-.54,1.31v3.9c0,.42.35.77.77.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3.79-.79,1.09-1.09l4.35-4.35Z"/></svg></button>
+      <button class="adv__btn" type="button" data-sim-turn="-0.8"><span class="adv__label">左转</span><svg class="adv__arrow" viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3.3.3.79,0,1.09l-4.35,4.35c-.3.3-.54.89-.54,1.31v3.9c0,.42.35.77.77.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3.79-.79,1.09-1.09l4.35-4.35Z"/></svg></button>
+      <button class="adv__btn" type="button" data-sim-turn="0.8"><span class="adv__label">右转</span><svg class="adv__arrow" viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3.3.3.79,0,1.09l-4.35,4.35c-.3.3-.54.89-.54,1.31v3.9c0,.42.35.77.77.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3.79-.79,1.09-1.09l4.35-4.35Z"/></svg></button>
+      <button class="adv__btn" type="button" data-sim-stop><span class="adv__label">急停</span><svg class="adv__arrow" viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3.3.3.79,0,1.09l-4.35,4.35c-.3.3-.54.89-.54,1.31v3.9c0,.42.35.77.77.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3.79-.79,1.09-1.09l4.35-4.35Z"/></svg></button>
+      <button class="adv__btn" type="button" data-sim-shot><span class="adv__label">存图</span><svg class="adv__arrow" viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3.3.3.79,0,1.09l-4.35,4.35c-.3.3-.54.89-.54,1.31v3.9c0,.42.35.77.77.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3.79-.79,1.09-1.09l4.35-4.35Z"/></svg></button>
     </div>
 
     <!-- Settings：左区标题与选项目录，右区放选中项对应的页面。
@@ -501,7 +564,7 @@
   </div>
 </div>
 
-<script src="js/modal.js?v=6"></script>
+<script src="js/modal.js?v=9"></script>
 
 <script src="js/models.js?v=2"></script>
 
@@ -513,7 +576,7 @@
      sim.js 与 models.js。需要回退时取消下一行注释，并恢复上面的 integration.css -->
 <!-- <script src="js/integration.js"></script> -->
 <!-- MuJoCo 仿真：操作面板在 Advance 弹窗内（.adv），这里只绑事件与轮询 -->
-<script src="js/sim.js?v=13"></script>
+<script src="js/sim.js?v=17"></script>
 
 </body>
 </html>

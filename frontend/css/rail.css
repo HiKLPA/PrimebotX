@@ -424,9 +424,14 @@ body:has(.rail--right.is-open) .rail__toggle[data-rail="right"]{
   flex:0 0 var(--rail-w);
   width:var(--rail-w);
   display:flex; flex-direction:column; justify-content:space-between;
-  padding:33px 16px 32px;
+  /* 下方内边距按「图标本体对齐」算，不是按整块 icon+标签：
+     编辑钮吊在列底时，它下面还挂着 4px 间隔 + 14px 行高的标签（共 18），
+     取 33 − 18 = 15，图标底边到栏底才是 33，与 Pinned 图标顶边到栏顶的 33 相等 */
+  padding:33px 16px 15px;
 }
-.rail__items{display:flex; flex-direction:column; gap:16px}
+.rail__items{display:flex; flex-direction:column; gap:16px; flex:1 1 auto}
+/* 编辑钮单独吊到列底：列已经撑满栏体，margin-top:auto 把剩下的高度全吃掉 */
+.item--edit{margin-top:auto}
 
 .item{
   appearance:none; -webkit-appearance:none;

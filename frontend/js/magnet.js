@@ -27,14 +27,16 @@
   /* 每块面板的磁吸强度：
      persp —— 透视距离 px，越小立体感越强
      tiltX —— 上下倾斜上限 deg（光标在上/下边缘时的最大翻角）
-     tiltY —— 左右倾斜上限 deg，长条栏体给小值，两端才不摆
+     tiltY —— 左右倾斜上限 deg，长条栏体比胶囊略收一档，两端才不摆
      lift  —— 沿 z 轴朝观众浮起的距离 px
+     顶栏两块与左右栏体统一用 900 的透视，翻角按各自面积定：
+     顶栏扁而宽，给 6；栏体高而窄，给 4
      栏体那条只在收起（图标列）时生效：展开后整块翻动会把卡片里的字整体
      重新采样、抖得厉害，立体感改由卡片自己给，见下面 .sc 的判定 */
   var CONF = [
-    { sel: '.group',         persp: 1200, tiltX: 4, tiltY: 6, lift: 6 },
-    { sel: '.user__surface', persp: 1200, tiltX: 4, tiltY: 6, lift: 6 },
-    { sel: '.rail__surface', persp: 900,  tiltX: 2, tiltY: 4, lift: 4 },
+    { sel: '.group',         persp: 900,  tiltX: 6, tiltY: 6, lift: 6 },
+    { sel: '.user__surface', persp: 900,  tiltX: 6, tiltY: 6, lift: 6 },
+    { sel: '.rail__surface', persp: 900,  tiltX: 4, tiltY: 4, lift: 4 },
     /* 卡片小、每条边都短，透视得拉近才看得出一块板子朝光标翻；
        面积小也压得住，倾斜和浮起都可以比大面板放开一档。
        底部面板左右两列的动作卡沿用同一组参数，只是更小更扁，
@@ -184,16 +186,32 @@
     raf = requestAnimationFrame(frame);
   }
 
-  CONF.forEach(function (cfg) {
-    document.querySelectorAll(cfg.sel).forEach(function (el) {
-      items.push({
-        el: el, cfg: cfg,
-        rx: 0, ry: 0, z: 0,          // 当前值
-        RX: 0, RY: 0, Z: 0,          // 目标值
-        vrx: 0, vry: 0, vz: 0        // 弹簧速度
+  /* 收集带磁吸的块。编辑页新增的卡片是后来才插进 DOM 的，
+     所以这件事得能重跑：已经收过的元素打上 __magnet 标记，
+     重扫只补新的，不碰正在动的那些（它们的 rx/ry/z 停在半路，重建会跳） */
+  function collect() {
+    CONF.forEach(function (cfg) {
+      document.querySelectorAll(cfg.sel).forEach(function (el) {
+        if (el.__magnet) return;
+        el.__magnet = true;
+        items.push({
+          el: el, cfg: cfg,
+          rx: 0, ry: 0, z: 0,          // 当前值
+          RX: 0, RY: 0, Z: 0,          // 目标值
+          vrx: 0, vry: 0, vz: 0        // 弹簧速度
+        });
       });
     });
-  });
+  }
+
+  collect();
+
+  /* 新增卡片后由 rails.js 调一次：补收新块，并按当前光标位置重新瞄目标 */
+  window.magnetRescan = function () {
+    collect();
+    needAim = true;
+    start();
+  };
 
   document.addEventListener('pointermove', function (e) {
     if (e.pointerType && e.pointerType !== 'mouse') return;   // 触屏不做

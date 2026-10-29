@@ -94,7 +94,7 @@
 .msg--user .msg__time{right:0}
 .msg:hover .msg__time{opacity:1}
 
-/* 输入区：只剩输入框一枚，自己就是整条盒子 —— 32 高、圆角 8，
+/* 输入区：只剩输入框一枚，自己就是整条盒子 —— 40 高、圆角 8，
    底色（--panel）铺满、柔光投影和选中态描边都贴着同一个圆角，
    不再有内衬留白把底色和投影圈读成两层。
    历史钮已挪到聊天页左上角、发送钮已删除，发送统一走输入框回车。
@@ -136,7 +136,7 @@
 }
 .chat__input{
   flex:1 1 auto; min-width:0;
-  height:32px; padding:0 8px;
+  height:40px; padding:0 8px;
   border:0; border-radius:8px; outline:none; appearance:none;
   /* 不透明的 panel fill 实色：--panel 自身半透明（.75），
      这里把它的 rgb 按 75% 压到 --bg 上 —— 即面板实际渲染出来的实色。
@@ -152,6 +152,184 @@
 .chat__input::placeholder{color:var(--text-muted)}
 /* 切到 Log 页时整块聊天收掉 */
 [data-panel-body][data-view="log"] [data-chat-only]{display:none}
+/* 编辑页在左栏那块面板里，没有滚动内容要托，顶上那条雾带也用不上 */
+#panel-shortcuts:has([data-panel-body][data-view="edit"]) > .frost--top{display:none}
+
+/* ── 左栏编辑页 ─────────────────────────────────────────────
+   左栏 Edit 钮把本栏面板切到 data-view="edit" 时出现：先选类型，再填名字与简介。
+   左右内边距已由 .panel__body 给到 --panel-pad，这里只排纵向节奏。
+   窗口压矮时字段自己滚，提交按钮不至于被挤出面板 */
+.edit{
+  display:none;
+  flex:1 1 auto; min-height:0;
+  flex-direction:column; gap:16px;
+  overflow:hidden;
+  /* 输入框带一圈 16px 的常驻柔光，而字段区自己是滚动容器 —— 滚动容器裁在
+     padding box，两边又都贴着面板内边距时，柔光刚散开就被切成直线硬边。
+     这里把表单左右各借一格 --panel-pad（等于面板内边距），再用等量 padding 收回，
+     内容位置分毫不动，裁剪边界却挪到了面板边，柔光有地方自然衰减到零 */
+  margin:0 calc(-1 * var(--panel-pad));
+  padding:0 var(--panel-pad);
+}
+/* 编辑视图下让 .panel__body 变成纵向弹性盒：表单才能撑满滚动区，
+   底部动作行才有个底边可以贴。
+   下内边距同时从卡片的 32 收到 --panel-pad：那 32 是给卡片首尾留白的，
+   表单页没有滚到底的内容要让开，动作行贴着它收口，左右与下沿就都是 16 了 */
+[data-panel-body][data-view="edit"]{
+  display:flex; flex-direction:column;
+  padding-bottom:var(--panel-pad);
+}
+[data-panel-body][data-view="edit"] .edit{display:flex}
+/* 字段区自己滚，撑满表单剩下的高度；动作行因此被挤到右下角，窗口压矮也不跟着滚走。
+   同样借一层内边距给柔光：横向与 .edit 一起把边界推到面板边，纵向在底部留 16
+   （柔光半径），滚到底时最后一个输入框的投影才不会被自身的裁剪边切平。
+   多出的这 8 由动作行让回来 —— 它的上内边距从 8 收到 0，间距仍是 16 + 16 */
+.edit__fields{
+  flex:1 1 auto; min-height:0;
+  display:flex; flex-direction:column; gap:16px;
+  overflow-x:clip; overflow-y:auto; overscroll-behavior:contain;
+  margin:0 calc(-1 * var(--panel-pad));
+  padding:0 var(--panel-pad) 16px;
+}
+.edit__field{display:flex; flex-direction:column; gap:8px}
+.edit__lab{
+  font-size:var(--fs-14); line-height:1; letter-spacing:.2px;
+  color:var(--text-secondary);
+}
+
+/* 三枚类型平分一行。静止态与顶栏胶囊一致：本体透明、没有描边，只有 text-reduced 的字；
+   底色挂在 ::before 上，hover 与选中都从圆心涨满，字同一拍反白；按住时 --press 由
+   press.js 逐帧写，底片等比内收再 elastic 弹回。填充色取该组的系列色（--itc），
+   与左栏图标钮、卡片 hover 同一个色源，没设的落回主题色 */
+.edit__types{display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:8px}
+.edit__type{
+  appearance:none; -webkit-appearance:none;
+  height:40px; padding:0;
+  border:0; border-radius:999px;
+  background:transparent; color:var(--text-reduced);
+  /* 字号跟着顶栏胶囊走：--pill-fs 是 clamp 出来的流体值，18–24 */
+  font-family:inherit; font-weight:var(--fw); font-size:var(--pill-fs); letter-spacing:0;
+  cursor:pointer;
+}
+.edit__type[data-edit-type="action"]{--itc:var(--series-green-light)}
+.edit__type[data-edit-type="dialog"]{--itc:var(--series-blue-light)}
+.edit__type[data-edit-type="tendance"]{--itc:var(--series-pink-light)}
+
+/* 类型胶囊与提交钮共用一套底片：isolation + z-index:-1 让底片落在本体背景之上、
+   文字之下（文字是按钮的行内内容，绝对定位的伪元素默认会盖住它）。
+   颜色常驻、静止时 scale 0 不可见，开合只走 scale —— 写成 transparent 的话退场第一帧
+   颜色就先跳没了，后面那下收缩发生在看不见的色块上，等于没有原路返回 */
+.edit__type, .edit__reset, .edit__add{
+  position:relative; isolation:isolate;
+  transition:color .1s cubic-bezier(.7,0,.84,.16);
+}
+.edit__type::before, .edit__reset::before, .edit__add::before{
+  content:''; position:absolute; inset:0; z-index:-1;
+  border-radius:inherit; background:var(--itc, var(--theme));
+  pointer-events:none;                 /* 放大后不改命中区域，免得边缘反复 over/out 闪 */
+  scale:0;
+  transform-origin:50% 50%;
+  transform:scale(calc(1 - var(--press, 0) * var(--press-k)));
+  /* 两条通道各管各的：transform 服务按下压入，scale 服务底色的开合 */
+  transition:transform .2s linear, scale .1s cubic-bezier(.7,0,.84,.16);
+}
+.edit__type:hover, .edit__type.is-active,
+.edit__reset:hover, .edit__add:hover{color:var(--text-invert); transition:color .1s cubic-bezier(.16,.84,.3,1)}
+.edit__type:hover::before, .edit__type.is-active::before,
+.edit__reset:hover::before, .edit__add:hover::before{
+  scale:1;
+  transition:transform .2s linear, scale .1s cubic-bezier(.16,.84,.3,1);
+}
+/* 按下期间几何由 GSAP 逐帧写 --press，这里只关 transform 那条过渡；
+   scale 留着 —— 边按边在涨的底色不会在中途冻住 */
+.edit__type.is-press::before, .edit__reset.is-press::before, .edit__add.is-press::before{
+  transition:scale .1s cubic-bezier(.7,0,.84,.16);
+}
+
+/* 文字动画与顶栏胶囊同一套：静止时文字居中，悬停时右滑贴到内边距（右缘留 12），
+   同时左侧浮出一枚箭头，位移与淡入都用 .34s 的 --dur / --ease，退场原路返回。
+   位移只走 transform，但「右缘贴住内边距」要按按钮自身的宽度算，
+   而这三枚是等分的 1fr、宽度随时会变，所以按钮声明成 inline-size 容器，
+   50cqw 就是自身宽度的一半（顶栏那里宽度由 --pill-w 写死，能用 calc 直接算）。
+   箭头 1em 见方、贴左 12，与顶栏同尺寸同起点 */
+.edit__type, .edit__reset, .edit__add{container-type:inline-size}
+.edit__label{
+  position:absolute; top:50%; left:50%;
+  transform:translate(-50%,-50%);
+  white-space:nowrap; pointer-events:none;
+  transition:transform var(--dur) var(--ease);
+}
+.edit__arrow{
+  position:absolute; top:50%; left:12px;
+  width:1em; height:1em; display:block;
+  fill:currentColor; pointer-events:none;
+  transform:translateY(-50%) translateX(-4px);
+  opacity:0;
+  transition:opacity var(--dur) var(--ease), transform var(--dur) var(--ease);
+}
+.edit__type:hover .edit__label, .edit__reset:hover .edit__label, .edit__add:hover .edit__label{
+  transform:translate(calc(50cqw - 12px - 100%), -50%);
+}
+.edit__type:hover .edit__arrow, .edit__reset:hover .edit__arrow, .edit__add:hover .edit__arrow{
+  opacity:1; transform:translateY(-50%) translateX(0);
+}
+/* 已经选中的那枚再悬停不播文字动画：和顶栏「点开过的胶囊」一样，
+   再点一次只是重复选中，字回到静止位置、箭头收起 */
+.edit__type.is-active:hover .edit__label{transform:translate(-50%,-50%)}
+.edit__type.is-active:hover .edit__arrow{opacity:0; transform:translateY(-50%) translateX(-4px)}
+
+.edit__input{
+  appearance:none; -webkit-appearance:none;
+  width:100%; height:40px; padding:0 12px;
+  border:0; border-radius:12px;
+  background:var(--card); color:var(--text-primary);
+  caret-color:var(--theme);
+  font-family:inherit; font-weight:var(--fw); font-size:var(--fs-14); letter-spacing:.2px;
+  outline:none;
+  /* 与右侧聊天输入条同一套选中态：平时不画框，只有一层常驻柔光；
+     聚焦时主题色 1px 内描边淡入，0.1s 直入直出会对不上，所以用 opacity 同款的
+     短过渡。描边走 inset box-shadow 而不是 border —— 加边框会挤动 40 高的内容区，
+     而且 border-color 从 --border 跳到 --theme 是硬切，没有渐显 */
+  box-shadow:
+    0 0 var(--sh) rgba(var(--shadow), calc(var(--sh-a) * var(--sh-k))),
+    inset 0 0 0 1px rgb(from var(--theme) r g b / 0);
+  transition:box-shadow .1s ease;
+}
+.edit__input::placeholder{color:var(--text-muted)}
+.edit__input:focus{
+  box-shadow:
+    0 0 var(--sh) rgba(var(--shadow), calc(var(--sh-a) * var(--sh-k))),
+    inset 0 0 0 1px var(--theme);
+}
+
+/* 底部动作行：两枚钮平分整行、间隔 8，贴着表单右下角。
+   用 grid 而不是 flex —— 两列 1fr 保证「平分」不随文字长短变化 */
+.edit__acts{
+  display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:8px;
+  flex:0 0 auto;
+  /* 无上内边距：字段区底部那 16 已经含了呼吸，按钮与最后一个输入框仍是 32 */
+  padding-top:0;
+}
+/* 两枚动作钮同一套交互，宽度由上面的两列各占一半。字号就是 --pill-fs，跟着流体缩放；
+   文字是绝对定位的（要做位移动画），宽度交给栅格轨道就行，不必再写死 */
+.edit__reset, .edit__add{
+  appearance:none; -webkit-appearance:none;
+  min-width:0;
+  height:40px; padding:0;
+  border:0; border-radius:999px;
+  background:transparent; color:var(--text-reduced);
+  font-family:inherit; font-weight:var(--fw); font-size:var(--pill-fs); letter-spacing:0;
+  cursor:pointer;
+}
+/* 分配角色：左边 Reset 参考截图里的 CANCEL，静止是纯文字、透明底；
+   右边 Add 参考 CONFIRM，底色常驻 —— 底片一上来就是满的，静止即实心胶囊。
+   两枚的压入回弹、文字右滑、箭头淡入仍然完全一致；
+   实心那枚 hover 不换底色，只靠文字右滑与箭头淡入表态，避免色块闪一下 */
+.edit__add{color:var(--text-invert)}
+.edit__add::before{
+  scale:1;
+  transition:transform .2s linear, scale .1s cubic-bezier(.7,0,.84,.16);
+}
 
 @media (max-width:640px){
   /* 窄屏侧栏贴底、--rail-h 变成 auto，calc 会失效，这里给弹窗一条独立的高度 */
@@ -178,7 +356,10 @@
   }
   .rail--right{left:auto; right:12px}
   .rail__bar{width:auto; flex:0 0 auto; padding:8px; flex-direction:row; align-items:center; gap:8px}
-  .rail__items{flex-direction:row; gap:8px}
+  /* 这一档是横排：撤掉撑满与「吊到底」的自动外边距，编辑钮照常跟在后面；
+     标签本来就不显示，下内边距那套算法也用不上 */
+  .rail__items{flex:0 1 auto; flex-direction:row; gap:8px}
+  .item--edit{margin-top:0}
   .item__label{display:none}
   .rail.is-open{width:calc(100vw - 24px)}
   .rail__panel{display:none}

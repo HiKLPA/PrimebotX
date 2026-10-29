@@ -287,14 +287,27 @@
    不留空壳。其余视图（Action / Dialog / Tendance）照旧全列 */
 .panel__body[data-view="pinned"] .sc:not(.is-pinned){display:none}
 .panel__body[data-view="pinned"] .sc-group.is-vacant{display:none}
-/* 一张都没钉时给一句提示，免得面板空白得像坏了 */
-.panel__body[data-view="pinned"][data-pin-empty="1"]::after{
-  content:'Nothing pinned yet';
-  display:block;
-  margin-top:calc(var(--title-top) - var(--pad-y));   /* 与组标题同一位置 */
-  font-size:var(--fs-14); line-height:1; letter-spacing:.2px;
+/* 编辑页：三组卡片与空态说明一起收掉，面板里只剩那张表单。
+   上面的 action / dialog / tendance 规则各自只藏「别的组」，
+   到 edit 这一档没有对应组可留，得整组收起 */
+.panel__body[data-view="edit"] .sc-group{display:none}
+/* 一张都没钉时面板整块空着，什么都没有的话看不出是「没有标记」还是「加载挂了」，
+   这里补一段说明。提示绝对定位铺满滚动区：面板的上下留白是 padding，左右各 --panel-pad，
+   inset:0 落在 padding box 上，两边对称，居中就是面板中线，不用手算偏移。
+   两行之间只留 4，提示读起来是一段而不是两句话 */
+.panel__body[data-view="pinned"]{position:relative}
+.panel__empty{
+  display:none;
+  position:absolute; inset:0;
+  flex-direction:column; align-items:center; justify-content:center;
+  gap:4px;
+  padding:0 var(--panel-pad);
+  text-align:center;
+  font-size:var(--fs-12); line-height:1.5;
   color:var(--text-muted);
+  pointer-events:none;     /* 不吃滚动、不吃拖拽 */
 }
+.panel__body[data-view="pinned"][data-pin-empty="1"] .panel__empty{display:flex}
 
 .sc-group--action{--sc:var(--series-green-light)}
 .sc-group--dialog{--sc:var(--series-blue-light)}
@@ -345,15 +358,18 @@
   pointer-events:auto;                 /* 面板自己吃点击，用来判断「点里面」 */
 }
 /* 面板的填充层：负 z-index 里 -2 先画、-1 后画，所以它盖在外挂底板之上、
-   又在正文之下。参数栏与工具列往里收时因此被这层挡掉，75% 底叠背板模糊，
-   看起来是沉进磨砂玻璃后面，而不是压在画面与滑块上面。
+   又在正文之下。参数栏与工具列往里收时因此被这层挡掉。
+   底色取 --panel 的色值、alpha 显式写 / 1：相对颜色省略 alpha 时取的是原色
+   的 alpha（--panel 是 .75 / .8），写漏了这层就还是半透明，收回的外挂面板
+   会隔着它显出一层影子，看着像浮在画面上。补上 / 1 才是真不透明。
+   浅色 250 / 深色 73 各自保持，主题切换照常跟随。
+   底既然不透光，backdrop-filter 采不到任何内容、只会多一层合成开销，一并去掉；
+   要改回半透明底时把 background 换回 var(--panel)、这两行加回来即可。
    柔光仍留在 .modal__panel 上：--sh / --sh-a 注册成 inherits:false，
    挪到伪元素就取不到展开时那组补间值，阴影不会跟着呼吸 */
 .modal__panel::before{
   content:''; position:absolute; inset:0; z-index:-1;
   border-radius:inherit; pointer-events:none;
-  background:var(--panel);
-  -webkit-backdrop-filter:blur(var(--blur));
-  backdrop-filter:blur(var(--blur));
+  background:rgb(from var(--panel) r g b / 1);
 }
 

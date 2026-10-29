@@ -12,8 +12,13 @@
   z-index:-2;                 /* 沉到面板填充层（.modal__panel::before 的 -1）下面 */
   display:flex; flex-direction:column; gap:8px;
   padding:8px; overflow-y:auto; scrollbar-width:thin;
-  border-radius:var(--rail-r); background:var(--panel);
-  -webkit-backdrop-filter:blur(var(--blur)); backdrop-filter:blur(var(--blur));
+  /* 底色不透明、也不做 backdrop 模糊：带 backdrop-filter 的负 z-index 元素
+     在 Chrome 里会被提成背板根（要先采样背后的内容），绘制顺序被抬到填充层之上，
+     收放动画一进面板范围就压在画面与调节区上面。面板本身已经是实色，
+     两翼跟着用同一个实色，材质照样一致。
+     alpha 必须显式写 / 1：相对颜色省略 alpha 时取的是原色的 alpha（--panel 是 .75），
+     写漏了这块自己就是半透明的，跟面板拼在一起会显出一条深浅不同的边 */
+  border-radius:var(--rail-r); background:rgb(from var(--panel) r g b / 1);
   box-shadow:0 0 var(--sh) rgba(var(--shadow), calc(var(--sh-a) * var(--sh-k)));
 }
 /* display:flex 会盖掉 [hidden] 自带的 display:none，必须显式补一条 */
@@ -21,8 +26,8 @@
 .adv__rail::-webkit-scrollbar{width:6px}
 .adv__rail::-webkit-scrollbar-thumb{border-radius:999px; background:rgb(136 136 136 / .32)}
 .adv__btn{
-  width:100%; height:32px; padding:0 10px;
-  border:1px solid transparent; border-radius:999px;
+  width:100%; height:32px; padding:0;
+  border:0; border-radius:999px;
   background:transparent; color:var(--text-reduced);
   font-family:inherit; font-weight:var(--fw); font-size:var(--fs-14);
   letter-spacing:.2px; line-height:1; cursor:pointer; white-space:nowrap;
@@ -232,11 +237,46 @@
   transition:scale .1s cubic-bezier(.7,0,.84,.16);
 }
 
+/* 左侧工具按钮的文字动画也照顶栏胶囊来：静止时字居中，悬停右滑到右缘留 12，
+   左侧同时浮出箭头，时长与曲线都用全局的 --dur / --ease，移开原路返回。
+   这里的文字是按钮的行内内容（不绝对定位），居中由按钮自己摆好，只补一个
+   transform，退场不会跳。右缘贴 12 要按按钮自身宽度算，而宽屏是 100% 定宽、
+   窄屏改回 width:auto 随文字撑，所以宽屏把按钮声明成 inline-size 容器，
+   50cqw 取内容盒半宽；按钮的内边距与描边都归零，内容盒才与边框盒等宽，
+   算出来的 12 才是离按钮外沿 12，和箭头那侧的 12 对称 */
+.adv__btn{container-type:inline-size}
+.adv__label{
+  display:inline-block;
+  transition:transform var(--dur) var(--ease);
+}
+.adv__arrow{
+  position:absolute; top:50%; left:12px;
+  width:1em; height:1em; display:block;
+  fill:currentColor; pointer-events:none;
+  transform:translateY(-50%) translateX(-4px);
+  opacity:0;
+  transition:opacity var(--dur) var(--ease), transform var(--dur) var(--ease);
+}
+.adv__btn:hover:not(:disabled) .adv__label{
+  transform:translateX(calc(50cqw - 12px - 50%));
+}
+.adv__btn:hover:not(:disabled) .adv__arrow{
+  opacity:1; transform:translateY(-50%) translateX(0);
+}
 
-/* 底部提示与上面那些读数用同一条左右缩进 */
+
+/* 底部提示与上面那些读数用同一条左右缩进。
+   两端对齐：中文按字撑开，右端和上面的读数一样贴齐内边距，不留参差的尾巴；
+   行距不写，跟着全局的默认值走（改了行距这里会跟着变，不用另设）。
+   长串（sim/mujoco_bridge.py 这类没有空格的）用 overflow-wrap:anywhere 兜底，
+   斜杠、下划线处优先断，实在断不开才逐字拆，保证一行不会顶出文字区。
+   盒宽锁死 100% + border-box：内边距算在里面，撑不到底板外面去 */
 .adv__msg{
-  flex:0 0 auto; margin:0; padding:8px 8px 0;
+  flex:0 0 auto; margin:0; padding:8px;
+  box-sizing:border-box; width:100%; max-width:100%;
   font-size:12px; color:var(--text-muted);
+  text-align:justify;
+  overflow-wrap:anywhere; word-break:break-word;
 }
 /* 参数显示：贴到弹窗面板外侧右边（面板 position:relative，这里 left:100% 顶出去），
    top/bottom 同时贴边，所以高度与面板一致；每行一项，左标签右数值，放不下就在内部滚 */
@@ -249,18 +289,21 @@
   z-index:-2;                 /* 同上：收进面板范围时被填充层挡住 */
   display:flex; flex-direction:column; gap:8px;
   padding:8px; overflow:hidden;
-  border-radius:var(--rail-r); background:var(--panel);
-  -webkit-backdrop-filter:blur(var(--blur)); backdrop-filter:blur(var(--blur));
+  /* 与左侧工具列同一套：实色底、不带 backdrop 模糊，理由见 .adv__rail 那一段 */
+  border-radius:var(--rail-r); background:rgb(from var(--panel) r g b / 1);
   box-shadow:0 0 var(--sh) rgba(var(--shadow), calc(var(--sh-a) * var(--sh-k)));
   color:var(--text-secondary);
   font-family:var(--stat-font); font-size:12px;
 }
 /* display:flex 会盖掉 [hidden] 自带的 display:none，必须显式补一条 */
 .modal__stats[hidden]{display:none}
-/* 行在这层里滚，提示固定在列底 */
+/* 行在这层里滚，提示固定在列底。
+   文字上下各再让 8：上沿靠 padding-top，下沿靠 .adv__msg 的 padding-bottom，
+   两头对称，读起来不顶着底板的圆角。左右不动 —— 那是每行自己的 0 8px */
 .adv__stats-list{
   flex:1 1 auto; min-height:0; overflow-y:auto; scrollbar-width:thin;
   display:flex; flex-direction:column; gap:3px;
+  padding:8px 0 0;
 }
 .adv__stats-list::-webkit-scrollbar{width:6px}
 .adv__stats-list::-webkit-scrollbar-thumb{border-radius:999px; background:rgb(136 136 136 / .32)}
@@ -305,7 +348,14 @@
     -webkit-backdrop-filter:none; backdrop-filter:none;
   }
   .modal__panel.is-advance .adv{order:2}
-  .adv__rail .adv__btn{width:auto; padding:0 14px}
+  /* 这一档按钮退回按钮栏、宽度跟着文字走：撤掉 inline-size 容器
+     （约束住行内尺寸的元素宽度不再由内容撑，width:auto 会塌成 0），
+     悬停位移改成固定值 —— 按钮宽度就是内容宽，算不出「离右缘 12」那一步。
+     左右内边距给到 16、位移 10：字右滑后右缘离边 6，箭头贴 6 起，
+     与字的间距也是 6，两侧对称，不会顶到按钮边缘 */
+  .adv__rail .adv__btn{width:auto; padding:0 16px; container-type:normal}
+  .adv__rail .adv__btn:hover:not(:disabled) .adv__label{transform:translateX(10px)}
+  .adv__rail .adv__arrow{left:6px}
   .modal__panel.is-advance{
     margin-left:0;
     --modal-w:min(

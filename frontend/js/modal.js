@@ -18,14 +18,18 @@
      换弹窗时它们不跟着内容瞬间消失：形变原点取中间面板的中心，缩到 DOCK_SCALE，
      同时淡掉 —— 看起来是从中间弹出来、又被中间吸回去。栏体那条是「缩到 .95 再
      平移到屏外」，这两块没有屏外可去，于是把位移交给缩量：原点远在元素外面，
-     一缩就顺势滑向面板中心，不用再另加位移。节拍与栏体一致：0.45 秒。
+     一缩就顺势滑向面板中心，不用再另加位移。节拍比栏体的 0.45 略快：0.4 秒。
      层级上它们沉在面板填充层下面（sim.css 里 z-index:-2，对 .modal__panel::before
-     的 -1），所以滑进面板范围的那一段是被面板挡住的，不会压在画面与滑块上。 */
+     的 -1），所以滑进面板范围的那一段是被面板挡住的，不会压在画面与滑块上。
+     这条要成立有两个前提，都落在 sim.css / cards.css 里：这两块自己不带
+     backdrop-filter（带了会被提成背板根，画到填充层之上），以及填充层是真不透明
+     —— rgb(from var(--panel) r g b) 省略 alpha 时会取原色的 .75，那样收回的底板
+     会隔着面板显出一层影子，看着就像浮在画面上，必须显式写 / 1。 */
   var statsEl = panel.querySelector('.modal__stats');
   var railEl  = panel.querySelector('.adv__rail');
   var docks   = [statsEl, railEl].filter(Boolean);
-  var DOCK_DUR   = 0.45;
-  var DOCK_SCALE = 0.55;
+  var DOCK_DUR   = 0.4;
+  var DOCK_SCALE = 0.5;
   var dockOn     = false;   /* 上一次之后这两块是开是关，用来判断要不要播 */
 
   /* 形变原点 = 中间面板的中心，折算成元素自己的像素坐标。
@@ -79,7 +83,9 @@
           x: 0, scale: 1, duration: DOCK_DUR, ease: 'back.out(1.2)', overwrite: 'auto',
           onComplete: function () { gsap.set(el, { clearProps: 'all' }); }
         });
-        gsap.to(el, { opacity: 1, duration: 0.24, ease: 'power1.out', overwrite: 'auto' });
+        /* 淡入按时长的 0.55 折算，不写死秒数：改 DOCK_DUR 时两条通道一起缩，
+           不会出现「缩到位了才刚刚显形」 */
+        gsap.to(el, { opacity: 1, duration: DOCK_DUR * 0.55, ease: 'power1.out', overwrite: 'auto' });
         return;
       }
       /* 当前位移（上面刚 kill 掉补间，这里读到的是最后一帧的值） */
@@ -108,6 +114,20 @@
         opacity: 0, duration: DOCK_DUR * 0.5, delay: DOCK_DUR * 0.35,
         ease: 'power1.in', overwrite: 'auto'
       });
+    });
+  }
+
+  /* 弹窗收完之后把两块底板归位成「从没展开过」。
+     不归位的话，上一次就是停在 Advance 上关的窗，dockOn 还是 true、两块底板也还挂着
+     终态（hidden=false、没有内联形变），下次点 Advance 时 paintDocks 直接早退，
+     它们就跟面板一起凭空出现，一次弹出都看不到。
+     归位要等收回动画跑完再做：收回途中这两块还跟着面板一起淡出、缩小 */
+  function resetDocks() {
+    dockOn = false;
+    docks.forEach(function (el) {
+      gsap.killTweensOf(el);
+      el.hidden = true;
+      gsap.set(el, { clearProps: 'all' });
     });
   }
 
@@ -372,11 +392,15 @@
       gsap.set(panel, { opacity: 0 });
       gsap.set(panel, { '--sh': SH_BASE, '--sh-a': SH_A_BASE });
       root.style.visibility = 'hidden';
+      resetDocks();
       return;
     }
     tl = gsap.timeline({
       onComplete: function () {
-        if (!shown) root.style.visibility = 'hidden';   /* 期间又被点开就保持可见 */
+        /* 期间又被点开就保持可见，也别归位：下次开窗还接着这次的姿态走 */
+        if (shown) return;
+        root.style.visibility = 'hidden';
+        resetDocks();
       }
     });
     /* 收回的内容通道走 CLOSE_DUR，两轴各取收回专用值，比打开起手更扁 */
