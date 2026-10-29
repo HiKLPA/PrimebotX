@@ -239,7 +239,7 @@ class Sim:
     def reset(self) -> None:
         mujoco.mj_resetData(self.model, self.data)
         # mj_resetData 会把关节全推回模型默认值，手臂于是又变成前臂朝前的样子，
-        # 这里补上自然下垂那一档，复位后的站姿和「站直」一致
+        # 这里补上自然下垂那一档，复位后手臂垂在体侧
         for name, value in ARM_REST.items():
             adr = self.hinge_qadr.get(name)
             if adr is not None:
@@ -290,9 +290,7 @@ class Sim:
         self.last_cmd_at = time.time()
 
     def apply_preset(self, name: str) -> dict:
-        """预设姿态：先把所有关节归零再叠加，避免上一组关节残留（比如蹲下之后直接平举）。
-        归零的手臂是前伸的（模型肘 0 就是僵尸手），所以预设里没写到的关节会停在那儿；
-        要回到自然站姿走 reset()，那里会补 ARM_REST。"""
+        """预设姿态：先回站姿再叠加，避免上一组关节残留（比如蹲下之后直接平举）。"""
         if name not in PRESETS:
             raise ValueError(f"未知姿态：{name}，可选 {', '.join(PRESETS)}")
         preset = PRESETS[name]

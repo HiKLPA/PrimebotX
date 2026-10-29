@@ -108,7 +108,7 @@ def main() -> int:
     )
     gesture_ids = {g.get("id") for g in table.get("gestures") or []}
     chain.step("手势库可用", gesture_ids >= {"wave", "heart", "cheer"}, str(sorted(gesture_ids)))
-    chain.step("姿态预设可用", {p.get("id") for p in table.get("presets") or []} >= {"stand", "tpose", "squat"}, "")
+    chain.step("姿态预设可用", {p.get("id") for p in table.get("presets") or []} >= {"tpose", "squat"}, "")
     chain.step("步态可用", {g.get("id") for g in table.get("gaits") or []} >= {"walk", "march"}, "")
 
     print("\n4. 关节控制")
@@ -206,7 +206,8 @@ def main() -> int:
     state = chain.wait_state(lambda s: abs(s.get("speed", 0) - 1.5) < 0.01)
     chain.step("设置速度倍率", status == 200 and abs((state or {}).get("speed", 0) - 1.5) < 0.01, f"{status}")
     chain.call("POST", "/sim/speed", {"speed": 1.0})
-    chain.call("POST", "/sim/preset", {"name": "stand"})
+    # 收尾回站姿。站直已经不在预设表里，走重置姿态那条路
+    chain.call("POST", "/sim/reset", {})
 
     print("\n11. 网页静态资源")
     page = args.backend.rstrip("/") + "/ui/PrrimebotX.html"
