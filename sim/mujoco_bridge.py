@@ -138,6 +138,11 @@ class Sim:
         self.step_count = 0
         self.frame: bytes | None = None
         self.frame_seq = 0
+        # 出图改成「有请求才画」：页面关掉或弹窗收起时不再空转占 CPU。
+        # demand 由 /frame 与 /stream 置位，物理循环画完一帧就清掉
+        self.demand = False
+        self.frame_cv = threading.Condition()
+        self.last_render = 0.0          # 上一帧的时刻，用来按 render_hz 限速
         self.renderer = None
         self.camera = None
         self.cam_home: tuple[float, float, float] | None = None
@@ -173,6 +178,10 @@ class Sim:
     def _init_renderer(self) -> None:
         try:
             self.renderer = mujoco.Renderer(self.model, self.args.height, self.args.width)
+            # 阴影贴图每帧要多跑一遍 pass：实测 640×480 下 23ms 变 69ms，
+            # 离屏小画面里那点接触阴影不值这个价，默认关掉；要立体感加 --shadows
+            self.renderer.scene.flags[mujoco.mjtRndFlag.mjRND_SHADOW] = bool(
+                getattr(self.args, "shadows", False))
             lo, hi = self._body_bbox()
             self.focus = (lo + hi) / 2.0
             span = float(max(hi[2] - lo[2], 0.4))
@@ -203,6 +212,9 @@ class Sim:
             Image.fromarray(pixels).save(buf, format="JPEG", quality=self.args.quality)
             self.frame = buf.getvalue()
             self.frame_seq += 1
+            self.last_render = time.perf_counter()
+            with self.frame_cv:
+                self.frame_cv.notify_all()
         except Exception as exc:
             self.error = f"渲染失败：{exc}"
             self.renderer = None
@@ -242,9 +254,11 @@ class Sim:
             if lo_hi:
                 angle = min(lo_hi[1], max(lo_hi[0], angle))
             self.target[name] = angle
-            # 按 duration 摊开：一次大幅跳变被拆成若干小步，页面滑块不会瞬移
+            # 按 duration 摊开：一次大幅跳变被拆成若干小步，页面滑块不会瞬移；
+            # 再乘全局倍率，让滑块与姿态预设跟手势、步态用同一个速度条
             delta = abs(angle - float(self.data.qpos[adr]))
-            self.slew[name] = max(0.2, min(8.0, delta / seconds))
+            self.slew[name] = max(0.2 * self.speed,
+                                  min(8.0 * self.speed, delta * self.speed / seconds))
             applied.append(name)
         self.last_cmd_at = time.time()
         self.gesture = None
@@ -615,7 +629,7 @@ GAITS: dict[str, dict] = {
 def physics_loop(sim: Sim, args: argparse.Namespace) -> None:
     """主线程物理循环。窗口模式下每帧 sync，无窗口模式按 render_hz 出图。"""
     dt = 1.0 / args.ctrl_hz
-    render_every = max(1, int(args.ctrl_hz / max(1, args.render_hz)))
+    render_gap = 1.0 / max(1.0, args.render_hz)   # 出图的最小间隔，按 render_hz 限速
     next_tick = time.perf_counter()
     viewer_ctx = None
     viewer = None
@@ -630,7 +644,11 @@ def physics_loop(sim: Sim, args: argparse.Namespace) -> None:
             sim.step(dt)
             if viewer is not None:
                 viewer.sync()
-            elif sim.step_count % render_every == 0:
+            elif sim.frame is None or (sim.demand
+                                       and time.perf_counter() - sim.last_render >= render_gap):
+                # 有请求就画，且距上一帧至少 render_gap：一次请求对应一帧，
+                # 不会像固定 Hz 那样让请求拿到上一轮画好的旧帧
+                sim.demand = False
                 sim._render()
             next_tick += dt
             sleep = next_tick - time.perf_counter()
@@ -702,7 +720,13 @@ class Handler(BaseHTTPRequestHandler):
             elif path == "/joints":
                 self._json(200, self.sim.joint_table())
             elif path == "/frame":
+                self.sim.demand = True
                 frame = self.sim.frame
+                if frame is None:      # 冷启动：等物理循环补出第一帧，最多 200ms
+                    with self.sim.frame_cv:
+                        if self.sim.frame is None:
+                            self.sim.frame_cv.wait(timeout=0.2)
+                    frame = self.sim.frame
                 if frame is None:
                     self._json(503, {"error": "没有可用画面：窗口模式或渲染不可用"})
                     return
@@ -733,6 +757,7 @@ class Handler(BaseHTTPRequestHandler):
         try:
             last = -1
             while self.sim.running:
+                self.sim.demand = True
                 if self.sim.frame is None or self.sim.frame_seq == last:
                     time.sleep(0.01)
                     continue
@@ -861,10 +886,13 @@ def main() -> int:
     parser.add_argument("--headless", action="store_true", help="不出窗口，改用离屏渲染供网页取图")
     parser.add_argument("--dynamic", action="store_true", help="以动力学模式启动（会受重力坠落）")
     parser.add_argument("--ctrl-hz", type=float, default=100.0)
-    parser.add_argument("--render-hz", type=float, default=15.0)
+    parser.add_argument("--render-hz", type=float, default=20.0,
+                        help="出图上限；实际按页面请求出图，不请求就不画")
     parser.add_argument("--width", type=int, default=640)
     parser.add_argument("--height", type=int, default=480)
     parser.add_argument("--quality", type=int, default=75)
+    parser.add_argument("--shadows", action="store_true",
+                        help="打开阴影贴图：画面更立体，但单帧渲染慢约 3 倍")
     parser.add_argument("--distance", type=float, default=0.0, help="相机距离，0 表示按本体高度自动取景")
     parser.add_argument("--azimuth", type=float, default=200.0)
     parser.add_argument("--elevation", type=float, default=-5.0)

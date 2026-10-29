@@ -332,13 +332,28 @@
   display:flex; flex-direction:column;  /* 标题区在上、页脚贴底，中间是列表 */
   gap:16px;                            /* 标题区 / 列表 / 按钮区之间各隔 16 */
   border-radius:var(--rail-r);
-  background:var(--panel);
-  -webkit-backdrop-filter:blur(var(--blur));
-  backdrop-filter:blur(var(--blur));
+  /* 自带一个叠层：外挂的两块底板挂在面板外侧，收放时要能沉到面板下面去，
+     而负 z-index 的子项只在自成叠层的父级里待得住，否则会跑到弹窗遮罩后面。
+     这里用 z-index:0 而不是 isolation —— 叠层要得，背板根不能要：
+     一旦成了背板根，::before 的 backdrop-filter 只取样面板内部，页面就不糊了。
+     顺带一提，底色与模糊挪到了 ::before，见下面那条。 */
+  z-index:0;
   /* 与栏体同一套柔光：--sh / --sh-a 是 @property 注册过的，取到的是初始值 16px / .1；
      展开时脚本把它们补到 32px / .2 再弹回，收回时归位 */
   box-shadow:0 0 var(--sh) rgba(var(--shadow), calc(var(--sh-a) * var(--sh-k)));
   transform-origin:50% 50%;            /* 从正中撑开，不是从某个角 */
   pointer-events:auto;                 /* 面板自己吃点击，用来判断「点里面」 */
+}
+/* 面板的填充层：负 z-index 里 -2 先画、-1 后画，所以它盖在外挂底板之上、
+   又在正文之下。参数栏与工具列往里收时因此被这层挡掉，75% 底叠背板模糊，
+   看起来是沉进磨砂玻璃后面，而不是压在画面与滑块上面。
+   柔光仍留在 .modal__panel 上：--sh / --sh-a 注册成 inherits:false，
+   挪到伪元素就取不到展开时那组补间值，阴影不会跟着呼吸 */
+.modal__panel::before{
+  content:''; position:absolute; inset:0; z-index:-1;
+  border-radius:inherit; pointer-events:none;
+  background:var(--panel);
+  -webkit-backdrop-filter:blur(var(--blur));
+  backdrop-filter:blur(var(--blur));
 }
 

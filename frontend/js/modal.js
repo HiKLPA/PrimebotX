@@ -12,6 +12,105 @@
   var NAMES = ['Connect', 'Preference', 'Advance', 'Settings'];
   var reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
 
+  /* ---------- 面板外挂的两块底板 ---------- */
+
+  /* Advance 的参数栏与工具列挂在面板两侧（见 sim.css 的 .modal__stats / .adv__rail）。
+     换弹窗时它们不跟着内容瞬间消失：形变原点取中间面板的中心，缩到 DOCK_SCALE，
+     同时淡掉 —— 看起来是从中间弹出来、又被中间吸回去。栏体那条是「缩到 .95 再
+     平移到屏外」，这两块没有屏外可去，于是把位移交给缩量：原点远在元素外面，
+     一缩就顺势滑向面板中心，不用再另加位移。节拍与栏体一致：0.45 秒。
+     层级上它们沉在面板填充层下面（sim.css 里 z-index:-2，对 .modal__panel::before
+     的 -1），所以滑进面板范围的那一段是被面板挡住的，不会压在画面与滑块上。 */
+  var statsEl = panel.querySelector('.modal__stats');
+  var railEl  = panel.querySelector('.adv__rail');
+  var docks   = [statsEl, railEl].filter(Boolean);
+  var DOCK_DUR   = 0.45;
+  var DOCK_SCALE = 0.55;
+  var dockOn     = false;   /* 上一次之后这两块是开是关，用来判断要不要播 */
+
+  /* 形变原点 = 中间面板的中心，折算成元素自己的像素坐标。
+     用 offsetLeft 而不是 getBoundingClientRect：后者量到的是已经带上 transform
+     的框，连着来回切时会越算越偏。纵向取 50%，两块底板 top/bottom 都贴着面板，
+     中心本来就和面板的中线重合。
+     左侧工具列 offsetLeft 是 -168，原点落在它右边约「半个面板 + 168」处；
+     右侧参数栏反过来，原点落在它左边很远，两边因此都朝面板中心收。 */
+  function dockOrigin(el) {
+    return (panel.clientWidth / 2 - el.offsetLeft) + 'px 50%';
+  }
+  /* 只有真正挂在面板外才做形变：860 以下工具列退回面板内部（position:static），
+     那时候它跟着面板回流，做 transform 反而错位。
+     注意别看 display —— 还没展开（hidden）的底板本来就是 display:none */
+  function dockFree(el) {
+    return window.getComputedStyle(el).position === 'absolute';
+  }
+
+  /* from 是切换前量到的位置：给面板加减 .is-advance 会改左右留白，
+     窄一点的视口上面板本身还会变宽，底板跟着挪一截；
+     退场从「刚才那个位置」起步，不会先跳一下再收 */
+  function paintDocks(on, from) {
+    if (on === dockOn) return;
+    dockOn = on;
+    docks.forEach(function (el, i) {
+      /* 上一段还没跑完（来回连点胶囊）就先记一笔：那种时候不补位置，
+         从当前这一帧接着走，否则会为了对齐位置先跳一下 */
+      var moving = gsap.isTweening(el);
+      gsap.killTweensOf(el);
+      /* 弹窗关着时换的只是「下次打开看到什么」：面板此刻缩在 0.25 × 0.8 的收回态上，
+         量到的位置全是偏的，也没有观众，直接切掉。
+         更窄的视口上参数栏整块 display:none，收的时候同样没什么可演的 */
+      var silent = !on && (root.style.visibility === 'hidden'
+                           || window.getComputedStyle(el).display === 'none');
+      if (!dockFree(el) || reduce.matches || silent) {
+        el.hidden = !on;
+        gsap.set(el, { clearProps: 'all' });
+        return;
+      }
+      if (on) {
+        /* 上一次是彻底收起来的（hidden）才从「面板中心」起手；
+           退场放到一半又点回来时，从当前这一帧接着长出去 */
+        var wasHidden = el.hidden;
+        el.hidden = false;
+        gsap.set(el, { transformOrigin: dockOrigin(el), pointerEvents: 'auto' });
+        if (wasHidden) gsap.set(el, { x: 0, scale: DOCK_SCALE, opacity: 0 });
+        /* 形变与淡入各走一条：过冲只留给几何，透明度冲过头会闪一下白。
+           原点很远，同样比例的过冲会被放大成几十像素的滑行，
+           所以弹性收到 1.2，只留一点「弹出」的手感 */
+        gsap.to(el, {
+          x: 0, scale: 1, duration: DOCK_DUR, ease: 'back.out(1.2)', overwrite: 'auto',
+          onComplete: function () { gsap.set(el, { clearProps: 'all' }); }
+        });
+        gsap.to(el, { opacity: 1, duration: 0.24, ease: 'power1.out', overwrite: 'auto' });
+        return;
+      }
+      /* 当前位移（上面刚 kill 掉补间，这里读到的是最后一帧的值） */
+      var curX = Number(gsap.getProperty(el, 'x')) || 0;
+      if (!moving) {
+        /* 位置补偿：面板这一拍可能刚换了左右留白（窄视口上还会换宽度），
+           底板跟着锚点挪了一截，先把它挪回原处，从切换前的位置起步 */
+        var r = el.getBoundingClientRect();
+        var dx = from && from[i] ? from[i].left - r.left : 0;
+        curX += dx;
+        gsap.set(el, { transformOrigin: dockOrigin(el), x: curX });
+      }
+      /* 退场：朝面板中心缩下去（前排快、尾巴软），淡出压在后半段 ——
+         全程线性淡会让它还很大时就开始发虚，收得再狠也看不出「被吸走」。
+         收尾挂在几何那条上：透明度先到 0，等形变跑完再真正 hidden。
+         这一秒它已经不属于当前弹窗了，顺手掐掉命中，别在残影上点到旧按钮 */
+      gsap.to(el, {
+        x: curX, scale: DOCK_SCALE, pointerEvents: 'none',
+        duration: DOCK_DUR, ease: 'power2.out', overwrite: 'auto',
+        onComplete: function () {
+          el.hidden = true;
+          gsap.set(el, { clearProps: 'all' });
+        }
+      });
+      gsap.to(el, {
+        opacity: 0, duration: DOCK_DUR * 0.5, delay: DOCK_DUR * 0.35,
+        ease: 'power1.in', overwrite: 'auto'
+      });
+    });
+  }
+
   /* 三枚胶囊各自那套标题区文案。左列 = 弹窗标题 + 一行说明，
      右列 = 一行标题 + 一行说明；除 Connect 的两行是实指，其余是占位，
      接上真实数据源时替换这里的字符串即可 */
@@ -107,12 +206,20 @@
       el.hidden = name !== 'Connect';
     });
     /* Advance 只装仿真面板（结构在 HTML 里，事件由 js/sim.js 绑），
-       换到别的弹窗时整块收掉，连画面轮询也会跟着停 */
+       换到别的弹窗时整块收掉，连画面轮询也会跟着停。
+       两块外挂底板走自己的收放，这里跳过 */
     Array.prototype.forEach.call(panel.querySelectorAll('[data-advance-only]'), function (el) {
+      if (el === statsEl || el === railEl) return;
       el.hidden = name !== 'Advance';
     });
-    /* Advance 的面板外侧左边挂着参数列，面板要让位（CSS 里 .is-advance 加 margin-left） */
+    /* 记下两块底板此刻的位置，给下面的退场动画当起点：
+       加减 .is-advance 会改面板左右留白，窄视口上面板本身还会变宽 */
+    var dockFrom = docks.map(function (el) {
+      return { left: el.getBoundingClientRect().left };
+    });
+    /* Advance 的面板外侧两边各挂一块底板，面板要给它们让位（CSS 里 .is-advance 加左右 margin） */
     panel.classList.toggle('is-advance', name === 'Advance');
+    paintDocks(name === 'Advance', dockFrom);
     /* Settings 是另一种版式：标题在左区，整块顶部标题区收掉，
        原来的 64px 让给左右两栏 */
     var isSet = name === 'Settings';

@@ -6,7 +6,10 @@
   if (!window.gsap) return;
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
-  var SEL = '.pill, .item, .mrow__btn, .chat__btn, .seg__opt, .dock__btn';
+  /* 仿真面板里的胶囊（手臂/腰/腿/联动、姿态/动作/步态、右侧工具按钮）
+     同样是「底片 + --press」结构，一并接管 */
+  var SEL = '.pill, .item, .mrow__btn, .chat__btn, .seg__opt, .dock__btn,' +
+            '.adv__tab, .adv__chip, .adv__btn';
   var PRESS_PILL = 1.0;   // 顶栏胶囊压入档位（× --press-k 得缩放比例）
   var PRESS_MENU = 1.2;   // 账号面板菜单项
   var PRESS_ITEM = 1.2;   // 侧栏圆钮
@@ -32,6 +35,8 @@
   function activated(el) {
     if (el.dataset && el.dataset.open === 'true') return true;
     if (el.classList.contains('is-active') || el.classList.contains('is-on')) return true;
+    /* 已经选中的分组 tab（is-sel）同理：再点一次只是重复选同一组 */
+    if (el.classList.contains('is-sel')) return true;
     /* 背景三选一里已选中的那枚同理：再点一次是重复，不再压弹 */
     if (el.classList.contains('seg__opt') && el.getAttribute('aria-checked') === 'true') return true;
     return el.classList.contains('pill') && el.getAttribute('aria-pressed') === 'true';

@@ -10,7 +10,7 @@ backend/ 为C++17源码；scripts/为可复现步骤。当前仅模拟模式，�
 
 MuJoCo 仿真联动见 [sim/README.md](./sim/README.md)：`sim/mujoco_bridge.py` 跑 Q1 的 MJCF 模型并暴露 HTTP，后端加 `--sim-url`（或 `scripts/run_local.sh --sim`）后网页即可驱动仿真；不给该参数时行为与纯 mock 完全一致。
 
-整条链路一条命令起：`bash scripts/run_sim_stack.sh`（桥 8090 + 后端 8080），随后 `python scripts/verify_sim_chain.py` 自检十项接口。首次使用先 `pip install -r sim/requirements.txt`、`bash scripts/fetch_model.sh`，编译后端用 `bash scripts/fetch_deps.sh && bash scripts/build_backend.sh`。
+整条链路一条命令起：`bash scripts/run_sim_stack.sh`（桥 8090 + 后端 8080），Windows 也可以直接双击 `scripts\run_sim_stack.cmd`（自动找 Git Bash，找不到就自己用 python 起两个进程）；随后 `python scripts/verify_sim_chain.py` 自检整条链路。首次使用先 `pip install -r sim/requirements.txt`、`bash scripts/fetch_model.sh`，编译后端用 `bash scripts/fetch_deps.sh && bash scripts/build_backend.sh`。
 
 旧阶段1两份文档保留作历史草案。本轮文档2取代其需求范围，文档3定义实际实现；不要混用旧规划与新程序接口。
 

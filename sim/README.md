@@ -20,9 +20,11 @@ bash scripts/fetch_model.sh                  # 拉官方模型到 sim/assets/q1-
 bash scripts/run_sim_stack.sh                # 起桥(8090) + 后端(8080)
 ```
 
+Windows 不想记 Git Bash 的路径就直接双击 `scripts\run_sim_stack.cmd`，或者在 cmd 里跑它：脚本会自己找 `C:\Program Files\Git\bin\bash.exe` 并转交给 `run_sim_stack.sh`（这条路径保留 Ctrl+C 收尾）；机器上没装 Git Bash 时，它退化成用 `python` 直接起桥、再用 `backend-build\primebot_backend.exe` 起后端，两个窗口各自独立，关掉前端窗口时会顺带把桥的窗口一起收掉。`PORT` / `SIM_PORT` / `SIM_MODE` / `PYTHON` / `PRIMEBOT_BIN` 照样认。
+
 浏览器打开 http://127.0.0.1:8080/ui/PrrimebotX.html ，点顶栏 Advance，点弹窗标题区右上角的「连接仿真」。
 
-弹窗里能做的事：左侧画面（拖动旋转、滚轮缩放、右下角有操作提示），右侧「手臂 / 腰 / 腿」三组关节滑块与三排动作按钮（姿态、动作、步态），顶部一行工具（重置姿态、急停、切换驱动模式、左右转、复位视角、存图、速度倍率）。键盘也能开：WASD 平移、Q/E 转向、空格急停，焦点在滑块上时不抢按键。页面左侧那个九宫格方向键照旧驱动底盘。
+弹窗里能做的事：左侧画面（拖动旋转、滚轮缩放、右下角有操作提示），右侧顶部是全局速度条（不分分区、四个 tab 共用），下面是「手臂 / 腰 / 腿 / 联动」四个等宽 tab——前三个出关节滑块，联动出姿态、动作、步态三排按钮；面板外侧左边是一列工具（重置姿态、急停、切换驱动模式、左右转、复位视角、存图），右边是参数栏（逐行读数，底部是状态提示）。键盘也能开：WASD 平移、Q/E 转向、空格急停，焦点在滑块上时不抢按键。页面左侧那个九宫格方向键照旧驱动底盘。
 
 初次构建后端（或改了 `backend/src/main.cpp`）需要先编一次：
 
@@ -102,7 +104,7 @@ python sim/mujoco_bridge.py --print-joints   # 关节名、类型、限位、是
 
 视角（`/cmd/camera`）传 `azimuth` / `elevation` / `distance` 的任意组合，或 `{"reset": true}` 回到启动时的机位。页面里在画面上拖动就是改 azimuth 与 elevation，滚轮缩放 distance。窗口模式没有离屏相机，这个接口会返回 422，页面上的相机控件随之置灰。
 
-速度倍率（`/cmd/speed`，0.2–3.0）同时作用于手势相位、步态频率与关节限速，页面滑块给的是 0.3–2.5。
+速度倍率（`/cmd/speed`，0.2–3.0）是全局量，同时作用于手势相位、步态频率、关节限速，以及滑块与姿态预设的过渡速度（`apply_pose` 里按倍率缩放 slew），所以四个分区共用一根速度条；页面滑块给的是 0.3–2.5。动力学模式下关节由 PD 直接跟 target，不受这条速度条影响。
 
 ## 接口
 
@@ -148,7 +150,7 @@ python sim/mujoco_bridge.py --print-joints   # 关节名、类型、限位、是
 
 | 场景 | 命令 |
 |---|---|
-| 桥 + 后端一起起（推荐） | `bash scripts/run_sim_stack.sh` |
+| 桥 + 后端一起起（推荐） | `bash scripts/run_sim_stack.sh`，Windows 也可以双击 `scripts\run_sim_stack.cmd` |
 | 弹 MuJoCo 原生窗口看机器人 | `SIM_MODE=viewer bash scripts/run_sim_stack.sh`（此时网页没有画面） |
 | 只要后端，连已在跑的桥 | `bash scripts/run_local.sh --sim` |
 | 只要桥 | `python sim/mujoco_bridge.py --headless` |
@@ -161,7 +163,8 @@ python sim/mujoco_bridge.py --print-joints   # 关节名、类型、限位、是
 | `--headless` | 关 | 不开窗口，离屏渲染出 JPEG 给网页 |
 | `--dynamic` | 关 | 以动力学模式启动 |
 | `--ctrl-hz` | 100 | 物理循环频率 |
-| `--render-hz` | 15 | 出图频率 |
+| `--render-hz` | 20 | 出图上限；实际有请求才画，页面关掉就不占 CPU |
+| `--shadows` | 关 | 打开阴影贴图，画面更立体，单帧渲染慢约 3 倍（69ms → 23ms） |
 | `--width/--height` | 640×480 | 画面尺寸 |
 | `--azimuth/--elevation` | 200 / -5 | 视角；180 是正脸，0 是背面 |
 | `--distance` | 0 | 0 表示按本体高度自动取景 |

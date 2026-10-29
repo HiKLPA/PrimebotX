@@ -18,13 +18,15 @@
 
   var pane = document.querySelector('.adv[data-advance-only]');
   if (!pane) return;
-  /* 工具按钮挂在面板右外侧（不在 .adv 里），单独取一次作用域 */
+  /* 工具按钮挂在面板左外侧（不在 .adv 里），单独取一次作用域 */
   var rail = document.querySelector('.adv__rail');
-  /* 提示文本挪到了面板外左侧参数栏的底部，不在 .adv 里 */
+  /* 提示文本挪到了面板外右侧参数栏的底部，不在 .adv 里 */
   var message = document.querySelector('[data-sim-message]');
   var frame = pane.querySelector('[data-sim-frame]');
   var viewport = pane.querySelector('[data-sim-viewport]');
   var jointsBox = pane.querySelector('[data-sim-joints]');
+  /* 联动区与关节滑块互斥：同一个位置，切 tab 换内容 */
+  var linkBox = pane.querySelector('[data-sim-link]');
   /* 参数列挂在面板外侧（不在 .adv 里），所以按文档查 */
   var readout = document.querySelector('[data-sim-state]');
   var modeBtn = rail.querySelector('[data-sim-mode]');
@@ -86,6 +88,9 @@
   }
 
   function controls() {
+    /* 未连接时右侧只留一句「请先连接仿真」：其余操作全部收起，
+       靠 CSS 的 .adv.is-offline 规则隐藏，这里只管切类 */
+    pane.classList.toggle('is-offline', !connected);
     /* 连接按钮在标题区右上角，不在 pane 里，所以从 document 抓 */
     if (connectBtn) connectBtn.disabled = busy || connected;
     ['reset', 'stop', 'mode', 'shot'].forEach(function (key) {
@@ -111,9 +116,29 @@
     return (range[0] + range[1]) / 2;
   }
 
+  /* 轨道填充：把当前值换算成百分比写到元素上，CSS 用两段渐变把它画成
+     「左边主题色、右边 text-muted」，拖动或状态同步后都要刷一次 */
+  function paintFill(input) {
+    if (!input) return;
+    var min = parseFloat(input.min);
+    var max = parseFloat(input.max);
+    var val = parseFloat(input.value);
+    if (!isFinite(min)) min = 0;
+    if (!isFinite(max)) max = 100;
+    if (!isFinite(val)) val = min;
+    var pct = max > min ? (val - min) / (max - min) * 100 : 0;
+    input.style.setProperty('--fill', Math.max(0, Math.min(100, pct)).toFixed(2) + '%');
+  }
+
   function renderJoints() {
+    /* 联动不是关节分组：内容区换成姿态 / 动作 / 步态那三行胶囊，
+       胶囊由 buildActions 建好并常驻，这里只负责换显 */
+    var isLink = group === 'link';
+    jointsBox.hidden = isLink;
+    if (linkBox) linkBox.hidden = !isLink;
     jointsBox.textContent = '';
     sliders = {};
+    if (isLink) { controls(); return; }
     var re = GROUPS[group];
     var list = joints.filter(function (j) {
       return j.controllable && j.type === 'hinge' && re.test(j.name);
@@ -130,6 +155,7 @@
       input.step = '0.02';
       input.value = known(joint.name).toFixed(2);
       input.dataset.joint = joint.name;
+      paintFill(input);
       wrap.appendChild(input);
       jointsBox.appendChild(wrap);
       sliders[joint.name] = input;
@@ -146,6 +172,7 @@
           markOn(gaitsBox, 'simGait', null);
           api('/sim/gait', 'POST', { name: 'off' }).catch(function () {});
         }
+        paintFill(input);
         pending[joint.name] = parseFloat(input.value);
         schedule();
       });
@@ -278,27 +305,46 @@
 
   /* ---------- 画面与状态 ---------- */
 
+  /* 取画面改成「一张加载完再取下一张」：固定 120ms 的定时器会在上一张
+     还没下载完时就改写 src，把请求打断、白掉一帧，看起来就是掉帧。
+     现在由 load/error 驱动节拍，另留 70ms 间隙，既不叠请求也不空转 */
+  var FRAME_GAP = 55;
+  var frameLoading = false, frameMiss = 0;
+
+  function scheduleFrame(delay) {
+    if (frameTimer) { clearTimeout(frameTimer); frameTimer = null; }
+    frameTimer = setTimeout(pollFrame, delay);
+  }
+
   function pollFrame() {
-    if (!connected || !showFrame || !visible()) return;
+    frameTimer = null;
+    if (!connected || !showFrame || !visible() || frameLoading) return;
+    frameLoading = true;
     frame.src = API + '/sim/frame?t=' + Date.now();
   }
 
   frame.addEventListener('load', function () {
+    frameLoading = false;
+    frameMiss = 0;
     if (frame.dataset.offline !== undefined) delete frame.dataset.offline;
+    if (connected) scheduleFrame(FRAME_GAP);
   });
   frame.addEventListener('error', function () {
-    /* 取不到画面时先停 3 秒，避免 120ms 一轮把 502 刷满 */
-    showFrame = false;
+    /* 取不到画面：退到 1.5s 一次重试，避免把 502 刷满；提示只说一次 */
+    frameLoading = false;
     frame.dataset.offline = '';
-    say('没有画面：仿真桥可能跑在窗口模式，或离屏渲染不可用；数值与滑块仍可正常驱动。');
-    clearInterval(frameTimer);
-    frameTimer = null;
-    setTimeout(function () {
-      if (!connected) return;
-      showFrame = true;
-      frameTimer = setInterval(pollFrame, 120);
-    }, 3000);
+    if (frameMiss++ === 0) {
+      say('没有画面：仿真桥可能跑在窗口模式，或离屏渲染不可用；数值与滑块仍可正常驱动。');
+    }
+    if (connected) scheduleFrame(1500);
   });
+
+  /* 弹窗收起时取帧暂停，重新打开要能自己接上：监听 hidden 变化补一脚 */
+  if (window.MutationObserver) {
+    new MutationObserver(function () {
+      if (!pane.hidden && connected) scheduleFrame(0);
+    }).observe(pane, { attributes: true, attributeFilter: ['hidden'] });
+  }
 
   shotBtn.onclick = function () {
     if (!connected) return;
@@ -378,6 +424,7 @@
       Object.keys(sliders).forEach(function (name) {
         if (dragging[name] || !(name in state.joints)) return;
         sliders[name].value = state.joints[name];
+        paintFill(sliders[name]);
       });
       paintStats(state);
     } catch (e) {
@@ -401,10 +448,9 @@
       renderJoints();
       buildActions(table);
       say('已连接 q1-sim（nq=' + table.nq + '，关节 ' + table.joints.length + ' 个）。' +
-          '右侧切手臂/腰/腿，画面可拖动旋转，键盘 WASD 走路。');
+          '右侧切手臂/腰/腿/联动，画面可拖动旋转，键盘 WASD 走路。');
       pollState();
       pollFrame();
-      frameTimer = setInterval(pollFrame, 120);
       stateTimer = setInterval(pollState, 500);
       if (connectBtn) connectBtn.textContent = '已连接';
       hudState('仿真已连接');
@@ -442,7 +488,9 @@
 
   speedInput.addEventListener('input', function () {
     speedVal.textContent = parseFloat(speedInput.value).toFixed(1) + 'x';
+    paintFill(speedInput);
   });
+  paintFill(speedInput);
   speedInput.addEventListener('change', function () {
     if (!connected) return;
     api('/sim/speed', 'POST', { speed: parseFloat(speedInput.value) })
