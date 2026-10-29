@@ -125,6 +125,14 @@ class Sim:
             )
             self.home_z = float(self.data.qpos[self.free_qadr + 2])
         self.focus = np.array([0.0, 0.0, 0.4])   # 渲染时按本体包围盒覆盖
+        # 一启动就把手臂放下来：模型默认是前臂朝前的僵尸手。写进 qpos 的同时
+        # 也写进 home_qpos，启动画面和复位之后看到的是同一个站姿
+        for _name, _value in ARM_REST.items():
+            _adr = self.hinge_qadr.get(_name)
+            if _adr is not None:
+                self.data.qpos[_adr] = _value
+                self.home_qpos[_adr] = _value
+        mujoco.mj_forward(self.model, self.data)
         self.target = {n: float(self.data.qpos[a]) for n, a in self.hinge_qadr.items()}
         self.slew = {n: self.joint_speed for n in self.hinge_qadr}
         self.base_cmd = np.zeros(3)      # vx, vy, wz（kinematic 下按机体系积分）
@@ -230,6 +238,12 @@ class Sim:
 
     def reset(self) -> None:
         mujoco.mj_resetData(self.model, self.data)
+        # mj_resetData 会把关节全推回模型默认值，手臂于是又变成前臂朝前的样子，
+        # 这里补上自然下垂那一档，复位后的站姿和「站直」一致
+        for name, value in ARM_REST.items():
+            adr = self.hinge_qadr.get(name)
+            if adr is not None:
+                self.data.qpos[adr] = value
         mujoco.mj_forward(self.model, self.data)
         self.sim_time = 0.0
         self.step_count = 0
@@ -276,7 +290,9 @@ class Sim:
         self.last_cmd_at = time.time()
 
     def apply_preset(self, name: str) -> dict:
-        """预设姿态：先回站姿再叠加，避免上一组关节残留（比如蹲下之后直接平举）。"""
+        """预设姿态：先把所有关节归零再叠加，避免上一组关节残留（比如蹲下之后直接平举）。
+        归零的手臂是前伸的（模型肘 0 就是僵尸手），所以预设里没写到的关节会停在那儿；
+        要回到自然站姿走 reset()，那里会补 ARM_REST。"""
         if name not in PRESETS:
             raise ValueError(f"未知姿态：{name}，可选 {', '.join(PRESETS)}")
         preset = PRESETS[name]
@@ -294,11 +310,15 @@ class Sim:
             raise ValueError(f"未知步态：{name}，可选 {', '.join(GAITS)}")
         self.gesture = None
         # 步态只写腿和肩 pitch，所以先把上半身摆回体侧、机身高度归零，
-        # 否则从「举手」或「半蹲」切过来会一直举着手、低着走
+        # 否则从「举手」或「半蹲」切过来会一直举着手、低着走。
+        # 肘角分两档，写在 GAITS 里：走路把肘弯到底（前臂贴着大臂垂下），
+        # 跑步反过来把肘留在 0 附近 —— 模型的前臂本来就跟大臂成 90°，
+        # 肩微外张后略作负角补偿正好回到 90°（偏 0.1°）
+        elbow = float(GAITS[name]["elbow"])
         for side in ("left", "right"):
             self._set_target(f"{side}_shoulder_roll_joint", 0.22 if side == "left" else -0.22)
             self._set_target(f"{side}_shoulder_yaw_joint", 0.0)
-            self._set_target(f"{side}_elbow_joint", 0.3)
+            self._set_target(f"{side}_elbow_joint", elbow)
         self._set_target("waist_roll_joint", 0.0)
         self._set_target("waist_yaw_joint", 0.0)
         self.base_dz = 0.0
@@ -357,8 +377,12 @@ class Sim:
                 pose = GESTURES[self.gesture["name"]]["pose"]
                 osc = GESTURES[self.gesture["name"]].get("osc", {})
                 for joint, value in pose.items():
-                    amp, omega = osc.get(joint, (0.0, 0.0))
-                    self._set_target(joint, value + amp * math.sin(omega * t))
+                    # osc 是 (幅值, 角频率) 或 (幅值, 角频率, 初相)：
+                    # 双手动作要靠初相把左右错开半个周期，才不会像镜像同步
+                    spec = osc.get(joint, (0.0, 0.0))
+                    amp, omega = spec[0], spec[1]
+                    phase = spec[2] if len(spec) > 2 else 0.0
+                    self._set_target(joint, value + amp * math.sin(omega * t + phase))
                 for joint in pose:
                     self.slew[joint] = 6.0 * self.speed
             elif self.gait is not None:
@@ -391,11 +415,19 @@ class Sim:
             self._set_target(f"{side}_knee_joint", knee)
             # 踝反向补偿，脚掌尽量保持水平
             self._set_target(f"{side}_ankle_pitch_joint", -0.45 * knee)
+            # 摆臂必须与同侧腿反相：髋与肩的 pitch 轴同向（正角都往后），
+            # 所以同一条腿的值取负号，手臂就摆到相反一侧，不会顺拐。
+            # 左右腿本身差 π，负号一加，两臂自然也是一前一后
             self._set_target(f"{side}_shoulder_pitch_joint", -g["arm"] * math.sin(p))
         self._set_target("waist_yaw_joint", g["waist"] * math.sin(phase))
+        # 摆臂的角速度按各自的幅值与频率算：跑步 1.8 Hz、幅值 0.5 时峰值已经
+        # 超过 5 rad/s，沿用站姿的 joint_speed 会把手臂削成一个几乎不动的小晃
+        arm_rate = 2 * math.pi * g["freq"] * g["arm"] * 1.6
         for name in self.hinge_qadr:
             if name.endswith(("hip_pitch_joint", "knee_joint", "ankle_pitch_joint")):
                 self.slew[name] = max(self.slew[name], 5.0 * self.speed)
+            elif name.endswith("shoulder_pitch_joint"):
+                self.slew[name] = max(self.slew[name], arm_rate * self.speed)
 
     def _step_kinematic(self, dt: float) -> None:
         for name, adr in self.hinge_qadr.items():
@@ -468,67 +500,84 @@ class Sim:
         return table
 
 
-# 动作库。三个姿势都在 q1_v3_mc.xml 的实际限位内（见 --print-joints 的输出），
-# wave 沿用 part3 挥手脚本的思路（肩 roll 抬起 + yaw 往复），heart 与 cheer
-# 是照着模型手臂长度重新摆的：这台机器人的前臂够不到身体中线，所以比心做成
-# 双手举过头顶的版本，而不是胸前合掌。
+# 动作库。所有角度都落在 q1_v3_mc.xml 的实际限位内（见 --print-joints 的输出），
+# 数值不是估的：每个姿势都拿正运动学验过 —— 手腕落点、小臂方向、肘部夹角、
+# 掌心朝向都打印出来对过。这台机器人的前臂够不到身体中线，所以比心做成
+# 双手举过头顶、指尖朝头顶汇聚的版本，而不是胸前合掌。
 GESTURES: dict[str, dict] = {
+    # 挥手：单手（右手）。大臂侧平举、肘几乎伸直，小臂竖直向上、掌心朝前；
+    # 摆动挂在 shoulder_roll 上 —— 那是绕前后轴的转动，整条手臂带着小臂在手侧左右摆，
+    # 比用 yaw 更接近人手「摆手」，也不会把手掌转成翻腕。
+    # 左臂显式写成垂在体侧：手不动的那条手臂不能被上一次动作的位置留下来
     "wave": {
         "label": "挥手",
         "pose": {
-            "right_shoulder_roll_joint": -2.3,
-            "right_shoulder_pitch_joint": -0.3,
-            "right_shoulder_yaw_joint": 0.0,
-            "right_elbow_joint": 0.1,
+            "right_shoulder_pitch_joint": -2.95,
+            "right_shoulder_roll_joint": -1.81,
+            "right_shoulder_yaw_joint": 1.38,
+            "right_elbow_joint": -0.14,
+            "left_shoulder_pitch_joint": 0.0,
+            "left_shoulder_roll_joint": 0.22,
+            "left_shoulder_yaw_joint": 0.0,
+            "left_elbow_joint": 1.45,
         },
-        "osc": {
-            "right_shoulder_yaw_joint": (0.55, 2.5),
-            "right_elbow_joint": (0.3, 2.5),
-        },
+        "osc": {"right_shoulder_roll_joint": (0.42, 6.0)},
     },
+    # 比心：双手举到头顶两侧，小臂折向头顶，指尖朝向头顶正上方那一点、掌心朝前。
+    # 这组角是从模型正运动学反解出来的：手腕落在 (±0.094, +0.910)，
+    # 前臂方向 (-0.11, ∓0.83, +0.54)，与「手腕→头顶」的方向只差 21°，
+    # 肘部约 93°，两只手在头顶上方围成一个心形
     "heart": {
         "label": "比心",
         "pose": {
-            "left_shoulder_pitch_joint": -2.6,
-            "right_shoulder_pitch_joint": -2.6,
-            "left_shoulder_roll_joint": 0.4,
-            "right_shoulder_roll_joint": -0.4,
-            "left_shoulder_yaw_joint": 1.2,
-            "right_shoulder_yaw_joint": -1.2,
-            "left_elbow_joint": 1.2,
-            "right_elbow_joint": 1.2,
+            "left_shoulder_pitch_joint": -2.73,
+            "right_shoulder_pitch_joint": -2.73,
+            "left_shoulder_roll_joint": 0.80,
+            "right_shoulder_roll_joint": -0.80,
+            "left_shoulder_yaw_joint": -1.22,
+            "right_shoulder_yaw_joint": 1.22,
+            "left_elbow_joint": -0.2,
+            "right_elbow_joint": -0.2,
         },
         "osc": {},
     },
+    # 加油：单手（右手）高举到脸前上方，小臂朝前上，靠 shoulder_pitch 往复
+    # 前后推，像举手敲门；左臂垂在体侧
     "cheer": {
         "label": "加油",
         "pose": {
-            "left_shoulder_roll_joint": 2.5,
-            "right_shoulder_roll_joint": -2.5,
-            "left_shoulder_pitch_joint": 0.15,
-            "right_shoulder_pitch_joint": 0.15,
-            "left_elbow_joint": 0.2,
-            "right_elbow_joint": 0.2,
+            "right_shoulder_pitch_joint": -0.04,
+            "right_shoulder_roll_joint": -2.39,
+            "right_shoulder_yaw_joint": -0.76,
+            "right_elbow_joint": 0.56,
+            "left_shoulder_roll_joint": 0.25,
+            "left_elbow_joint": 1.4,
         },
-        "osc": {"left_shoulder_pitch_joint": (0.25, 3.0), "right_shoulder_pitch_joint": (0.25, 3.0)},
+        "osc": {"right_shoulder_pitch_joint": (0.32, 6.5)},
     },
-    # 双手同时挥：左右 yaw 的符号约定相反，所以 osc 里右臂取负振幅
+    # 双手同时挥：挥手的镜像，两条手臂由同一个正弦驱动，幅值取负（roll 的符号
+    # 约定左右相反）就得到同一时刻的对称姿态 —— 一起向外张、一起向内收，
+    # 世界坐标里方向相反，节奏完全同步。不要再加初相，那会让一臂升一臂降
     "wave_both": {
         "label": "双手挥",
         "pose": {
-            "left_shoulder_roll_joint": 2.3,
-            "right_shoulder_roll_joint": -2.3,
-            "left_shoulder_pitch_joint": 0.1,
-            "right_shoulder_pitch_joint": 0.1,
-            "left_elbow_joint": 0.2,
-            "right_elbow_joint": 0.2,
+            "left_shoulder_pitch_joint": -2.95,
+            "right_shoulder_pitch_joint": -2.95,
+            "left_shoulder_roll_joint": 1.81,
+            "right_shoulder_roll_joint": -1.81,
+            "left_shoulder_yaw_joint": -1.38,
+            "right_shoulder_yaw_joint": 1.38,
+            "left_elbow_joint": -0.14,
+            "right_elbow_joint": -0.14,
         },
         "osc": {
-            "left_shoulder_yaw_joint": (0.45, 2.6),
-            "right_shoulder_yaw_joint": (-0.45, 2.6),
+            "left_shoulder_roll_joint": (0.42, 6.0),
+            "right_shoulder_roll_joint": (-0.42, 6.0),
         },
     },
-    # 舞动：手臂收到体前屈肘，左右按不同频率上下摆，腰跟着扭
+    # 舞动：手臂收到体前屈肘，左右按不同频率上下摆，腰跟着扭；
+    # 小臂单独再摆一层 —— 肘角跟着各自肩的节拍开合，前臂在体前画小圈，
+    # 不是整条手臂僵着一起晃
     "dance": {
         "label": "舞动",
         "pose": {
@@ -536,38 +585,55 @@ GESTURES: dict[str, dict] = {
             "right_shoulder_roll_joint": -0.55,
             "left_shoulder_pitch_joint": -0.9,
             "right_shoulder_pitch_joint": -0.9,
-            "left_elbow_joint": 1.5,
-            "right_elbow_joint": 1.5,
+            "left_elbow_joint": -0.25,
+            "right_elbow_joint": -0.25,
             "waist_yaw_joint": 0.0,
         },
         "osc": {
             "left_shoulder_pitch_joint": (0.65, 3.0),
             "right_shoulder_pitch_joint": (0.65, 4.5),
+            "left_elbow_joint": (0.45, 3.0),
+            "right_elbow_joint": (0.45, 4.5),
             "waist_yaw_joint": (0.35, 3.0),
         },
     },
-    # 伸懒腰：双臂举高、肘微屈，肩轻微起伏
+    # 伸懒腰：大臂举到竖直，小臂向后折 54°，双手落在头后 ——
+    # 手腕 (±0.164, -0.098) 已经在后脑勺平面（头枕 x=-0.044）的后面，
+    # 高度 0.948 也高过头顶 0.926；肩与肘再慢速小幅开合，像伸完舒展一下
     "stretch": {
         "label": "伸懒腰",
         "pose": {
-            "left_shoulder_roll_joint": 2.55,
-            "right_shoulder_roll_joint": -2.55,
-            "left_shoulder_pitch_joint": 0.45,
-            "right_shoulder_pitch_joint": 0.45,
-            "left_elbow_joint": 0.35,
-            "right_elbow_joint": 0.35,
+            "left_shoulder_roll_joint": 0.22,
+            "right_shoulder_roll_joint": -0.22,
+            "left_shoulder_pitch_joint": -3.03,
+            "right_shoulder_pitch_joint": -3.03,
+            "left_shoulder_yaw_joint": -0.28,
+            "right_shoulder_yaw_joint": 0.28,
+            "left_elbow_joint": 0.48,
+            "right_elbow_joint": 0.48,
         },
         "osc": {
-            "left_shoulder_pitch_joint": (0.18, 1.2),
-            "right_shoulder_pitch_joint": (0.18, 1.2),
+            "left_shoulder_roll_joint": (0.06, 1.0),
+            "right_shoulder_roll_joint": (-0.06, 1.0),
+            "left_elbow_joint": (0.1, 1.0),
+            "right_elbow_joint": (0.1, 1.0),
         },
     },
+}
+
+# 手臂自然下垂的那一组角。模型的前臂默认是向前平伸的（肘 0 就是僵尸手），
+# 光把肩归零不会让手垂下来，必须把肘折到底、肩再微外张一点（±0.22 让手臂
+# 离开躯干）。重置姿态和刚启动时的初始站姿共用这一份
+ARM_REST: dict[str, float] = {
+    "left_shoulder_roll_joint": 0.22,
+    "right_shoulder_roll_joint": -0.22,
+    "left_elbow_joint": 1.45,
+    "right_elbow_joint": 1.45,
 }
 
 # 静态姿态预设。kinematic 下另带 base_dz：屈膝时把机身一起压下去，
 # 否则脚会被抬离地面（qpos 里腿短了、机身没降）。dynamic 下不用这个值。
 PRESETS: dict[str, dict] = {
-    "stand": {"label": "站直", "pose": {}, "base_dz": 0.0},
     "tpose": {
         "label": "平举",
         "pose": {
@@ -578,41 +644,51 @@ PRESETS: dict[str, dict] = {
         },
         "base_dz": 0.0,
     },
-    # 半蹲。弯曲量按实际腿长算过：hip 0.25 / knee 0.8 时机身要降 0.105 才让
-    # 脚底回到地面高度；再深就会变成单膝跪地的样子，所以只做到浅蹲。
+    # 半蹲。髋向前摆（负角）让大腿压到接近水平、膝同量回弯让小臂（小腿）立回竖直，
+    # 踝回到 0 使脚掌仍是平的。这一蹲机身要降 0.18，否则脚掌被抬离地面
     "squat": {
         "label": "半蹲",
         "pose": {
-            "left_hip_pitch_joint": 0.25,
-            "right_hip_pitch_joint": 0.25,
-            "left_knee_joint": 0.8,
-            "right_knee_joint": 0.8,
-            "left_ankle_pitch_joint": -0.25,
-            "right_ankle_pitch_joint": -0.25,
+            "left_hip_pitch_joint": -1.6,
+            "right_hip_pitch_joint": -1.6,
+            "left_knee_joint": 1.7,
+            "right_knee_joint": 1.7,
+            "left_ankle_pitch_joint": 0.0,
+            "right_ankle_pitch_joint": 0.0,
             "left_shoulder_roll_joint": 0.3,
             "right_shoulder_roll_joint": -0.3,
+            "left_elbow_joint": 1.4,
+            "right_elbow_joint": 1.4,
         },
-        "base_dz": -0.105,
+        "base_dz": -0.18,
     },
+    # 举手（投降式）：大臂侧平举、肘微屈，小臂竖直向上、掌心朝前。
+    # 这组角度是照模型算出来的（肩 pitch -2.95 / roll -1.81 / yaw 1.38），
+    # 只看 roll 举不起来 —— 侧举之后肘轴变成竖直的，必须先用 yaw 把肘轴掰回水平
     "hands_up": {
         "label": "举手",
         "pose": {
-            "left_shoulder_roll_joint": 2.5,
-            "right_shoulder_roll_joint": -2.5,
-            "left_elbow_joint": 0.1,
-            "right_elbow_joint": 0.1,
+            "left_shoulder_pitch_joint": -2.95,
+            "right_shoulder_pitch_joint": -2.95,
+            "left_shoulder_roll_joint": 1.81,
+            "right_shoulder_roll_joint": -1.81,
+            "left_shoulder_yaw_joint": -1.38,
+            "right_shoulder_yaw_joint": 1.38,
+            "left_elbow_joint": -0.14,
+            "right_elbow_joint": -0.14,
         },
         "base_dz": 0.0,
     },
-    # 这台机器人没有腕关节、前臂也短，只能做到"伸手"的程度
+    # 伸手：大臂竖直垂在体侧，只有小臂向前平伸（肘角度接近 0，靠的是模型本身的
+    # 前臂朝向），另一条手臂自然收着
     "reach": {
         "label": "伸手",
         "pose": {
-            "right_shoulder_pitch_joint": 1.4,
-            "right_shoulder_roll_joint": -0.4,
-            "right_elbow_joint": 0.0,
+            "right_shoulder_pitch_joint": 0.05,
+            "right_shoulder_roll_joint": -0.05,
+            "right_elbow_joint": -0.15,
             "left_shoulder_roll_joint": 0.2,
-            "left_elbow_joint": 0.25,
+            "left_elbow_joint": 1.35,
         },
         "base_dz": 0.0,
     },
@@ -620,9 +696,12 @@ PRESETS: dict[str, dict] = {
 
 # 步态：两条腿按正弦相位交替，膝在摆动相屈起，手臂反向摆、腰轻微扭。
 # 只写 target，实际的角速度仍受 joint_speed 限制，所以从站姿切进来不会瞬移。
+# elbow 是肘的目标角：walk 1.45 让前臂垂下来（手臂自然下垂），
+# march -0.15 让小臂与大臂成 90°（模型前臂默认就朝前，肘 0 已是直角，
+# 肩 roll 外张 0.22 会把它带偏 8.6°，负角补回来）
 GAITS: dict[str, dict] = {
-    "walk": {"label": "行走", "hip": 0.35, "knee": 0.55, "arm": 0.28, "waist": 0.12, "freq": 1.1},
-    "march": {"label": "踏步", "hip": 0.3, "knee": 0.8, "arm": 0.2, "waist": 0.06, "freq": 1.8},
+    "walk": {"label": "行走", "hip": 0.35, "knee": 0.55, "arm": 0.45, "waist": 0.12, "freq": 1.1, "elbow": 1.45},
+    "march": {"label": "跑步", "hip": 0.3, "knee": 0.8, "arm": 0.5, "waist": 0.06, "freq": 1.8, "elbow": -0.15},
 }
 
 
