@@ -53,15 +53,14 @@
   scale:0;
   transform-origin:50% 50%;
   transform:scale(calc(1 - var(--press, 0) * var(--press-k)));
-  /* 换色也过渡一下：确认态是从主题色直接切到 warning，硬切会闪 */
-  transition:transform .2s linear, scale .1s cubic-bezier(.7,0,.84,.16),
-             background-color .15s linear;
+  /* 颜色不参与过渡：浅青到暗红之间会经过一段发灰的中间值，而 hover 进出时
+     这条过渡常只跑一半就被反向，看上去就是底色在闪。状态色瞬切，底片只管缩放 */
+  transition:transform .2s linear, scale .1s cubic-bezier(.7,0,.84,.16);
 }
 .modal__act-btn:hover:not(:disabled){color:var(--text-invert); transition:color .1s cubic-bezier(.16,.84,.3,1)}
 .modal__act-btn:hover:not(:disabled)::before{
   scale:1;
-  transition:transform .2s linear, scale .1s cubic-bezier(.16,.84,.3,1),
-             background-color .15s linear;
+  transition:transform .2s linear, scale .1s cubic-bezier(.16,.84,.3,1);
 }
 /* 按下期间几何由 GSAP 逐帧写，只关 transform 那条过渡，scale 留着 ——
    边按边涨的底色不会在中途冻住 */
@@ -69,13 +68,19 @@
 .modal__act-btn:disabled{opacity:.35; cursor:not-allowed}
 
 /* 连上之后底片不再收回去：它此刻表达的是「已连接」，一直铺着主题色、
-   字保持反白，和顶栏已选中的胶囊同一个样子 */
+   字保持反白，和顶栏已选中的胶囊同一个样子。指针一移上来就交给下面的
+   .is-cut，底色跟着状态换，不做提亮那一档 */
 .modal__act-btn.is-on{color:var(--text-invert)}
 .modal__act-btn.is-on::before{scale:1}
-/* 已连接时底片已经铺满，hover 的涨开看不出变化，改用提亮一档给一点反馈 */
-.modal__act-btn.is-on:hover:not(:disabled)::before{background:var(--theme-hover)}
-/* 已连接再点一下先进入确认态：底片换 warning、文案变「断连」，
-   再点一次才真的断开；3 秒内没有第二下才退回已连接 */
+
+/* 指针停在上面：底片换 warning、文案由脚本改成「断连」、字保持反白。
+   这就是点下去会发生的事，先摆出来 —— 比原来「提亮一档」诚实得多，
+   也顺带替掉了 3 秒确认：鼠标用户一下即断，不再需要先点一下试探 */
+.modal__act-btn.is-cut{color:var(--text-invert)}
+.modal__act-btn.is-cut::before{scale:1; background:var(--warning)}
+
+/* 没有 hover 的输入（触屏、键盘）走这条：第一下进入 warning 确认态，
+   再点一次才真的断开；3 秒内没有第二下就退回已连接 */
 .modal__act-btn.is-arm{color:var(--text-invert)}
 .modal__act-btn.is-arm::before{scale:1; background:var(--warning)}
 /* 右列那行标题（Q1_RandomName）走主题色：它指的是当前生效的那一个，
@@ -401,4 +406,88 @@
    不再叠一层 CSS 补间，抬手时也就没有补偿性的淡出 */
 .modal__foot .pill[data-act="confirm"]{color:var(--text-invert); transition:none}
 .modal__foot .pill[data-act="confirm"]::before{background:var(--theme); inset:0; scale:1; transition:none}
+
+/* ── Privacy / Contact：纯文本页 ──────────────────────────────────
+   两枚账号菜单胶囊没有可操作的控件，只有一段说明，所以不用 Settings 那套
+   左右分栏：标题留给顶部标题区，下面整块是一个滚动区，一块一块往下排。
+   节奏与 Settings 右区对齐 —— 16 号小标题、14 号正文、条间 4。
+   条款多了就直接滚，顶部不加雾带：那条雾带原本是给栏体做的（内容滑到栏顶时
+   化掉边缘），搬到弹窗里会把第一条的小标题洗浅，没有提示作用，
+   所以这里只有 overflow-y 一层，滚动条隐掉，其余保持朴素 */
+.doc{
+  display:flex; flex-direction:column;
+  flex:1 1 auto; min-height:0;
+}
+.doc[hidden]{display:none}   /* 类选择器会盖掉 [hidden] 的 UA display:none */
+.doc__body{
+  flex:1 1 auto; min-height:0;
+  display:flex; flex-direction:column; gap:4px;
+  overflow-y:auto; overflow-x:clip;
+  overscroll-behavior:contain;
+  scrollbar-width:none;   /* 不显示滚动条：条宽会把行挤窄，右端就不再与标题区齐平 */
+}
+.doc__body::-webkit-scrollbar{width:0; height:0}
+/* Contact 那种「整块只有一个链接」的页：横纵都居中。纵向也居中是必须的 ——
+   只横不纵时链接贴在滚动区顶端，下面一大片空白，看着像没排完。
+   align-items 同时把链接从 stretch 收回自身宽度，胶囊不会被拉满整行 */
+.doc__body--mid{align-items:center; justify-content:center}
+/* 一条一款：序号 + 小标题在上，正文距它 2。
+   条与条只隔 4（上面那条 gap）—— 序号本身就是分组标记，不必再靠大留白分隔；
+   正文用默认行距（line-height:normal），1.6 那种松排法配上 4 的条间距，
+   块内会松于块间，读起来是散的 */
+.doc__sec{display:flex; flex-direction:column; align-items:flex-start; gap:2px}
+.doc__name{
+  font-size:var(--fs-16); line-height:1.2; letter-spacing:.2px;
+  color:var(--text-secondary);
+}
+/* 序号：主题色、等宽数字，不参与小标题的次级文字色；
+   右侧 6 与标题拉开，不写空格字符（缩进换行时不会被吃掉） */
+.doc__no{
+  margin-right:6px;
+  color:var(--theme);
+  font-variant-numeric:tabular-nums;
+}
+/* 正文用 --text-reduced：正文是长句，压到 text-primary 会和标题争层级；
+   行距走默认，长度靠面板自身的宽度控制，不再靠加行距来换可读性 */
+.doc__text{
+  margin:0;
+  font-size:var(--fs-14); line-height:normal; letter-spacing:.2px;
+  color:var(--text-reduced);
+  /* 两端对齐：条款是成段的中文，右端参差时行尾会碎掉；逐行拉齐后
+     右缘与标题区对齐，读起来是一整块。最后一行显式回左 ——
+     justify 的最后一行在不同引擎里处理不一致，Safari 会把末行也拉开 */
+  text-align:justify; text-align-last:left;
+}
+/* 键名这类代码用等宽字：混在中文句子里，比例字体下 px.mode 会看着发虚 */
+.doc__code{
+  font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size:.92em; letter-spacing:0;
+  color:var(--text-secondary);
+}
+/* 外链做成胶囊：高度与 Settings 的 .set__tab 同为 34，颜色跟主题，
+   描边用 inset 阴影而不是 border —— border 在 border-box 下会挤掉内容宽，
+   且 border-color 本身没有过渡，hover 时描边是硬切 */
+.doc__link{
+  display:inline-flex; align-items:center; gap:8px;
+  height:34px; padding:0 12px;
+  border-radius:999px;
+  font-size:var(--fs-16); line-height:1; letter-spacing:.2px;
+  color:var(--theme); text-decoration:none;
+  box-shadow:inset 0 0 0 1px rgb(from var(--theme) r g b / .35);
+  transition:box-shadow .15s linear, background-color .15s linear;
+}
+/* hover 只加深描边、不铺底色：这一枚是文档里的一个链接，
+   不是主按钮，涨满主题色会把它读成「可以按的控件」 */
+.doc__link:hover{box-shadow:inset 0 0 0 1px var(--theme)}
+.doc__link:focus-visible{outline:2px solid var(--theme); outline-offset:2px}
+.doc__link-lab{white-space:nowrap}
+/* 箭头跟胶囊那枚同源，只是缩到 14 并压在文字后面：
+   它指示的是「离开本页」，所以朝右下，hover 时往那个方向挪 1 */
+.doc__link-arrow{
+  width:14px; height:14px; display:block;
+  fill:currentColor;
+  transform:rotate(45deg);
+  transition:transform .15s var(--ease);
+}
+.doc__link:hover .doc__link-arrow{transform:rotate(45deg) translate(1px, 0)}
 

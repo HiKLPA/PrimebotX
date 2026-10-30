@@ -66,9 +66,12 @@
         展开动画里卡片跟着面板一起伸缩，和右栏的输入框是同一套跟随方式，
         不再是「卡片定宽、面板拉开遮住」的抽屉感；
         hover 填该组系列色、文字全部反白 ---- */
-/* 视图切换：Pinned 三组全出、每组带组名；
-   Action / Dialog / Tendance 只出自己那一组，且不显示组名（按钮下方的标签已经说明了） */
-.panel__body[data-view="pinned"] .sc-group + .sc-group{
+/* 视图切换：Pinned 三组全出；Action / Dialog / Tendance 只出自己那一组。
+   四个视图都带组名 —— 单组页里那枚标题同时也是吸顶的那一枚，
+   内容滚起来才有东西压到雾带上 */
+/* .is-first 是「pinned 视图里真正排第一的组」，由 rails.js 的 paint 挂上，
+   见下面标题那段；它不是 DOM 第二个却排在首位时，不能再吃一段组间距 */
+.panel__body[data-view="pinned"] .sc-group + .sc-group:not(.is-first){
   margin-top:var(--group-gap);   /* 不同指令区域上下间隔，默认 16 */
 }
 .panel__body[data-view="action"] .sc-group,
@@ -77,9 +80,6 @@
 .panel__body[data-view="action"] .sc-group--action,
 .panel__body[data-view="dialog"] .sc-group--dialog,
 .panel__body[data-view="tendance"] .sc-group--tendance{display:block}
-.panel__body[data-view="action"] .sc-group__title,
-.panel__body[data-view="dialog"] .sc-group__title,
-.panel__body[data-view="tendance"] .sc-group__title{display:none}
 .sc-group{
   --sc: var(--series-green-light);              /* 默认组色，Action 用；Dialog / Tendance 在标签上覆盖 */
   /* 组宽撑满栏宽，让下面的 .sc-grid 有整栏可以平分。
@@ -104,19 +104,18 @@
   font-size:24px; line-height:1; letter-spacing:.4px; font-weight:var(--fw);
   color:var(--text-secondary);   /* 组标题用次级文字色，压在雾带上也够实 */
 }
-/* 第一枚标题的初始位置与吸顶位置对齐，都是 --title-top（遮罩竖直中线）。
+/* 每个视图里排在最上面的那枚标题，初始位置与吸顶位置对齐，都是 --title-top（遮罩竖直中线）。
    正文自带 --pad-y(32) 的上留白，这里用同样的差值把它抵掉，
-   后面的卡片跟着一起上移，标题与首张卡片之间那 8px 的节奏不变 */
-.panel__body > .sc-group:first-child > .sc-group__title{
+   后面的卡片跟着一起上移，标题与首张卡片之间那 8px 的节奏不变。
+   pinned 里空组会整组收起（.is-vacant），排第一的未必是 DOM 第一个组，
+   rails.js 因此额外给真正排第一的那组挂 .is-first；
+   单组视图只有一个组可见，按各自的分组类指名 —— 不能写 :first-of-type，
+   它永远落在 DOM 第一个 section（action）上，切到 dialog / tendance 就落空了 */
+.panel__body[data-view="pinned"] > .sc-group.is-first > .sc-group__title,
+.panel__body[data-view="action"] > .sc-group--action > .sc-group__title,
+.panel__body[data-view="dialog"] > .sc-group--dialog > .sc-group__title,
+.panel__body[data-view="tendance"] > .sc-group--tendance > .sc-group__title{
   margin-top:calc(var(--title-top) - var(--pad-y));
-}
-/* 其余三个视图把标题 display:none 掉了，卡片会往上顶 32px。
-   这里补一段等价的上留白：标题盒 24 + 下间距 8，减去被负 margin 抵掉的那段，
-   首张卡片因此和 pinned 一样落在 44 处（12 + 24 + 8），切页时卡片顶边不跳 */
-.panel__body[data-view="action"] .sc-group--action,
-.panel__body[data-view="dialog"] .sc-group--dialog,
-.panel__body[data-view="tendance"] .sc-group--tendance{
-  padding-top:calc(24px + 8px + var(--title-top) - var(--pad-y));
 }
 .sc-grid{
   display:grid;

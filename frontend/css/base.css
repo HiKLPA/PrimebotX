@@ -5,8 +5,6 @@
 :root{
   /* color */
   --theme:            #91d2c3;   /* theme_light */
-  --theme-hover:      #9cd7c9;   /* theme 提亮 10%（兜底，color-mix 不支持时用） */
-  --theme-hover:      color-mix(in srgb, var(--theme) 90%, #ffffff);  /* 向白混 10% */
   --theme-dark:       #91d7cd;   /* theme_dark */
   --hint:             #5f9b73;   /* hint */
   --warning:          #aa4137;   /* warning */

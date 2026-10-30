@@ -26,6 +26,14 @@ gsap.registerPlugin(ScrollTrigger);
       titleTop = isNaN(v) ? 12 : v;
     }
 
+    /* 内容撑不满时没有可滚的距离，顶上那条雾带压在空白上只是一块灰，收掉更好看。
+       判定结果写成属性交给 CSS —— 雾带是 body 的兄弟节点，得从面板往下选。
+       留 1px 容差：分数高度取整后 scrollHeight 与 clientHeight 常差半像素 */
+    function fit() {
+      var next = body.scrollHeight - body.clientHeight > 1 ? 'on' : 'off';
+      if (body.getAttribute('data-scroll') !== next) body.setAttribute('data-scroll', next);
+    }
+
     /* 内容坐标：元素顶边到滚动内容起点的距离。滚到哪儿它都不变，
        所以 start / end 只在 refresh 时算一次，滚动过程中不读布局 */
     function groupTop(g) {
@@ -68,11 +76,14 @@ gsap.registerPlugin(ScrollTrigger);
     var timer = 0;
     function relayout() {
       clearTimeout(timer);
-      timer = setTimeout(function () { measure(); ScrollTrigger.refresh(); }, 160);
+      timer = setTimeout(function () { measure(); fit(); ScrollTrigger.refresh(); }, 160);
     }
 
     measure();
-    if (window.ResizeObserver) new ResizeObserver(relayout).observe(body);
+    fit();
+    /* 面板开合时高度一路在变，雾带要不要显示得跟着走。这里不进防抖：
+       量一次 scrollHeight 很便宜，进防抖反而会让动画里多出几百毫秒的错档 */
+    if (window.ResizeObserver) new ResizeObserver(function () { fit(); relayout(); }).observe(body);
     if (window.MutationObserver) {
       /* 切视图是瞬时换显示，得当场重算。走 160ms 防抖的话，这段空窗里标题还按
          上一套 start/end 的进度挂在 opacity 0 上 —— 卡片已经出来了、标题却要等
@@ -80,6 +91,7 @@ gsap.registerPlugin(ScrollTrigger);
       new MutationObserver(function () {
         clearTimeout(timer);
         measure();
+        fit();
         ScrollTrigger.refresh();
       }).observe(body, { attributes: true, attributeFilter: ['data-view'] });
 
@@ -87,6 +99,7 @@ gsap.registerPlugin(ScrollTrigger);
       body.addEventListener('pinchange', function () {
         clearTimeout(timer);
         measure();
+        fit();
         ScrollTrigger.refresh();
       });
     }

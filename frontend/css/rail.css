@@ -272,12 +272,15 @@ body:has(.rail--right.is-open) .rail__toggle[data-rail="right"]{
 .dock__card:hover::before{opacity:1}
 
 /* 升降箭头：展开时贴面板上沿 4。它放在 .dock 里，跟着整块一起上下走，
-   不用像栏体那样另算一套位置；箭头本身只是 32 的透明钮 */
+   不用像栏体那样另算一套位置；箭头本身只是 32 的透明钮。
+   层级要压在 .dock__surface 之上：面板 has 一圈 16–32 的投影，收起过程中
+   两者还会短暂重叠，不抬的话按钮会被面板连同投影一起盖掉 */
 .dock__toggle{
   appearance:none; -webkit-appearance:none;
   position:absolute;
   left:50%; bottom:calc(100% + 4px);
   translate:-50% 0;
+  z-index:1;
   width:32px; height:32px;
   display:grid; place-items:center;
   padding:0; border:0; background:none;
@@ -287,12 +290,14 @@ body:has(.rail--right.is-open) .rail__toggle[data-rail="right"]{
   transition:opacity .1s linear, color .1s linear;
 }
 .dock__toggle:hover{opacity:1; color:var(--theme)}
-/* 收起后按钮不再跟着面板沉下去：面板这时只露 1/8 在屏内，按钮要停在离屏底 4 的地方，
-   等于换了一个定位基准。面板此时被 scale .95 压过（原点在底边），所以 bottom 值
-   得把这一档除回来：.95 × bottom − .825h = 4  →  bottom = 82.5%/.95 + 4px/.95，
-   百分比按面板自身高度算，面板长高长矮两边一起变，4 始终是 4 */
+/* 收起后 4 这个间距仍要对准面板上沿，而那个上沿就是露在屏内的 1/8 那条带子的顶：
+   位移按 s·h − h/8 走、缩放又把上沿压低 (1 − s)·h，两边正好抵掉，带子顶落在
+   原高上方 h/8 处，与面板自己的上沿重合。所以 bottom 照旧取 100%（贴面板上沿），
+   只需把 4 除以缩放量补回被 scale 吞掉的那一成：100% + 4px/.95，落屏后仍是 4。
+   这里不再另算一套 82.5% 的位移 —— 那是「4 离视口底」的算法，
+   落点会掉进带子里，正是让按钮看着被面板吃掉的写法 */
 .dock:not(.is-open) .dock__toggle{
-  bottom:calc(82.5% / .95 + 4px / .95);
+  bottom:calc(100% + 4px / .95);
 }
 .dock__toggle svg{
   width:20px; height:20px; display:block;
@@ -434,10 +439,10 @@ body:has(.rail--right.is-open) .rail__toggle[data-rail="right"]{
   display:flex; flex-direction:column; justify-content:space-between;
   /* 下方内边距按「图标本体对齐」算，不是按整块 icon+标签：
      编辑钮吊在列底时，它下面还挂着 4px 间隔 + 14px 行高的标签（共 18），
-     取 33 − 18 = 15，图标底边到栏底才是 33，与 Pinned 图标顶边到栏顶的 33 相等 */
-  padding:33px 16px 15px;
+     取 32 − 18 = 14，图标底边到栏底才是 32，与 Pinned 图标顶边到栏顶的 32 相等 */
+  padding:32px 16px 14px;
 }
-.rail__items{display:flex; flex-direction:column; gap:16px; flex:1 1 auto}
+.rail__items{display:flex; flex-direction:column; gap:8px; flex:1 1 auto}
 /* 编辑钮单独吊到列底：列已经撑满栏体，margin-top:auto 把剩下的高度全吃掉 */
 .item--edit{margin-top:auto}
 
@@ -488,7 +493,11 @@ body:has(.rail--right.is-open) .rail__toggle[data-rail="right"]{
   margin:4px 0 0;
   font-size:var(--fs-14); line-height:1; letter-spacing:.2px;
   color:var(--text-muted); text-align:center; white-space:nowrap;
-  transition:color .1s cubic-bezier(.7,0,.84,.16);
+  /* 平时只留图标，hover 时原地淡入。
+     用 opacity 而不是 display:none：占位一直留着，出现时下面的按钮不会被顶动，
+     整列的节奏也就不会被 hover 改掉 */
+  opacity:0;
+  transition:color .1s cubic-bezier(.7,0,.84,.16), opacity .12s linear;
 }
 /* 每个图标钮各自的强调色。Action / Dialog / Tendance 填各自的分组色，
    与展开后卡片区那套 --sc（.sc-group--action 等）同源；没写 --itc 的
@@ -514,8 +523,13 @@ body:has(.rail--right.is-open) .rail__toggle[data-rail="right"]{
 .item.is-active .item__label,
 .item:hover .item__label{
   color:var(--text-secondary);
-  transition:color .1s cubic-bezier(.16,.84,.3,1);
+  /* transition 是整条覆盖的，这里要把不透明度带上，
+     否则 hover 一刻只剩 color 有过渡，文字是「啪」一下出现的 */
+  transition:color .1s cubic-bezier(.16,.84,.3,1), opacity .12s linear;
 }
+/* 只在 hover 时露字：is-active 只换颜色，不负责显隐。
+   原地淡入，位置就是 margin 给的按钮下方 4，不做位移 */
+.item:hover .item__label{opacity:1}
 
 /* 展开面板 */
 .rail__panel{

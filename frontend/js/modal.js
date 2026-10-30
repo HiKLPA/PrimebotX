@@ -9,7 +9,7 @@
   var root = document.getElementById('modal');
   if (!root || !window.gsap) return;
   var panel = root.querySelector('.modal__panel');
-  var NAMES = ['Connect', 'Preference', 'Advance', 'Settings'];
+  var NAMES = ['Connect', 'Preference', 'Advance', 'Settings', 'Privacy', 'Contact'];
   var reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
 
   /* ---------- 面板外挂的两块底板 ---------- */
@@ -131,7 +131,7 @@
     });
   }
 
-  /* 三枚胶囊各自那套标题区文案。左列 = 弹窗标题 + 一行说明，
+  /* 六枚胶囊各自那套标题区文案。左列 = 弹窗标题 + 一行说明，
      右列 = 一行标题 + 一行说明；除 Connect 的两行是实指，其余是占位，
      接上真实数据源时替换这里的字符串即可 */
   var META = {
@@ -139,7 +139,11 @@
     Preference: { sub: '3 available', right: 'Q1_RandomName', rightSub: 'current' },
     Advance:    { sub: 'MuJoCo simulation' },
     /* Settings 左列只有标题和当前选项；右列（已确认的机型）与它无关，整列收掉 */
-    Settings:   { sub: 'Appearance' }
+    Settings:   { sub: 'Appearance' },
+    /* 账号菜单里那两枚也是这套弹窗，右列同样无关（它们不讲某台机器）。
+       说明行讲的是各自的内容，不是占位 */
+    Privacy:    { sub: '隐私政策' },
+    Contact:    { sub: '联系与反馈' }
   };
   var titleL = panel.querySelectorAll('[data-modal-title]');
   var subL   = panel.querySelectorAll('[data-modal-sub]');
@@ -247,10 +251,19 @@
       el.hidden = !isSet;
     });
     if (head) head.hidden = isSet;
+    /* Privacy / Contact 各是一段纯文本（.doc），和 Settings 一样按弹窗名整块切。
+       这两块没有内部状态，切走再回来内容不变，不需要另外复位 */
+    Array.prototype.forEach.call(panel.querySelectorAll('[data-privacy-only]'), function (el) {
+      el.hidden = name !== 'Privacy';
+    });
+    Array.prototype.forEach.call(panel.querySelectorAll('[data-contact-only]'), function (el) {
+      el.hidden = name !== 'Contact';
+    });
     /* 右上那列讲的是当前机型：Settings 用不上，Advance 里那一位已经让给
-       「连接仿真」按钮，也用不上。hidden 之外再把两行字清空 —— 只靠 hidden 的话，
+       「连接仿真」按钮，Privacy / Contact 也不讲某台机器，都用不上。
+       hidden 之外再把两行字清空 —— 只靠 hidden 的话，
        CSS 还没重新加载（浏览器缓存住旧 modal.css）时那一列会照旧显示 */
-    headEnd.hidden = isSet || name === 'Advance';
+    headEnd.hidden = isSet || name === 'Advance' || name === 'Privacy' || name === 'Contact';
     if (name === 'Advance') {
       titleL[1].textContent = '';
       subL[1].textContent = '';
@@ -516,6 +529,8 @@
   Array.prototype.forEach.call(tabs, function (t) {
     t.addEventListener('click', function () { pickTab(t.dataset.setTab); });
   });
+
+  /* ---------- Settings 内部 ---------- */
 
   /* 明暗模式：day / night，切的是 <html> 上的 data-theme，颜色全部由 :root 那套
      变量带出来，night 就是预留给深色的那一组。首帧之前 <head> 里已经按存下的选择

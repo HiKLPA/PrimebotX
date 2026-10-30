@@ -176,14 +176,20 @@
      全页一张都没有时面板就空着，此时给一段空态说明（.panel__empty），
      判据挂在 body 的 data-pin-empty 上，样式那边只认 pinned 视图 */
   function paint(body) {
-    var total = 0;
-    body.querySelectorAll('.sc-group').forEach(function (g) {
+    var total = 0, firstShown = null;
+    var groups = Array.prototype.slice.call(body.querySelectorAll('.sc-group'));
+    groups.forEach(function (g) {
       var any = false;
       g.querySelectorAll('.sc').forEach(function (c) {
         if (pinned[c.dataset.pinKey]) { any = true; total++; }
       });
       g.classList.toggle('is-vacant', !any);
+      if (any && !firstShown) firstShown = g;
     });
+    /* pinned 视图里空组整组收起，排在最上面的因此可能不是 DOM 第一个组。
+       标记出来给 CSS 用：那一组的标题要跟 :first-child 一样贴到遮罩处，
+       否则它比 Action 组当第一时低 20px，滚动一吸顶又跳回来 */
+    groups.forEach(function (g) { g.classList.toggle('is-first', g === firstShown); });
     body.setAttribute('data-pin-empty', total ? '0' : '1');
   }
 
@@ -404,9 +410,15 @@
   const user = document.getElementById('account');
   if (!user) return;
   const trigger = user.querySelector('.user__trigger');
+  const avatar = user.querySelector('.avatar');
 
   function setOpen(on) {
     user.classList.toggle('is-open', on);
+    /* 收面板时把头像选择区一起收掉：它的展开高度挂在面板高度上，
+       留着不关，下次点开胶囊会先看到那块选择条 */
+    if (!on) user.classList.remove('is-picking');
+    /* 收起态头像被 trigger 盖着，不该被 Tab 选中；展开后它才是独立的一站 */
+    if (avatar) avatar.tabIndex = on ? 0 : -1;
     trigger.setAttribute('aria-expanded', on ? 'true' : 'false');
   }
 

@@ -154,6 +154,10 @@
 [data-panel-body][data-view="log"] [data-chat-only]{display:none}
 /* 编辑页在左栏那块面板里，没有滚动内容要托，顶上那条雾带也用不上 */
 #panel-shortcuts:has([data-panel-body][data-view="edit"]) > .frost--top{display:none}
+/* 卡片撑不满、压根滚不动时同样收掉：雾带本身是给"内容从遮罩下滚过去"用的，
+   没有可滚的距离，它就只剩压在空白上的一块灰。data-scroll 由 sticky.js 量完写入
+   （scrollHeight 与 clientHeight 比较），切视图、钉卡、面板开合都会重算 */
+#panel-shortcuts:has(> [data-panel-body][data-scroll="off"]) > .frost--top{display:none}
 
 /* ── 左栏编辑页 ─────────────────────────────────────────────
    左栏 Edit 钮把本栏面板切到 data-view="edit" 时出现：先选类型，再填名字与简介。

@@ -139,9 +139,14 @@
   /* 与栏体同一套形变变量；原点取上边界中点，鼓起时上边界不动、左右对称 */
   --sx: 1;
   --sy: 1;
+  /* 头像选择区展开时向下让出的高度：名字与菜单都跟着它走，
+     面板高度也加同一段（长度值，CSS 变量本身不过渡，
+     但 top / height 的计算值变了，那两条声明上的 transition 照样平滑） */
+  --tray: 0px;
   scale: var(--sx) var(--sy);
   transform-origin:50% 0%;
 }
+.user.is-picking{--tray:60px;}
 .user__surface{
   position:absolute; top:0; left:0;
   width:100%; height:var(--top-h);
@@ -154,9 +159,10 @@
   /* 高度过渡：展开 48 → 246 + 名字行高，收起反向，都是 0.3s */
   transition:height .3s var(--ease);
 }
-/* 1 描边 + 8 + 80 + 4 + 名字(fs+4) + 16 + 3×40+2×4 + 4 + 1 描边 */
+/* 1 描边 + 8 + 80 + 4 + 名字(fs+4) + 16 + 3×40+2×4 + 4 + 1 描边；
+   点头像后再加 --tray 那 60（选择区 40 + 与名字之间的 16） */
 .user.is-open .user__surface{
-  height:calc(246px + var(--pill-fs));
+  height:calc(246px + var(--pill-fs) + var(--tray));
 }
 
 /* 头像是固定 80 的盒子，收起态只靠 transform 缩到 40 再挪到左上角：
@@ -164,10 +170,14 @@
    展开时不必重排。收起态中心要落在 (24,24)，展开态中心是 (50%, 48)，
    胶囊宽 --user-w 时即 (--user-half, 48) —— 所以左移 (--user-half − 24)、上移 24、缩到 0.5；
    胶囊宽度是流体的，位移量跟着一起算，换视口头像照样落在左上角。
-   transform 的平移量在父级坐标里，不受后面 scale 影响，数值直接按视觉距离写。 */
+   transform 的平移量在父级坐标里，不受后面 scale 影响，数值直接按视觉距离写。
+   它本身是个 button（展开后点头像要弹出下方的选择区），所以 button 的默认
+   边框、内边距、字体都清掉；收起态仍旧不接点击，交给盖住整条胶囊的 trigger */
 .avatar{
   position:absolute; left:50%; top:8px; margin-left:-40px;
   width:80px; height:80px; border-radius:999px;
+  appearance:none; -webkit-appearance:none;
+  padding:0; border:0;
   background-color:var(--avatar);
   background-image:url("../icon/default_avatar.png")   /* 相对 css/ 本身，故带 ../ 回项目根 */;
   background-size:cover;
@@ -176,9 +186,65 @@
   transform:translate(calc(24px - var(--user-half)), -24px) scale(.5);
   transform-origin:50% 50%;
   transition:transform var(--dur) var(--ease);
+  pointer-events:none;
+  z-index:3;            /* 压过 trigger(2)：展开后头像那 80 的圆是它自己的命中区 */
 }
-/* 展开：等比长到 80，水平居中，上边距 8 */
-.user.is-open .avatar{transform:none}
+/* 展开：等比长到 80，水平居中，上边距 8；此时头像自己接点击 */
+.user.is-open .avatar{transform:none; pointer-events:auto; cursor:pointer}
+.avatar:focus-visible{outline:2px solid var(--theme); outline-offset:2px}
+
+/* 头像选择区：贴着头像下沿 8（头像 8–88，这里 96 起、高 40）。
+   收起态不只淡到 0，还用 visibility 从 Tab 序列里摘掉 ——
+   单靠 opacity 的话，看不见的按钮仍然能被键盘选中 */
+.avatar__tray{
+  position:absolute; left:4px; right:4px; top:96px;
+  height:40px;
+  display:flex; align-items:center; justify-content:center; gap:8px;
+  z-index:3;
+  opacity:0; visibility:hidden; pointer-events:none;
+  /* 出场时 visibility 延到淡出结束再切，进场时立刻可见 */
+  transition:opacity var(--dur) var(--ease),
+             visibility 0s linear var(--dur);
+}
+.user.is-picking .avatar__tray{
+  opacity:1; visibility:visible; pointer-events:auto;
+  transition:opacity var(--dur) var(--ease), visibility 0s;
+}
+.avatar__opt,
+.avatar__up{
+  appearance:none; -webkit-appearance:none;
+  box-sizing:border-box;
+  width:40px; height:40px; padding:0; border-radius:999px;
+  background-size:cover; background-position:center; background-repeat:no-repeat;
+  cursor:pointer;
+  transition:box-shadow .15s linear, transform .15s var(--ease),
+             border-color .15s linear, color .15s linear;
+}
+.avatar__opt{
+  border:0; background-color:var(--avatar);
+  box-shadow:0 0 0 1px var(--border);
+}
+.avatar__opt[data-avatar="a1"]{background-image:url("../icon/default_avatar.png")}
+.avatar__opt[data-avatar="a2"]{background-image:url("../icon/default_avatar2.png")}
+.avatar__opt[data-avatar="a3"]{background-image:url("../icon/default_avatar3.png")}
+.avatar__opt[data-avatar="a4"]{background-image:url("../icon/default_avatar4.png")}
+/* 上传钮：空着时是虚线框加一个加号，传过图之后框里就是那张图 */
+.avatar__up{
+  border:1px dashed var(--border); background:none;
+  color:var(--text-reduced);
+  display:grid; place-items:center;
+}
+.avatar__plus{width:16px; height:16px; display:block}
+.avatar__up:hover{color:var(--theme); border-color:var(--theme)}
+.avatar__up.has-img{
+  border-style:solid; border-color:transparent;
+  background-size:cover; background-position:center;
+}
+.avatar__up.has-img .avatar__plus{display:none}
+.avatar__opt:hover,
+.avatar__up:hover{transform:scale(1.06)}
+.avatar__opt.is-sel,
+.avatar__up.is-sel{box-shadow:0 0 0 2px var(--theme)}
 
 .user__name{
   position:absolute;
@@ -192,9 +258,10 @@
              transform var(--dur) var(--ease), max-width var(--dur) var(--ease),
              font-size var(--dur) var(--ease), line-height var(--dur) var(--ease);
 }
-/* 展开：名字滑到头像正下方，间距 4；字号上调一档 */
+/* 展开：名字滑到头像正下方，间距 4；字号上调一档。
+   打开头像选择区时再往下让 --tray，给那张 40 高的选择条腾位置 */
 .user.is-open .user__name{
-  top:92px;
+  top:calc(92px + var(--tray));
   left:50%; transform:translateX(-50%);
   max-width:calc(100% - 16px);
   font-size:calc(var(--pill-fs) + 4px);
@@ -205,10 +272,11 @@
 /* 三项菜单：名字下方 16，左右内边距 4 */
 .user__menu{
   position:absolute; left:4px; right:4px;
-  top:calc(112px + var(--pill-fs));
+  top:calc(112px + var(--pill-fs) + var(--tray));
   display:flex; flex-direction:column; gap:4px;
   opacity:0; pointer-events:none;
-  transition:opacity var(--dur) var(--ease);
+  /* top 也要过渡：头像选择区一开，整组菜单跟着名字一起下移，不能硬跳 */
+  transition:opacity var(--dur) var(--ease), top var(--dur) var(--ease);
 }
 .user.is-open .user__menu{opacity:1; pointer-events:auto; transition-delay:.06s}
 /* 菜单项沿用顶栏胶囊的全部样式，只把尺寸改成撑满、高 48；

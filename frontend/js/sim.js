@@ -50,8 +50,12 @@
 
   var connected = false, busy = false, showFrame = true;
   /* 已连接后再点第一下进入的确认态：底色转 warning、文案变「断连」，
-     第二下才真的断开。没有第二下就等满 3 秒自己退回，中途不移开就早退 */
+     第二下才真的断开。没有第二下就等满 3 秒自己退回，中途不移开就早退。
+     这条只服务没有 hover 的输入（触屏、键盘）—— 鼠标另有 hoverCut */
   var armed = false, armTimer = null;
+  /* 指针停在已连接的按钮上时，按钮先变成「断连」的样子，点一下即断。
+     有了它就不必再点两下：悬停本身已经是那句「我要断开」的预告 */
+  var hoverCut = false;
   var sliders = {};                 // name -> input 元素
   var dragging = {};                // name -> 是否正在拖
   var pending = {};                 // 待发送的关节目标
@@ -98,14 +102,18 @@
     return result.data;
   }
 
-  /* 连接按钮三种样子：未连接（只剩文字）、已连接（主题色底、反白）、
-     已连接且点了第一下（warning 底、文案「断连」）。
-     全部由 connected / armed / busy 三个量推出来，不散在流程里手改 */
+  /* 连接按钮四种样子：未连接（只剩文字）、已连接（主题色底、反白）、
+     指针停在已连接上（warning 底、文案「断连」，点一下即断）、
+     没有 hover 时的确认态（样子同上，但要再点一下）。
+     全部由 connected / armed / hoverCut / busy 推出来，不散在流程里手改 */
   function paintConnect() {
     if (!connectBtn) return;
+    var cut = connected && (armed || hoverCut);
     connectBtn.disabled = busy;
-    connectBtn.textContent = !connected ? '连接仿真' : (armed ? '断连' : '已连接');
-    connectBtn.classList.toggle('is-on', connected && !armed);
+    connectBtn.textContent = !connected ? '连接仿真' : (cut ? '断连' : '已连接');
+    /* 底片颜色只由状态决定：hover 那一档也归进 cut，不再另做提亮 */
+    connectBtn.classList.toggle('is-on', connected && !cut);
+    connectBtn.classList.toggle('is-cut', connected && hoverCut && !armed);
     connectBtn.classList.toggle('is-arm', connected && armed);
   }
 
@@ -339,8 +347,8 @@
     if (!connected) return;
     api('/sim/camera', 'POST', { reset: true }).then(function (data) {
       cam = data;
-      say('视角已复位。');
-    }).catch(function (e) { say('视角复位失败：' + e.message); });
+      say('视角已重置。');
+    }).catch(function (e) { say('重置视角失败：' + e.message); });
   };
 
   /* ---------- 画面与状态 ---------- */
@@ -398,7 +406,7 @@
     document.body.appendChild(link);
     link.click();
     link.remove();
-    say('已请求保存当前画面。');
+    say('已请求保存当前帧。');
   };
 
   /* ---------- 参数显示：左列，一行一项 ---------- */
@@ -463,7 +471,10 @@
       var state = await api('/sim/state');
       lastState = state;
       dynamic = state.mode === 'dynamic';
-      setModeLabel(dynamic ? '切到运动学' : '切到动力学');
+      /* 按钮上写的是「点下去切到哪一种」，不是当前是哪一种 ——
+         dynamic 为真时按下去要切运动学，所以这里取反。
+         当前模式看右侧参数栏的 mode 那行，那里显示的是 state.mode 原值 */
+      setModeLabel(dynamic ? '运动学模式' : '动力学模式');
       if (state.camera) cam = state.camera;
       Object.keys(sliders).forEach(function (name) {
         if (dragging[name] || !(name in state.joints)) return;
@@ -489,6 +500,9 @@
       joints = table.joints;
       cam = table.camera || null;
       connected = true;
+      /* 刚连上时指针多半还压在按钮上，这时不该立刻摆出「断连」：
+         先回已连接，等移出去再进来才预告断开 */
+      hoverCut = false;
       renderJoints();
       buildActions(table);
       say('已连接 q1-sim（nq=' + table.nq + '，关节 ' + table.joints.length + ' 个）。' +
@@ -530,6 +544,7 @@
   function teardown() {
     if (armTimer) { clearTimeout(armTimer); armTimer = null; }
     armed = false;
+    hoverCut = false;
     if (stateTimer) { clearInterval(stateTimer); stateTimer = null; }
     if (frameTimer) { clearTimeout(frameTimer); frameTimer = null; }
     if (camTimer) { clearTimeout(camTimer); camTimer = null; }
@@ -546,7 +561,7 @@
     /* 只摘 src 不置空串：空串会按当前地址再请求一次 */
     frame.removeAttribute('src');
     Object.keys(statVals).forEach(function (key) { statVals[key].textContent = '-'; });
-    if (modeBtn) setModeLabel('切到动力学');
+    if (modeBtn) setModeLabel('动力学模式');
   }
 
   async function run(path, body, label) {
@@ -560,12 +575,25 @@
     finally { busy = false; controls(); }
   }
 
-  /* 同一枚按钮三态：没连→连上，已连接→先进确认态，确认态→真断 */
+  /* 同一枚按钮四种落点：没连→连上，已连接→鼠标停上去先预告断连，
+     这时点一下即断；触屏 / 键盘没有 hover，仍是先进入确认态再点第二下 */
   if (connectBtn) {
     connectBtn.addEventListener('click', function () {
       if (!connected) { connect(); return; }
-      if (!armed) { armDisconnect(); return; }
-      disconnect();
+      if (armed || hoverCut) { disconnect(); return; }
+      armDisconnect();
+    });
+    /* 只认鼠标：触屏点按也会补发 enter/leave，照收的话第一下就直接断了，
+       二次确认等于没有。pointerType 判定比 matchMedia 更贴近这一次输入 */
+    connectBtn.addEventListener('pointerenter', function (e) {
+      if (e.pointerType !== 'mouse' || !connected || busy || armed) return;
+      hoverCut = true;
+      paintConnect();
+    });
+    connectBtn.addEventListener('pointerleave', function () {
+      if (!hoverCut) return;
+      hoverCut = false;
+      paintConnect();
     });
   }
   rail.querySelector('[data-sim-reset]').onclick = function () {
@@ -575,7 +603,7 @@
     markOn(presetsBox, 'simPreset', null);
     run('/sim/reset', {}, '重置');
   };
-  rail.querySelector('[data-sim-stop]').onclick = function () { run('/motion/stop', {}, '急停'); };
+  rail.querySelector('[data-sim-stop]').onclick = function () { run('/motion/stop', {}, '停止'); };
   rail.querySelector('[data-sim-mode]').onclick = function () {
     run('/sim/mode', { mode: dynamic ? 'kinematic' : 'dynamic' }, dynamic ? '切运动学' : '切动力学');
     setTimeout(pollState, 300);
