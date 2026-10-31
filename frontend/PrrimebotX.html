@@ -19,6 +19,7 @@
   } catch (e) {}
 })();
 </script>
+<script src="js/i18n.js?v=1"></script>
   <link rel="stylesheet" href="css/base.css?v=2">
   <link rel="stylesheet" href="css/topbar.css?v=3">
   <link rel="stylesheet" href="css/rail.css?v=9">
@@ -45,14 +46,14 @@
 
   <nav class="nav" aria-label="主导航">
     <div class="group" role="group" aria-label="Camera">
-      <button class="pill is-active" type="button" aria-pressed="true"><span class="pill__label">Camera</span><svg class="pill__arrow" viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3.3.3.79,0,1.09l-4.35,4.35c-.3.3-.54.89-.54,1.31v3.9c0,.42.35.77.77.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3.79-.79,1.09-1.09l4.35-4.35Z"/></svg></button>
-      <button class="pill" type="button" aria-pressed="false"><span class="pill__label">Modal</span><svg class="pill__arrow" viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3.3.3.79,0,1.09l-4.35,4.35c-.3.3-.54.89-.54,1.31v3.9c0,.42.35.77.77.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3.79-.79,1.09-1.09l4.35-4.35Z"/></svg></button>
+      <button class="pill is-active" type="button" aria-pressed="true"><span class="pill__label" data-i18n="nav.camera">Camera</span><svg class="pill__arrow" viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3.3.3.79,0,1.09l-4.35,4.35c-.3.3-.54.89-.54,1.31v3.9c0,.42.35.77.77.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3.79-.79,1.09-1.09l4.35-4.35Z"/></svg></button>
+      <button class="pill" type="button" aria-pressed="false"><span class="pill__label" data-i18n="nav.modal">Modal</span><svg class="pill__arrow" viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3.3.3.79,0,1.09l-4.35,4.35c-.3.3-.54.89-.54,1.31v3.9c0,.42.35.77.77.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3.79-.79,1.09-1.09l4.35-4.35Z"/></svg></button>
     </div>
 
     <div class="group" role="group" aria-label="Control">
-      <button class="pill" type="button" aria-pressed="false"><span class="pill__label">Connect</span><svg class="pill__arrow" viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3.3.3.79,0,1.09l-4.35,4.35c-.3.3-.54.89-.54,1.31v3.9c0,.42.35.77.77.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3.79-.79,1.09-1.09l4.35-4.35Z"/></svg></button>
-      <button class="pill" type="button" aria-pressed="false"><span class="pill__label">Preference</span><svg class="pill__arrow" viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3.3.3.79,0,1.09l-4.35,4.35c-.3.3-.54.89-.54,1.31v3.9c0,.42.35.77.77.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3.79-.79,1.09-1.09l4.35-4.35Z"/></svg></button>
-      <button class="pill" type="button" aria-pressed="false"><span class="pill__label">Advance</span><svg class="pill__arrow" viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3.3.3.79,0,1.09l-4.35,4.35c-.3.3-.54.89-.54,1.31v3.9c0,.42.35.77.77.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3.79-.79,1.09-1.09l4.35-4.35Z"/></svg></button>
+      <button class="pill" type="button" aria-pressed="false" data-modal="Connect"><span class="pill__label" data-i18n="nav.connect">Connect</span><svg class="pill__arrow" viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3.3.3.79,0,1.09l-4.35,4.35c-.3.3-.54.89-.54,1.31v3.9c0,.42.35.77.77.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3.79-.79,1.09-1.09l4.35-4.35Z"/></svg></button>
+      <button class="pill" type="button" aria-pressed="false" data-modal="Preference"><span class="pill__label" data-i18n="nav.preference">Preference</span><svg class="pill__arrow" viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3.3.3.79,0,1.09l-4.35,4.35c-.3.3-.54.89-.54,1.31v3.9c0,.42.35.77.77.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3.79-.79,1.09-1.09l4.35-4.35Z"/></svg></button>
+      <button class="pill" type="button" aria-pressed="false" data-modal="Advance"><span class="pill__label" data-i18n="nav.advance">Advance</span><svg class="pill__arrow" viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3.3.3.79,0,1.09l-4.35,4.35c-.3.3-.54.89-.54,1.31v3.9c0,.42.35.77.77.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3.79-.79,1.09-1.09l4.35-4.35Z"/></svg></button>
     </div>
 
     <div class="user" id="account">
@@ -72,9 +73,9 @@
         </div>
         <span class="user__name">TestUser_11</span>
         <div class="user__menu" role="group" aria-label="Account menu">
-        <button class="pill" type="button" aria-pressed="false"><span class="pill__label">Settings</span><svg class="pill__arrow" viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01,.54,1.31l4.35,4.35c.3.3.3.79,0,1.09l-4.35,4.35c-.3.3-.54,.89-.54,1.31v3.9c0,.42,.35,.77,.77,.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3,.79-.79,1.09-1.09l4.35-4.35Z"/></svg></button>
-        <button class="pill" type="button" aria-pressed="false"><span class="pill__label">Privacy</span><svg class="pill__arrow" viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01,.54,1.31l4.35,4.35c.3.3.3.79,0,1.09l-4.35,4.35c-.3.3-.54,.89-.54,1.31v3.9c0,.42,.35,.77,.77,.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3,.79-.79,1.09-1.09l4.35-4.35Z"/></svg></button>
-        <button class="pill" type="button" aria-pressed="false"><span class="pill__label">Contact</span><svg class="pill__arrow" viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01,.54,1.31l4.35,4.35c.3.3.3.79,0,1.09l-4.35,4.35c-.3.3-.54,.89-.54,1.31v3.9c0,.42,.35,.77,.77,.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3,.79-.79,1.09-1.09l4.35-4.35Z"/></svg></button>
+        <button class="pill" type="button" aria-pressed="false" data-modal="Settings"><span class="pill__label" data-i18n="nav.settings">Settings</span><svg class="pill__arrow" viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01,.54,1.31l4.35,4.35c.3.3.3.79,0,1.09l-4.35,4.35c-.3.3-.54,.89-.54,1.31v3.9c0,.42,.35,.77,.77,.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3,.79-.79,1.09-1.09l4.35-4.35Z"/></svg></button>
+        <button class="pill" type="button" aria-pressed="false" data-modal="Privacy"><span class="pill__label" data-i18n="nav.privacy">Privacy</span><svg class="pill__arrow" viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01,.54,1.31l4.35,4.35c.3.3.3.79,0,1.09l-4.35,4.35c-.3.3-.54,.89-.54,1.31v3.9c0,.42,.35,.77,.77,.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3,.79-.79,1.09-1.09l4.35-4.35Z"/></svg></button>
+        <button class="pill" type="button" aria-pressed="false" data-modal="Contact"><span class="pill__label" data-i18n="nav.contact">Contact</span><svg class="pill__arrow" viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01,.54,1.31l4.35,4.35c.3.3.3.79,0,1.09l-4.35,4.35c-.3.3-.54,.89-.54,1.31v3.9c0,.42,.35,.77,.77,.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3,.79-.79,1.09-1.09l4.35-4.35Z"/></svg></button>
         </div>
         <button class="user__trigger" type="button" aria-expanded="false" aria-label="Account"></button>
       </div>
@@ -94,28 +95,28 @@
         <span class="item__btn">
           <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M24.5,13.17h-5.67s0-5.67,0-5.67c0-1.57-1.27-2.83-2.83-2.83h0c-1.57,0-2.83,1.27-2.83,2.83v5.67s-5.67,0-5.67,0c-1.57,0-2.83,1.27-2.83,2.83h0c0,1.57,1.27,2.83,2.83,2.83h5.67v5.67c0,1.57,1.27,2.83,2.83,2.83h0c1.57,0,2.83-1.27,2.83-2.83v-5.67s5.67,0,5.67,0c1.57,0,2.83-1.27,2.83-2.83h0c0-1.57-1.27-2.83-2.83-2.83Z"/></svg>
         </span>
-        <span class="item__label">Pinned</span>
+        <span class="item__label" data-i18n="rail.left.pinned">Pinned</span>
       </button>
 
       <button class="item" type="button" data-panel="Action" aria-expanded="false" aria-controls="panel-shortcuts">
         <span class="item__btn">
           <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M24.5,13.17h-5.67s0-5.67,0-5.67c0-1.57-1.27-2.83-2.83-2.83h0c-1.57,0-2.83,1.27-2.83,2.83v5.67s-5.67,0-5.67,0c-1.57,0-2.83,1.27-2.83,2.83h0c0,1.57,1.27,2.83,2.83,2.83h5.67v5.67c0,1.57,1.27,2.83,2.83,2.83h0c1.57,0,2.83-1.27,2.83-2.83v-5.67s5.67,0,5.67,0c1.57,0,2.83-1.27,2.83-2.83h0c0-1.57-1.27-2.83-2.83-2.83Z"/></svg>
         </span>
-        <span class="item__label">Action</span>
+        <span class="item__label" data-i18n="rail.left.action">Action</span>
       </button>
 
       <button class="item" type="button" data-panel="Dialog" aria-expanded="false" aria-controls="panel-shortcuts">
         <span class="item__btn">
           <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M24.5,13.17h-5.67s0-5.67,0-5.67c0-1.57-1.27-2.83-2.83-2.83h0c-1.57,0-2.83,1.27-2.83,2.83v5.67s-5.67,0-5.67,0c-1.57,0-2.83,1.27-2.83,2.83h0c0,1.57,1.27,2.83,2.83,2.83h5.67v5.67c0,1.57,1.27,2.83,2.83,2.83h0c1.57,0,2.83-1.27,2.83-2.83v-5.67s5.67,0,5.67,0c1.57,0,2.83-1.27,2.83-2.83h0c0-1.57-1.27-2.83-2.83-2.83Z"/></svg>
         </span>
-        <span class="item__label">Dialog</span>
+        <span class="item__label" data-i18n="rail.left.dialog">Dialog</span>
       </button>
 
       <button class="item" type="button" data-panel="Tendance" aria-expanded="false" aria-controls="panel-shortcuts">
         <span class="item__btn">
           <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M24.5,13.17h-5.67s0-5.67,0-5.67c0-1.57-1.27-2.83-2.83-2.83h0c-1.57,0-2.83,1.27-2.83,2.83v5.67s-5.67,0-5.67,0c-1.57,0-2.83,1.27-2.83,2.83h0c0,1.57,1.27,2.83,2.83,2.83h5.67v5.67c0,1.57,1.27,2.83,2.83,2.83h0c1.57,0,2.83-1.27,2.83-2.83v-5.67s5.67,0,5.67,0c1.57,0,2.83-1.27,2.83-2.83h0c0-1.57-1.27-2.83-2.83-2.83Z"/></svg>
         </span>
-        <span class="item__label">Tendance</span>
+        <span class="item__label" data-i18n="rail.left.tendance">Tendance</span>
       </button>
 
       <!-- 编辑入口：和上面四个一样是左栏自己的图标项，
@@ -125,7 +126,7 @@
         <span class="item__btn">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
         </span>
-        <span class="item__label">Edit</span>
+        <span class="item__label" data-i18n="rail.left.edit">Edit</span>
       </button>
     </div>
   </div>
@@ -136,8 +137,8 @@
     <div class="panel__body" data-panel-body data-view="pinned">
       <!-- 一张都没钉时的空态：两段之间留一行空行，整块在面板里居中，见 .panel__empty -->
       <div class="panel__empty">
-        <span>暂无已标记卡片</span>
-        <span>请点击 动作 / 语言 / 照护类 卡片左下角的标记按钮以添加</span>
+        <span data-i18n="rail.left.empty">暂无已标记卡片</span>
+        <span data-i18n="rail.left.empty.hint">请点击 动作 / 语言 / 照护类 卡片左下角的标记按钮以添加</span>
       </div>
 
       <!-- 编辑页：左栏 Edit 钮把本面板切到 data-view="edit" 时出现。
@@ -146,71 +147,71 @@
       <div class="edit" data-edit-only>
         <div class="edit__fields">
           <div class="edit__field">
-            <span class="edit__lab">Type</span>
+            <span class="edit__lab" data-i18n="rail.left.type">Type</span>
             <div class="edit__types" role="group" aria-label="Card type">
               <button class="edit__type is-active" type="button" data-edit-type="action" aria-pressed="true">
-                <span class="edit__label">Action</span>
+                <span class="edit__label" data-i18n="rail.left.action">Action</span>
                 <svg class="edit__arrow" viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3.3.3.79,0,1.09l-4.35,4.35c-.3.3-.54.89-.54,1.31v3.9c0,.42.35.77.77.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3.79-.79,1.09-1.09l4.35-4.35Z"/></svg>
               </button>
               <button class="edit__type" type="button" data-edit-type="dialog" aria-pressed="false">
-                <span class="edit__label">Dialog</span>
+                <span class="edit__label" data-i18n="rail.left.dialog">Dialog</span>
                 <svg class="edit__arrow" viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3.3.3.79,0,1.09l-4.35,4.35c-.3.3-.54.89-.54,1.31v3.9c0,.42.35.77.77.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3.79-.79,1.09-1.09l4.35-4.35Z"/></svg>
               </button>
               <button class="edit__type" type="button" data-edit-type="tendance" aria-pressed="false">
-                <span class="edit__label">Tendance</span>
+                <span class="edit__label" data-i18n="rail.left.tendance">Tendance</span>
                 <svg class="edit__arrow" viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3.3.3.79,0,1.09l-4.35,4.35c-.3.3-.54.89-.54,1.31v3.9c0,.42.35.77.77.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3.79-.79,1.09-1.09l4.35-4.35Z"/></svg>
               </button>
             </div>
           </div>
           <label class="edit__field">
-            <span class="edit__lab">Name</span>
+            <span class="edit__lab" data-i18n="rail.left.name">Name</span>
             <input class="edit__input" data-edit-name type="text" placeholder="Card name"
-                   maxlength="24" autocomplete="off">
+                   maxlength="24" autocomplete="off" data-i18n-placeholder="rail.left.name">
           </label>
           <label class="edit__field">
-            <span class="edit__lab">Intro</span>
+            <span class="edit__lab" data-i18n="rail.left.intro">Intro</span>
             <input class="edit__input" data-edit-brief type="text" placeholder="One-line intro"
-                   maxlength="40" autocomplete="off">
+                   maxlength="40" autocomplete="off" data-i18n-placeholder="rail.left.intro">
           </label>
         </div>
         <div class="edit__acts">
           <button class="edit__reset" data-edit-reset type="button">
-            <span class="edit__label">Reset</span>
+            <span class="edit__label" data-i18n="rail.left.reset">Reset</span>
             <svg class="edit__arrow" viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3.3.3.79,0,1.09l-4.35,4.35c-.3.3-.54.89-.54,1.31v3.9c0,.42.35.77.77.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3.79-.79,1.09-1.09l4.35-4.35Z"/></svg>
           </button>
           <button class="edit__add" data-edit-add type="button">
-            <span class="edit__label">Add</span>
+            <span class="edit__label" data-i18n="rail.left.add">Add</span>
             <svg class="edit__arrow" viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3.3.3.79,0,1.09l-4.35,4.35c-.3.3-.54.89-.54,1.31v3.9c0,.42.35.77.77.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3.79-.79,1.09-1.09l4.35-4.35Z"/></svg>
           </button>
         </div>
       </div>
       <section class="sc-group sc-group--action">
-        <h3 class="sc-group__title">Action</h3>
+        <h3 class="sc-group__title" data-i18n="rail.left.group.action">Action</h3>
         <div class="sc-grid">
-          <div class="sc"><span class="sc__id">01</span><span class="sc__brief">Brief Intro</span><span class="sc__time">Expected Duration(s)</span><span class="sc__go"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3,.3.3,.79,0,1.09l-4.35,4.35c-.3,.3-.54,.89-.54,1.31v3.9c0,.42.35,.77,.77,.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3.79-.79,1.09-1.09l4.35-4.35Z"/></svg></span><button class="sc__pin" type="button" aria-pressed="false" aria-label="Pin"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 9V4h1a1 1 0 0 0 1-1V2H6v1a1 1 0 0 0 1 1h1v5c0 1.66-1.34 3-3 3v2h5.97v7l1 1 1-1v-7H19v-2c-1.66 0-3-1.34-3-3z"/></svg></button></div>
-          <div class="sc"><span class="sc__id">02</span><span class="sc__brief">Brief Intro</span><span class="sc__time">Expected Duration(s)</span><span class="sc__go"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3,.3.3,.79,0,1.09l-4.35,4.35c-.3,.3-.54,.89-.54,1.31v3.9c0,.42.35,.77,.77,.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3.79-.79,1.09-1.09l4.35-4.35Z"/></svg></span><button class="sc__pin" type="button" aria-pressed="false" aria-label="Pin"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 9V4h1a1 1 0 0 0 1-1V2H6v1a1 1 0 0 0 1 1h1v5c0 1.66-1.34 3-3 3v2h5.97v7l1 1 1-1v-7H19v-2c-1.66 0-3-1.34-3-3z"/></svg></button></div>
-          <div class="sc"><span class="sc__id">03</span><span class="sc__brief">Brief Intro</span><span class="sc__time">Expected Duration(s)</span><span class="sc__go"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3,.3.3,.79,0,1.09l-4.35,4.35c-.3,.3-.54,.89-.54,1.31v3.9c0,.42.35,.77,.77,.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3.79-.79,1.09-1.09l4.35-4.35Z"/></svg></span><button class="sc__pin" type="button" aria-pressed="false" aria-label="Pin"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 9V4h1a1 1 0 0 0 1-1V2H6v1a1 1 0 0 0 1 1h1v5c0 1.66-1.34 3-3 3v2h5.97v7l1 1 1-1v-7H19v-2c-1.66 0-3-1.34-3-3z"/></svg></button></div>
-          <div class="sc"><span class="sc__id">04</span><span class="sc__brief">Brief Intro</span><span class="sc__time">Expected Duration(s)</span><span class="sc__go"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3,.3.3,.79,0,1.09l-4.35,4.35c-.3,.3-.54,.89-.54,1.31v3.9c0,.42.35,.77,.77,.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3.79-.79,1.09-1.09l4.35-4.35Z"/></svg></span><button class="sc__pin" type="button" aria-pressed="false" aria-label="Pin"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 9V4h1a1 1 0 0 0 1-1V2H6v1a1 1 0 0 0 1 1h1v5c0 1.66-1.34 3-3 3v2h5.97v7l1 1 1-1v-7H19v-2c-1.66 0-3-1.34-3-3z"/></svg></button></div>
+          <div class="sc"><span class="sc__id">01</span><span class="sc__brief" data-i18n="rail.left.brief">Brief Intro</span><span class="sc__time" data-i18n="rail.left.duration">Expected Duration(s)</span><span class="sc__go"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3,.3.3,.79,0,1.09l-4.35,4.35c-.3,.3-.54,.89-.54,1.31v3.9c0,.42.35,.77,.77,.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3.79-.79,1.09-1.09l4.35-4.35Z"/></svg></span><button class="sc__pin" type="button" aria-pressed="false" aria-label="Pin"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 9V4h1a1 1 0 0 0 1-1V2H6v1a1 1 0 0 0 1 1h1v5c0 1.66-1.34 3-3 3v2h5.97v7l1 1 1-1v-7H19v-2c-1.66 0-3-1.34-3-3z"/></svg></button></div>
+          <div class="sc"><span class="sc__id">02</span><span class="sc__brief" data-i18n="rail.left.brief">Brief Intro</span><span class="sc__time" data-i18n="rail.left.duration">Expected Duration(s)</span><span class="sc__go"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3,.3.3,.79,0,1.09l-4.35,4.35c-.3,.3-.54,.89-.54,1.31v3.9c0,.42.35,.77,.77,.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3.79-.79,1.09-1.09l4.35-4.35Z"/></svg></span><button class="sc__pin" type="button" aria-pressed="false" aria-label="Pin"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 9V4h1a1 1 0 0 0 1-1V2H6v1a1 1 0 0 0 1 1h1v5c0 1.66-1.34 3-3 3v2h5.97v7l1 1 1-1v-7H19v-2c-1.66 0-3-1.34-3-3z"/></svg></button></div>
+          <div class="sc"><span class="sc__id">03</span><span class="sc__brief" data-i18n="rail.left.brief">Brief Intro</span><span class="sc__time" data-i18n="rail.left.duration">Expected Duration(s)</span><span class="sc__go"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3,.3.3,.79,0,1.09l-4.35,4.35c-.3,.3-.54,.89-.54,1.31v3.9c0,.42.35,.77,.77,.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3.79-.79,1.09-1.09l4.35-4.35Z"/></svg></span><button class="sc__pin" type="button" aria-pressed="false" aria-label="Pin"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 9V4h1a1 1 0 0 0 1-1V2H6v1a1 1 0 0 0 1 1h1v5c0 1.66-1.34 3-3 3v2h5.97v7l1 1 1-1v-7H19v-2c-1.66 0-3-1.34-3-3z"/></svg></button></div>
+          <div class="sc"><span class="sc__id">04</span><span class="sc__brief" data-i18n="rail.left.brief">Brief Intro</span><span class="sc__time" data-i18n="rail.left.duration">Expected Duration(s)</span><span class="sc__go"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3,.3.3,.79,0,1.09l-4.35,4.35c-.3,.3-.54,.89-.54,1.31v3.9c0,.42.35,.77,.77,.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3.79-.79,1.09-1.09l4.35-4.35Z"/></svg></span><button class="sc__pin" type="button" aria-pressed="false" aria-label="Pin"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 9V4h1a1 1 0 0 0 1-1V2H6v1a1 1 0 0 0 1 1h1v5c0 1.66-1.34 3-3 3v2h5.97v7l1 1 1-1v-7H19v-2c-1.66 0-3-1.34-3-3z"/></svg></button></div>
         </div>
       </section>
 
       <section class="sc-group sc-group--dialog">
-        <h3 class="sc-group__title">Dialog</h3>
+        <h3 class="sc-group__title" data-i18n="rail.left.group.dialog">Dialog</h3>
         <div class="sc-grid">
-          <div class="sc"><span class="sc__id">01</span><span class="sc__brief">Brief Intro</span><span class="sc__time">Expected Duration(s)</span><span class="sc__go"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3,.3.3,.79,0,1.09l-4.35,4.35c-.3,.3-.54,.89-.54,1.31v3.9c0,.42.35,.77,.77,.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3.79-.79,1.09-1.09l4.35-4.35Z"/></svg></span><button class="sc__pin" type="button" aria-pressed="false" aria-label="Pin"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 9V4h1a1 1 0 0 0 1-1V2H6v1a1 1 0 0 0 1 1h1v5c0 1.66-1.34 3-3 3v2h5.97v7l1 1 1-1v-7H19v-2c-1.66 0-3-1.34-3-3z"/></svg></button></div>
-          <div class="sc"><span class="sc__id">02</span><span class="sc__brief">Brief Intro</span><span class="sc__time">Expected Duration(s)</span><span class="sc__go"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3,.3.3,.79,0,1.09l-4.35,4.35c-.3,.3-.54,.89-.54,1.31v3.9c0,.42.35,.77,.77,.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3.79-.79,1.09-1.09l4.35-4.35Z"/></svg></span><button class="sc__pin" type="button" aria-pressed="false" aria-label="Pin"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 9V4h1a1 1 0 0 0 1-1V2H6v1a1 1 0 0 0 1 1h1v5c0 1.66-1.34 3-3 3v2h5.97v7l1 1 1-1v-7H19v-2c-1.66 0-3-1.34-3-3z"/></svg></button></div>
-          <div class="sc"><span class="sc__id">03</span><span class="sc__brief">Brief Intro</span><span class="sc__time">Expected Duration(s)</span><span class="sc__go"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3,.3.3,.79,0,1.09l-4.35,4.35c-.3,.3-.54,.89-.54,1.31v3.9c0,.42.35,.77,.77,.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3.79-.79,1.09-1.09l4.35-4.35Z"/></svg></span><button class="sc__pin" type="button" aria-pressed="false" aria-label="Pin"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 9V4h1a1 1 0 0 0 1-1V2H6v1a1 1 0 0 0 1 1h1v5c0 1.66-1.34 3-3 3v2h5.97v7l1 1 1-1v-7H19v-2c-1.66 0-3-1.34-3-3z"/></svg></button></div>
-          <div class="sc"><span class="sc__id">04</span><span class="sc__brief">Brief Intro</span><span class="sc__time">Expected Duration(s)</span><span class="sc__go"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3,.3.3,.79,0,1.09l-4.35,4.35c-.3,.3-.54,.89-.54,1.31v3.9c0,.42.35,.77,.77,.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3.79-.79,1.09-1.09l4.35-4.35Z"/></svg></span><button class="sc__pin" type="button" aria-pressed="false" aria-label="Pin"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 9V4h1a1 1 0 0 0 1-1V2H6v1a1 1 0 0 0 1 1h1v5c0 1.66-1.34 3-3 3v2h5.97v7l1 1 1-1v-7H19v-2c-1.66 0-3-1.34-3-3z"/></svg></button></div>
+          <div class="sc"><span class="sc__id">01</span><span class="sc__brief" data-i18n="rail.left.brief">Brief Intro</span><span class="sc__time" data-i18n="rail.left.duration">Expected Duration(s)</span><span class="sc__go"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3,.3.3,.79,0,1.09l-4.35,4.35c-.3,.3-.54,.89-.54,1.31v3.9c0,.42.35,.77,.77,.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3.79-.79,1.09-1.09l4.35-4.35Z"/></svg></span><button class="sc__pin" type="button" aria-pressed="false" aria-label="Pin"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 9V4h1a1 1 0 0 0 1-1V2H6v1a1 1 0 0 0 1 1h1v5c0 1.66-1.34 3-3 3v2h5.97v7l1 1 1-1v-7H19v-2c-1.66 0-3-1.34-3-3z"/></svg></button></div>
+          <div class="sc"><span class="sc__id">02</span><span class="sc__brief" data-i18n="rail.left.brief">Brief Intro</span><span class="sc__time" data-i18n="rail.left.duration">Expected Duration(s)</span><span class="sc__go"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3,.3.3,.79,0,1.09l-4.35,4.35c-.3,.3-.54,.89-.54,1.31v3.9c0,.42.35,.77,.77,.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3.79-.79,1.09-1.09l4.35-4.35Z"/></svg></span><button class="sc__pin" type="button" aria-pressed="false" aria-label="Pin"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 9V4h1a1 1 0 0 0 1-1V2H6v1a1 1 0 0 0 1 1h1v5c0 1.66-1.34 3-3 3v2h5.97v7l1 1 1-1v-7H19v-2c-1.66 0-3-1.34-3-3z"/></svg></button></div>
+          <div class="sc"><span class="sc__id">03</span><span class="sc__brief" data-i18n="rail.left.brief">Brief Intro</span><span class="sc__time" data-i18n="rail.left.duration">Expected Duration(s)</span><span class="sc__go"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3,.3.3,.79,0,1.09l-4.35,4.35c-.3,.3-.54,.89-.54,1.31v3.9c0,.42.35,.77,.77,.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3.79-.79,1.09-1.09l4.35-4.35Z"/></svg></span><button class="sc__pin" type="button" aria-pressed="false" aria-label="Pin"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 9V4h1a1 1 0 0 0 1-1V2H6v1a1 1 0 0 0 1 1h1v5c0 1.66-1.34 3-3 3v2h5.97v7l1 1 1-1v-7H19v-2c-1.66 0-3-1.34-3-3z"/></svg></button></div>
+          <div class="sc"><span class="sc__id">04</span><span class="sc__brief" data-i18n="rail.left.brief">Brief Intro</span><span class="sc__time" data-i18n="rail.left.duration">Expected Duration(s)</span><span class="sc__go"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3,.3.3,.79,0,1.09l-4.35,4.35c-.3,.3-.54,.89-.54,1.31v3.9c0,.42.35,.77,.77,.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3.79-.79,1.09-1.09l4.35-4.35Z"/></svg></span><button class="sc__pin" type="button" aria-pressed="false" aria-label="Pin"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 9V4h1a1 1 0 0 0 1-1V2H6v1a1 1 0 0 0 1 1h1v5c0 1.66-1.34 3-3 3v2h5.97v7l1 1 1-1v-7H19v-2c-1.66 0-3-1.34-3-3z"/></svg></button></div>
         </div>
       </section>
 
       <section class="sc-group sc-group--tendance">
-        <h3 class="sc-group__title">Tendance</h3>
+        <h3 class="sc-group__title" data-i18n="rail.left.group.tendance">Tendance</h3>
         <div class="sc-grid">
-          <div class="sc"><span class="sc__id">01</span><span class="sc__brief">Brief Intro</span><span class="sc__time">Expected Duration(s)</span><span class="sc__go"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3,.3.3,.79,0,1.09l-4.35,4.35c-.3,.3-.54,.89-.54,1.31v3.9c0,.42.35,.77,.77,.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3.79-.79,1.09-1.09l4.35-4.35Z"/></svg></span><button class="sc__pin" type="button" aria-pressed="false" aria-label="Pin"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 9V4h1a1 1 0 0 0 1-1V2H6v1a1 1 0 0 0 1 1h1v5c0 1.66-1.34 3-3 3v2h5.97v7l1 1 1-1v-7H19v-2c-1.66 0-3-1.34-3-3z"/></svg></button></div>
-          <div class="sc"><span class="sc__id">02</span><span class="sc__brief">Brief Intro</span><span class="sc__time">Expected Duration(s)</span><span class="sc__go"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3,.3.3,.79,0,1.09l-4.35,4.35c-.3,.3-.54,.89-.54,1.31v3.9c0,.42.35,.77,.77,.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3.79-.79,1.09-1.09l4.35-4.35Z"/></svg></span><button class="sc__pin" type="button" aria-pressed="false" aria-label="Pin"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 9V4h1a1 1 0 0 0 1-1V2H6v1a1 1 0 0 0 1 1h1v5c0 1.66-1.34 3-3 3v2h5.97v7l1 1 1-1v-7H19v-2c-1.66 0-3-1.34-3-3z"/></svg></button></div>
-          <div class="sc"><span class="sc__id">03</span><span class="sc__brief">Brief Intro</span><span class="sc__time">Expected Duration(s)</span><span class="sc__go"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3,.3.3,.79,0,1.09l-4.35,4.35c-.3,.3-.54,.89-.54,1.31v3.9c0,.42.35,.77,.77,.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3.79-.79,1.09-1.09l4.35-4.35Z"/></svg></span><button class="sc__pin" type="button" aria-pressed="false" aria-label="Pin"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 9V4h1a1 1 0 0 0 1-1V2H6v1a1 1 0 0 0 1 1h1v5c0 1.66-1.34 3-3 3v2h5.97v7l1 1 1-1v-7H19v-2c-1.66 0-3-1.34-3-3z"/></svg></button></div>
-          <div class="sc"><span class="sc__id">04</span><span class="sc__brief">Brief Intro</span><span class="sc__time">Expected Duration(s)</span><span class="sc__go"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3,.3.3,.79,0,1.09l-4.35,4.35c-.3,.3-.54,.89-.54,1.31v3.9c0,.42.35,.77,.77,.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3.79-.79,1.09-1.09l4.35-4.35Z"/></svg></span><button class="sc__pin" type="button" aria-pressed="false" aria-label="Pin"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 9V4h1a1 1 0 0 0 1-1V2H6v1a1 1 0 0 0 1 1h1v5c0 1.66-1.34 3-3 3v2h5.97v7l1 1 1-1v-7H19v-2c-1.66 0-3-1.34-3-3z"/></svg></button></div>
+          <div class="sc"><span class="sc__id">01</span><span class="sc__brief" data-i18n="rail.left.brief">Brief Intro</span><span class="sc__time" data-i18n="rail.left.duration">Expected Duration(s)</span><span class="sc__go"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3,.3.3,.79,0,1.09l-4.35,4.35c-.3,.3-.54,.89-.54,1.31v3.9c0,.42.35,.77,.77,.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3.79-.79,1.09-1.09l4.35-4.35Z"/></svg></span><button class="sc__pin" type="button" aria-pressed="false" aria-label="Pin"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 9V4h1a1 1 0 0 0 1-1V2H6v1a1 1 0 0 0 1 1h1v5c0 1.66-1.34 3-3 3v2h5.97v7l1 1 1-1v-7H19v-2c-1.66 0-3-1.34-3-3z"/></svg></button></div>
+          <div class="sc"><span class="sc__id">02</span><span class="sc__brief" data-i18n="rail.left.brief">Brief Intro</span><span class="sc__time" data-i18n="rail.left.duration">Expected Duration(s)</span><span class="sc__go"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3,.3.3,.79,0,1.09l-4.35,4.35c-.3,.3-.54,.89-.54,1.31v3.9c0,.42.35,.77,.77,.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3.79-.79,1.09-1.09l4.35-4.35Z"/></svg></span><button class="sc__pin" type="button" aria-pressed="false" aria-label="Pin"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 9V4h1a1 1 0 0 0 1-1V2H6v1a1 1 0 0 0 1 1h1v5c0 1.66-1.34 3-3 3v2h5.97v7l1 1 1-1v-7H19v-2c-1.66 0-3-1.34-3-3z"/></svg></button></div>
+          <div class="sc"><span class="sc__id">03</span><span class="sc__brief" data-i18n="rail.left.brief">Brief Intro</span><span class="sc__time" data-i18n="rail.left.duration">Expected Duration(s)</span><span class="sc__go"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3,.3.3,.79,0,1.09l-4.35,4.35c-.3,.3-.54,.89-.54,1.31v3.9c0,.42.35,.77,.77,.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3.79-.79,1.09-1.09l4.35-4.35Z"/></svg></span><button class="sc__pin" type="button" aria-pressed="false" aria-label="Pin"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 9V4h1a1 1 0 0 0 1-1V2H6v1a1 1 0 0 0 1 1h1v5c0 1.66-1.34 3-3 3v2h5.97v7l1 1 1-1v-7H19v-2c-1.66 0-3-1.34-3-3z"/></svg></button></div>
+          <div class="sc"><span class="sc__id">04</span><span class="sc__brief" data-i18n="rail.left.brief">Brief Intro</span><span class="sc__time" data-i18n="rail.left.duration">Expected Duration(s)</span><span class="sc__go"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3,.3.3,.79,0,1.09l-4.35,4.35c-.3,.3-.54,.89-.54,1.31v3.9c0,.42.35,.77,.77,.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3.79-.79,1.09-1.09l4.35-4.35Z"/></svg></span><button class="sc__pin" type="button" aria-pressed="false" aria-label="Pin"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 9V4h1a1 1 0 0 0 1-1V2H6v1a1 1 0 0 0 1 1h1v5c0 1.66-1.34 3-3 3v2h5.97v7l1 1 1-1v-7H19v-2c-1.66 0-3-1.34-3-3z"/></svg></button></div>
         </div>
       </section>
     </div>
@@ -233,14 +234,14 @@
         <span class="item__btn">
           <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M24.5,13.17h-5.67s0-5.67,0-5.67c0-1.57-1.27-2.83-2.83-2.83h0c-1.57,0-2.83,1.27-2.83,2.83v5.67s-5.67,0-5.67,0c-1.57,0-2.83,1.27-2.83,2.83h0c0,1.57,1.27,2.83,2.83,2.83h5.67v5.67c0,1.57,1.27,2.83,2.83,2.83h0c1.57,0,2.83-1.27,2.83-2.83v-5.67s5.67,0,5.67,0c1.57,0,2.83-1.27,2.83-2.83h0c0-1.57-1.27-2.83-2.83-2.83Z"/></svg>
         </span>
-        <span class="item__label">Chat</span>
+        <span class="item__label" data-i18n="rail.right.chat">Chat</span>
       </button>
 
       <button class="item" type="button" data-panel="Log" aria-expanded="false" aria-controls="panel-tools">
         <span class="item__btn">
           <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M24.5,13.17h-5.67s0-5.67,0-5.67c0-1.57-1.27-2.83-2.83-2.83h0c-1.57,0-2.83,1.27-2.83,2.83v5.67s-5.67,0-5.67,0c-1.57,0-2.83,1.27-2.83,2.83h0c0,1.57,1.27,2.83,2.83,2.83h5.67v5.67c0,1.57,1.27,2.83,2.83,2.83h0c1.57,0,2.83-1.27,2.83-2.83v-5.67s5.67,0,5.67,0c1.57,0,2.83-1.27,2.83-2.83h0c0-1.57-1.27-2.83-2.83-2.83Z"/></svg>
         </span>
-        <span class="item__label">Log</span>
+        <span class="item__label" data-i18n="rail.right.log">Log</span>
       </button>
     </div>
   </div>
@@ -271,7 +272,7 @@
 
         <div class="chat__composer">
           <input class="chat__input" data-chat-input type="text"
-                 placeholder="Message" aria-label="Message" autocomplete="off">
+                 data-i18n-placeholder="rail.right.message" placeholder="Message" aria-label="Message" autocomplete="off">
         </div>
       </div>
     </div>
@@ -303,7 +304,7 @@
       <div class="dock__col">
         <span class="frost frost--top" aria-hidden="true"></span>
         <div class="dock__scroll">
-          <div class="dock__title">Gestures</div>
+          <div class="dock__title" data-i18n="dock.gestures">Gestures</div>
           <div class="dock__grid" data-dock-grid="gestures"></div>
         </div>
       </div>
@@ -342,7 +343,7 @@
       <div class="dock__col">
         <span class="frost frost--top" aria-hidden="true"></span>
         <div class="dock__scroll">
-          <div class="dock__title dock__title--end">Emotions</div>
+          <div class="dock__title dock__title--end" data-i18n="dock.emotions">Emotions</div>
           <div class="dock__grid" data-dock-grid="emotions"></div>
         </div>
       </div>
@@ -395,7 +396,7 @@
     <!-- 设备名由弹窗脚本按 Connect 的「已确认机型」写入（data-hud-device），
          这里的占位值只在脚本没跑到时兜底；超宽时限宽循环滚动 -->
     <span class="hud__item hud__name"><span class="hud__name-track" data-hud-device>Q1_RandomName</span></span>
-    <span class="hud__item hud__state--ready">Ready</span>
+    <span class="hud__item hud__state--ready" data-i18n="hud.ready">Ready</span>
   </div>
 </div>
 
@@ -430,15 +431,15 @@
          所以它一出现这一列就比右列高，标题区改成由内容撑高 -->
     <div class="modal__head">
       <div class="modal__col">
-        <div class="modal__title" data-modal-title>Connect</div>
-        <div class="modal__sub" data-modal-sub>2 available</div>
+        <div class="modal__title" data-modal-title data-i18n="modal.connect.title">Connect</div>
+        <div class="modal__sub" data-modal-sub data-i18n="modal.connect.available">2 available</div>
         <!-- 三个 32 方形紧密相接、贴标题左基线；无底色，hover 只换图标颜色。
              只在 Connect 里出现，其余弹窗由脚本按 data-connect-only 收掉 -->
         <div class="modal__tools" data-model-tools data-connect-only hidden></div>
       </div>
       <div class="modal__col modal__col--end" data-head-end>
         <div class="modal__title" data-modal-title>Q1_RandomName</div>
-        <div class="modal__sub" data-modal-sub>current</div>
+        <div class="modal__sub" data-modal-sub data-i18n="modal.connect.current">current</div>
       </div>
       <!-- Advance 的主动作挂在标题区右上角：连接仿真只在仿真面板里有意义，
            放这里比塞进下面那排工具按钮更醒目。其余弹窗由脚本按 data-advance-only 收掉 -->
@@ -464,11 +465,11 @@
           </div>
         </figure>
         <div class="adv__side">
-          <p class="adv__empty" data-sim-empty>请先连接仿真</p>
+          <p class="adv__empty" data-sim-empty data-i18n="sim.empty">请先连接仿真</p>
           <!-- 速度置顶、不随分区切换：它同时缩放四个分区的操作快慢
                （关节滑块的跟随速度、姿态过渡、动作与步态的相位） -->
           <div class="adv__speed">
-            <span class="adv__row-lab">速度</span>
+            <span class="adv__row-lab" data-i18n="sim.speed">速度</span>
             <input type="range" min="0.3" max="2.5" step="0.1" value="1" data-sim-speed>
             <b data-sim-speed-val>1.0x</b>
           </div>
@@ -476,34 +477,34 @@
                姿态 / 动作 / 步态三行胶囊，宽度和滑块区一致，不再挤在侧栏底部 -->
           <div class="adv__tabs" role="tablist" aria-label="调节分组">
             <button class="adv__tab is-sel" type="button" role="tab" aria-selected="true" data-joint-group="arm">
-              <span class="adv__label">手臂</span>
+              <span class="adv__label" data-i18n="sim.tab.arm">手臂</span>
               <svg class="adv__arrow" viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3.3.3.79,0,1.09l-4.35,4.35c-.3.3-.54.89-.54,1.31v3.9c0,.42.35.77.77.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3.79-.79,1.09-1.09l4.35-4.35Z"/></svg>
             </button>
             <button class="adv__tab" type="button" role="tab" aria-selected="false" data-joint-group="waist">
-              <span class="adv__label">腰</span>
+              <span class="adv__label" data-i18n="sim.tab.waist">腰</span>
               <svg class="adv__arrow" viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3.3.3.79,0,1.09l-4.35,4.35c-.3.3-.54.89-.54,1.31v3.9c0,.42.35.77.77.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3.79-.79,1.09-1.09l4.35-4.35Z"/></svg>
             </button>
             <button class="adv__tab" type="button" role="tab" aria-selected="false" data-joint-group="leg">
-              <span class="adv__label">腿</span>
+              <span class="adv__label" data-i18n="sim.tab.leg">腿</span>
               <svg class="adv__arrow" viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3.3.3.79,0,1.09l-4.35,4.35c-.3.3-.54.89-.54,1.31v3.9c0,.42.35.77.77.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3.79-.79,1.09-1.09l4.35-4.35Z"/></svg>
             </button>
             <button class="adv__tab" type="button" role="tab" aria-selected="false" data-joint-group="link">
-              <span class="adv__label">联动</span>
+              <span class="adv__label" data-i18n="sim.tab.link">联动</span>
               <svg class="adv__arrow" viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3.3.3.79,0,1.09l-4.35,4.35c-.3.3-.54.89-.54,1.31v3.9c0,.42.35.77.77.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3.79-.79,1.09-1.09l4.35-4.35Z"/></svg>
             </button>
           </div>
           <div class="adv__joints" data-sim-joints></div>
           <div class="adv__link" data-sim-link hidden>
             <div class="adv__row">
-              <span class="adv__row-lab">姿态</span>
+              <span class="adv__row-lab" data-i18n="sim.row.posture">姿态</span>
               <div class="adv__chips" data-sim-presets></div>
             </div>
             <div class="adv__row">
-              <span class="adv__row-lab">动作</span>
+              <span class="adv__row-lab" data-i18n="sim.row.gesture">动作</span>
               <div class="adv__chips" data-sim-gestures></div>
             </div>
             <div class="adv__row">
-              <span class="adv__row-lab">步态</span>
+              <span class="adv__row-lab" data-i18n="sim.row.gait">步态</span>
               <div class="adv__chips" data-sim-gaits></div>
             </div>
           </div>
@@ -515,7 +516,7 @@
          高度与面板齐平，逐行一项；最底部那条是操作提示 -->
     <div class="modal__stats" role="group" aria-label="仿真参数" data-advance-only hidden>
       <div class="adv__stats-list" data-sim-state></div>
-      <p class="adv__msg" role="status" data-sim-message>先启动 sim/mujoco_bridge.py，再点连接仿真。</p>
+      <p class="adv__msg" role="status" data-sim-message data-i18n="sim.hint">先启动 sim/mujoco_bridge.py，再点连接仿真。</p>
     </div>
 
     <!-- 工具按钮：与右侧参数栏同尺寸的底板，挂在面板左边框外 8px。
@@ -524,13 +525,13 @@
          为的是复用顶栏胶囊那套 hover 文字动画（字右滑、箭头左侧浮出），
          所以 sim.js 改写文案时写的是 .adv__label，不能直接写按钮的 textContent -->
     <div class="adv__rail" data-advance-only hidden>
-      <button class="adv__btn" type="button" data-sim-mode><span class="adv__label">动力学模式</span><svg class="adv__arrow" viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3.3.3.79,0,1.09l-4.35,4.35c-.3.3-.54.89-.54,1.31v3.9c0,.42.35.77.77.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3.79-.79,1.09-1.09l4.35-4.35Z"/></svg></button>
-      <button class="adv__btn" type="button" data-sim-reset><span class="adv__label">重置姿态</span><svg class="adv__arrow" viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3.3.3.79,0,1.09l-4.35,4.35c-.3.3-.54.89-.54,1.31v3.9c0,.42.35.77.77.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3.79-.79,1.09-1.09l4.35-4.35Z"/></svg></button>
-      <button class="adv__btn" type="button" data-sim-cam-reset><span class="adv__label">重置视角</span><svg class="adv__arrow" viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3.3.3.79,0,1.09l-4.35,4.35c-.3.3-.54.89-.54,1.31v3.9c0,.42.35.77.77.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3.79-.79,1.09-1.09l4.35-4.35Z"/></svg></button>
-      <button class="adv__btn" type="button" data-sim-turn="-0.8"><span class="adv__label">左转</span><svg class="adv__arrow" viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3.3.3.79,0,1.09l-4.35,4.35c-.3.3-.54.89-.54,1.31v3.9c0,.42.35.77.77.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3.79-.79,1.09-1.09l4.35-4.35Z"/></svg></button>
-      <button class="adv__btn" type="button" data-sim-turn="0.8"><span class="adv__label">右转</span><svg class="adv__arrow" viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3.3.3.79,0,1.09l-4.35,4.35c-.3.3-.54.89-.54,1.31v3.9c0,.42.35.77.77.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3.79-.79,1.09-1.09l4.35-4.35Z"/></svg></button>
-      <button class="adv__btn" type="button" data-sim-stop><span class="adv__label">停止</span><svg class="adv__arrow" viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3.3.3.79,0,1.09l-4.35,4.35c-.3.3-.54.89-.54,1.31v3.9c0,.42.35.77.77.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3.79-.79,1.09-1.09l4.35-4.35Z"/></svg></button>
-      <button class="adv__btn" type="button" data-sim-shot><span class="adv__label">保存当前帧</span><svg class="adv__arrow" viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3.3.3.79,0,1.09l-4.35,4.35c-.3.3-.54.89-.54,1.31v3.9c0,.42.35.77.77.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3.79-.79,1.09-1.09l4.35-4.35Z"/></svg></button>
+      <button class="adv__btn" type="button" data-sim-mode><span class="adv__label" data-i18n="sim.mode.dynamic">动力学模式</span><svg class="adv__arrow" viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3.3.3.79,0,1.09l-4.35,4.35c-.3.3-.54.89-.54,1.31v3.9c0,.42.35.77.77.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3.79-.79,1.09-1.09l4.35-4.35Z"/></svg></button>
+      <button class="adv__btn" type="button" data-sim-reset><span class="adv__label" data-i18n="sim.reset_pose">重置姿态</span><svg class="adv__arrow" viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3.3.3.79,0,1.09l-4.35,4.35c-.3.3-.54.89-.54,1.31v3.9c0,.42.35.77.77.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3.79-.79,1.09-1.09l4.35-4.35Z"/></svg></button>
+      <button class="adv__btn" type="button" data-sim-cam-reset><span class="adv__label" data-i18n="sim.reset_cam">重置视角</span><svg class="adv__arrow" viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3.3.3.79,0,1.09l-4.35,4.35c-.3.3-.54.89-.54,1.31v3.9c0,.42.35.77.77.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3.79-.79,1.09-1.09l4.35-4.35Z"/></svg></button>
+      <button class="adv__btn" type="button" data-sim-turn="-0.8"><span class="adv__label" data-i18n="sim.turn_left">左转</span><svg class="adv__arrow" viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3.3.3.79,0,1.09l-4.35,4.35c-.3.3-.54.89-.54,1.31v3.9c0,.42.35.77.77.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3.79-.79,1.09-1.09l4.35-4.35Z"/></svg></button>
+      <button class="adv__btn" type="button" data-sim-turn="0.8"><span class="adv__label" data-i18n="sim.turn_right">右转</span><svg class="adv__arrow" viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3.3.3.79,0,1.09l-4.35,4.35c-.3.3-.54.89-.54,1.31v3.9c0,.42.35.77.77.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3.79-.79,1.09-1.09l4.35-4.35Z"/></svg></button>
+      <button class="adv__btn" type="button" data-sim-stop><span class="adv__label" data-i18n="sim.stop">停止</span><svg class="adv__arrow" viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3.3.3.79,0,1.09l-4.35,4.35c-.3.3-.54.89-.54,1.31v3.9c0,.42.35.77.77.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3.79-.79,1.09-1.09l4.35-4.35Z"/></svg></button>
+      <button class="adv__btn" type="button" data-sim-shot><span class="adv__label" data-i18n="sim.save_frame">保存当前帧</span><svg class="adv__arrow" viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3.3.3.79,0,1.09l-4.35,4.35c-.3.3-.54.89-.54,1.31v3.9c0,.42.35.77.77.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3.79-.79,1.09-1.09l4.35-4.35Z"/></svg></button>
     </div>
 
     <!-- Privacy：条款体例的隐私政策。每条 = 序号 + 小标题 + 正文，序号取主题色。
@@ -611,10 +612,12 @@
          顶部标题区（.modal__head）在 Settings 下整块收掉，标题改由 .set__title 承担 -->
     <div class="set" data-settings-only hidden>
       <div class="set__nav">
-        <div class="set__title">Settings</div>
+        <div class="set__title" data-i18n="settings.title">Settings</div>
         <div class="set__list" role="tablist" aria-label="Settings">
           <button class="set__tab is-sel" type="button" role="tab"
-                  aria-selected="true" data-set-tab="appearance">Appearance</button>
+                  aria-selected="true" data-set-tab="appearance" data-i18n="settings.appearance">Appearance</button>
+          <button class="set__tab" type="button" role="tab"
+                  aria-selected="false" data-set-tab="language" data-i18n="settings.language">Language</button>
         </div>
       </div>
       <div class="set__main">
@@ -622,26 +625,39 @@
           <!-- 明暗模式：Day 是默认这套浅色，Night 直接切到 :root[data-theme="dark"]
                那一组参数。这里只换 <html> 上的属性，颜色一律由 CSS 变量带出来 -->
           <div class="set__item">
-            <div class="set__name">Mode</div>
+            <div class="set__name" data-i18n="settings.mode">Mode</div>
             <div class="set__body">
               <div class="seg" role="radiogroup" aria-label="Color mode">
                 <button class="seg__opt is-sel" type="button" role="radio"
-                        aria-checked="true" data-mode="day"><span class="seg__lab">Day</span><svg class="seg__arrow" viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77,.35-.77,.77v3.9c0,.42,.24,1.01,.54,1.31l4.35,4.35c.3,.3,.3,.79,0,1.09l-4.35,4.35c-.3,.3-.54,.89-.54,1.31v3.9c0,.42,.35,.77,.77,.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3,.79-.79,1.09-1.09l4.35-4.35Z"/></svg></button>
+                        aria-checked="true" data-mode="day"><span class="seg__lab" data-i18n="settings.mode.day">Day</span><svg class="seg__arrow" viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77,.35-.77,.77v3.9c0,.42,.24,1.01,.54,1.31l4.35,4.35c.3,.3,.3,.79,0,1.09l-4.35,4.35c-.3,.3-.54,.89-.54,1.31v3.9c0,.42,.35,.77,.77,.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3,.79-.79,1.09-1.09l4.35-4.35Z"/></svg></button>
                 <button class="seg__opt" type="button" role="radio"
-                        aria-checked="false" data-mode="night"><span class="seg__lab">Night</span><svg class="seg__arrow" viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77,.35-.77,.77v3.9c0,.42,.24,1.01,.54,1.31l4.35,4.35c.3,.3,.3,.79,0,1.09l-4.35,4.35c-.3,.3-.54,.89-.54,1.31v3.9c0,.42,.35,.77,.77,.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3,.79-.79,1.09-1.09l4.35-4.35Z"/></svg></button>
+                        aria-checked="false" data-mode="night"><span class="seg__lab" data-i18n="settings.mode.night">Night</span><svg class="seg__arrow" viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77,.35-.77,.77v3.9c0,.42,.24,1.01,.54,1.31l4.35,4.35c.3,.3,.3,.79,0,1.09l-4.35,4.35c-.3,.3-.54,.89-.54,1.31v3.9c0,.42,.35,.77,.77,.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3,.79-.79,1.09-1.09l4.35-4.35Z"/></svg></button>
               </div>
             </div>
           </div>
           <div class="set__item">
-            <div class="set__name">Background</div>
+            <div class="set__name" data-i18n="settings.background">Background</div>
             <div class="set__body">
               <div class="seg" role="radiogroup" aria-label="Background style">
                 <button class="seg__opt" type="button" role="radio"
-                        aria-checked="false" data-bg="plain"><span class="seg__lab">Plain</span><svg class="seg__arrow" viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77,.35-.77,.77v3.9c0,.42,.24,1.01,.54,1.31l4.35,4.35c.3,.3,.3,.79,0,1.09l-4.35,4.35c-.3,.3-.54,.89-.54,1.31v3.9c0,.42,.35,.77,.77,.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3,.79-.79,1.09-1.09l4.35-4.35Z"/></svg></button>
+                        aria-checked="false" data-bg="plain"><span class="seg__lab" data-i18n="settings.bg.plain">Plain</span><svg class="seg__arrow" viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77,.35-.77,.77v3.9c0,.42,.24,1.01,.54,1.31l4.35,4.35c.3,.3,.3,.79,0,1.09l-4.35,4.35c-.3,.3-.54,.89-.54,1.31v3.9c0,.42,.35,.77,.77,.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3,.79-.79,1.09-1.09l4.35-4.35Z"/></svg></button>
                 <button class="seg__opt is-sel" type="button" role="radio"
-                        aria-checked="true" data-bg="magnetic"><span class="seg__lab">Magnet</span><svg class="seg__arrow" viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77,.35-.77,.77v3.9c0,.42,.24,1.01,.54,1.31l4.35,4.35c.3,.3,.3,.79,0,1.09l-4.35,4.35c-.3,.3-.54,.89-.54,1.31v3.9c0,.42,.35,.77,.77,.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3,.79-.79,1.09-1.09l4.35-4.35Z"/></svg></button>
+                        aria-checked="true" data-bg="magnetic"><span class="seg__lab" data-i18n="settings.bg.magnet">Magnet</span><svg class="seg__arrow" viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77,.35-.77,.77v3.9c0,.42,.24,1.01,.54,1.31l4.35,4.35c.3,.3,.3,.79,0,1.09l-4.35,4.35c-.3,.3-.54,.89-.54,1.31v3.9c0,.42,.35,.77,.77,.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3,.79-.79,1.09-1.09l4.35-4.35Z"/></svg></button>
                 <button class="seg__opt" type="button" role="radio"
-                        aria-checked="false" data-bg="wave"><span class="seg__lab">Wave</span><svg class="seg__arrow" viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77,.35-.77,.77v3.9c0,.42,.24,1.01,.54,1.31l4.35,4.35c.3,.3,.3,.79,0,1.09l-4.35,4.35c-.3,.3-.54,.89-.54,1.31v3.9c0,.42,.35,.77,.77,.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3,.79-.79,1.09-1.09l4.35-4.35Z"/></svg></button>
+                        aria-checked="false" data-bg="wave"><span class="seg__lab" data-i18n="settings.bg.wave">Wave</span><svg class="seg__arrow" viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77,.35-.77,.77v3.9c0,.42,.24,1.01,.54,1.31l4.35,4.35c.3,.3,.3,.79,0,1.09l-4.35,4.35c-.3,.3-.54,.89-.54,1.31v3.9c0,.42,.35,.77,.77,.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3,.79-.79,1.09-1.09l4.35-4.35Z"/></svg></button>
+              </div>
+            </div>
+          </div>
+        </section>
+        <section class="set__pane" data-set-pane="language" hidden>
+          <div class="set__item">
+            <div class="set__name" data-i18n="settings.language">Language</div>
+            <div class="set__body">
+              <div class="seg" role="radiogroup" aria-label="Language">
+                <button class="seg__opt is-sel" type="button" role="radio"
+                        aria-checked="true" data-lang="en"><span class="seg__lab" data-i18n="settings.lang.en">English</span><svg class="seg__arrow" viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77,.35-.77,.77v3.9c0,.42,.24,1.01,.54,1.31l4.35,4.35c.3,.3,.3,.79,0,1.09l-4.35,4.35c-.3,.3-.54,.89-.54,1.31v3.9c0,.42,.35,.77,.77,.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3,.79-.79,1.09-1.09l4.35-4.35Z"/></svg></button>
+                <button class="seg__opt" type="button" role="radio"
+                        aria-checked="false" data-lang="zh"><span class="seg__lab" data-i18n="settings.lang.zh">简体中文</span><svg class="seg__arrow" viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77,.35-.77,.77v3.9c0,.42,.24,1.01,.54,1.31l4.35,4.35c.3,.3,.3,.79,0,1.09l-4.35,4.35c-.3,.3-.54,.89-.54,1.31v3.9c0,.42,.35,.77,.77,.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3,.79-.79,1.09-1.09l4.35-4.35Z"/></svg></button>
               </div>
             </div>
           </div>
@@ -653,11 +669,11 @@
          左 Cancel 只退出，不保存；右 Confirm 默认就填主题色（is-active） -->
     <div class="modal__foot" data-modal-foot data-connect-only hidden>
       <button class="pill" type="button" data-act="cancel">
-        <span class="pill__label">CANCEL</span>
+        <span class="pill__label" data-i18n="modal.cancel">CANCEL</span>
         <svg class="pill__arrow" viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3,.3,.3,.79,0,1.09l-4.35,4.35c-.3,.3-.54,.89-.54,1.31v3.9c0,.42,.35,.77,.77,.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3,.79-.79,1.09-1.09l4.35-4.35Z"/></svg>
       </button>
       <button class="pill" type="button" data-act="confirm">
-        <span class="pill__label">CONFIRM</span>
+        <span class="pill__label" data-i18n="modal.confirm">CONFIRM</span>
         <svg class="pill__arrow" viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01.54,1.31l4.35,4.35c.3,.3,.3,.79,0,1.09l-4.35,4.35c-.3,.3-.54,.89-.54,1.31v3.9c0,.42,.35,.77,.77,.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3,.79-.79,1.09-1.09l4.35-4.35Z"/></svg>
       </button>
     </div>

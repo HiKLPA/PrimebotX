@@ -198,16 +198,33 @@
      弹窗开着时反复点同一枚，只是重写一遍文案，没有任何动画。
      name 传空表示没有打开的弹窗，全部清掉 */
   function markPill(name) {
-    Array.prototype.forEach.call(document.querySelectorAll('.pill'), function (p) {
-      if (name && p.textContent.trim() === name) p.setAttribute('data-open', 'true');
+    Array.prototype.forEach.call(document.querySelectorAll('.pill[data-modal]'), function (p) {
+      if (name && p.dataset.modal === name) p.setAttribute('data-open', 'true');
       else p.removeAttribute('data-open');
     });
   }
 
+  var TITLE_KEY = {
+    Connect: 'modal.connect.title',
+    Preference: 'modal.preference.title',
+    Advance: 'modal.advance.title',
+    Settings: 'settings.title',
+    Privacy: 'modal.privacy.title',
+    Contact: 'modal.contact.title'
+  };
+  var SUB_KEY = {
+    Connect: 'modal.connect.available',
+    Preference: 'modal.preference.available',
+    Advance: 'modal.advance.sub',
+    Settings: 'settings.appearance',
+    Privacy: 'modal.privacy.sub',
+    Contact: 'modal.contact.sub'
+  };
+
   function paint(name) {
     var m = META[name] || {};
-    titleL[0].textContent = name;
-    subL[0].textContent   = m.sub || '';
+    titleL[0].textContent = TITLE_KEY[name] ? t(TITLE_KEY[name]) : name;
+    subL[0].textContent   = SUB_KEY[name] ? t(SUB_KEY[name]) : (m.sub || '');
     if (confirmed === null && m.right) {
       var sel0 = document.querySelector('[data-model-list] .mrow.is-sel');
       confirmed = (sel0 && sel0.dataset.model) || m.right;
@@ -333,28 +350,25 @@
      弹窗已经开着时不再记录：那是从一个弹窗换到另一个，要还原的仍是头一次开窗前的样子 */
   document.addEventListener('pointerdown', function (e) {
     if (shown) return;
-    var pill = e.target.closest && e.target.closest('.pill');
+    var pill = e.target.closest && e.target.closest('.pill[data-modal]');
     if (!pill) return;
-    var lab = pill.querySelector('.pill__label');
-    if (!lab || NAMES.indexOf(lab.textContent.trim()) < 0) return;
+    if (NAMES.indexOf(pill.dataset.modal) < 0) return;
     var box = pill.closest('.group, .user__menu');
     if (!box) return;
     var cur = box.querySelector('.pill.is-active');
-    box.dataset.prevActive = cur ? cur.querySelector('.pill__label').textContent.trim() : '';
+    box.dataset.prevActive = cur && cur.dataset.modal ? cur.dataset.modal : '';
   }, true);
 
   /* 按记下的那一枚还原：空串表示开窗前这一组谁都没选中，全部熄灭。
      keep 是「这次要留下的那一枚」，换弹窗时传新的名字，免得把刚点亮的那组也还原掉 */
   function restorePills(keep) {
     Array.prototype.forEach.call(document.querySelectorAll('.pill[data-open]'), function (p) {
-      var lab = p.querySelector('.pill__label');
-      if (keep && lab && lab.textContent.trim() === keep) return;
+      if (keep && p.dataset.modal === keep) return;
       var box = p.closest('.group, .user__menu');
       if (!box) return;
       var prev = box.dataset.prevActive || '';
       Array.prototype.forEach.call(box.querySelectorAll('.pill'), function (x) {
-        var l = x.querySelector('.pill__label');
-        var on = !!l && l.textContent.trim() === prev;
+        var on = !!x.dataset.modal && x.dataset.modal === prev;
         x.classList.toggle('is-active', on);
         x.setAttribute('aria-pressed', on ? 'true' : 'false');
       });
@@ -430,12 +444,11 @@
      点菜单项不收起账号面板：选中哪一项就留在哪一项上，面板只在点空白与 Esc 时收。
      高亮交给账号面板自己那套组内单选（点谁亮谁），这里不再插手，
      否则会在同一次点击里先亮起来又被抹掉，闪一下 */
-  Array.prototype.forEach.call(document.querySelectorAll('.pill'), function (pill) {
-    var label = pill.querySelector('.pill__label');
-    if (!label || NAMES.indexOf(label.textContent.trim()) < 0) return;
+  Array.prototype.forEach.call(document.querySelectorAll('.pill[data-modal]'), function (pill) {
+    if (NAMES.indexOf(pill.dataset.modal) < 0) return;
     pill.addEventListener('click', function () {
       /* 文案在动画之前写入：起手那一帧面板还不可见，换字不会被看见 */
-      paint(label.textContent.trim());
+      paint(pill.dataset.modal);
       if (!shown) {
         show();
         return;
@@ -522,9 +535,10 @@
       g.hidden = g.dataset.setPane !== key;
     });
     /* 标题区那行说明跟着当前选项走 */
-    if (panel.getAttribute('aria-label') === 'Settings') subL[0].textContent = key.replace(/^./, function (c) {
-      return c.toUpperCase();
-    });
+    if (panel.getAttribute('aria-label') === 'Settings') {
+      var subMap = { appearance: 'settings.appearance', language: 'settings.language' };
+      subL[0].textContent = subMap[key] ? t(subMap[key]) : key;
+    }
   }
   Array.prototype.forEach.call(tabs, function (t) {
     t.addEventListener('click', function () { pickTab(t.dataset.setTab); });
@@ -610,4 +624,13 @@
     if (savedBg === 'matrix') savedBg = 'plain';
     pickBg(savedBg === 'plain' || savedBg === 'wave' ? savedBg : 'magnetic');
   } catch (e) {}
+
+  document.addEventListener('langchange', function () {
+    if (!shown) return;
+    var name = panel.getAttribute('aria-label');
+    if (name && TITLE_KEY[name]) {
+      titleL[0].textContent = t(TITLE_KEY[name]);
+      subL[0].textContent = SUB_KEY[name] ? t(SUB_KEY[name]) : '';
+    }
+  });
 })();

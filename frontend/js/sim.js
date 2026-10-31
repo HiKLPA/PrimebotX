@@ -110,7 +110,8 @@
     if (!connectBtn) return;
     var cut = connected && (armed || hoverCut);
     connectBtn.disabled = busy;
-    connectBtn.textContent = !connected ? '连接仿真' : (cut ? '断连' : '已连接');
+    var label = !connected ? t('sim.connect_btn') : (cut ? t('sim.disconnect') : t('sim.connected'));
+    connectBtn.textContent = label;
     /* 底片颜色只由状态决定：hover 那一档也归进 cut，不再另做提亮 */
     connectBtn.classList.toggle('is-on', connected && !cut);
     connectBtn.classList.toggle('is-cut', connected && hoverCut && !armed);
@@ -413,10 +414,10 @@
 
   /* 行只建一次，之后只改右值文本，免得每 500ms 重建整块把滚动位置也抖掉 */
   var STATS = [
-    ['t', '运行'], ['mode', '模式'], ['step', '步数'], ['contacts', '触点'],
-    ['speed', '速度'], ['gesture', '动作'], ['gait', '步态'],
-    ['bx', 'base x'], ['by', 'base y'], ['bz', 'base z'], ['dz', '机身'],
-    ['cam', '视角'], ['stale', '延迟']
+    ['t', 'sim.stat.t'], ['mode', 'sim.stat.mode'], ['step', 'sim.stat.step'], ['contacts', 'sim.stat.contacts'],
+    ['speed', 'sim.stat.speed'], ['gesture', 'sim.stat.gesture'], ['gait', 'sim.stat.gait'],
+    ['bx', 'base x'], ['by', 'base y'], ['bz', 'base z'], ['dz', 'sim.stat.body'],
+    ['cam', 'sim.stat.cam'], ['stale', 'sim.stat.latency']
   ];
   var statVals = {};
 
@@ -426,7 +427,7 @@
       var row = document.createElement('div');
       row.className = 'adv__stat';
       var key = document.createElement('span');
-      key.textContent = item[1];
+      key.textContent = item[1].startsWith('sim.stat.') ? t(item[1]) : item[1];
       var val = document.createElement('b');
       val.textContent = '-';
       row.appendChild(key);
@@ -474,7 +475,7 @@
       /* 按钮上写的是「点下去切到哪一种」，不是当前是哪一种 ——
          dynamic 为真时按下去要切运动学，所以这里取反。
          当前模式看右侧参数栏的 mode 那行，那里显示的是 state.mode 原值 */
-      setModeLabel(dynamic ? '运动学模式' : '动力学模式');
+      setModeLabel(dynamic ? t('sim.mode.kinematic') : t('sim.mode.dynamic'));
       if (state.camera) cam = state.camera;
       Object.keys(sliders).forEach(function (name) {
         if (dragging[name] || !(name in state.joints)) return;
@@ -561,7 +562,7 @@
     /* 只摘 src 不置空串：空串会按当前地址再请求一次 */
     frame.removeAttribute('src');
     Object.keys(statVals).forEach(function (key) { statVals[key].textContent = '-'; });
-    if (modeBtn) setModeLabel('动力学模式');
+    if (modeBtn) setModeLabel(t('sim.mode.dynamic'));
   }
 
   async function run(path, body, label) {
@@ -722,4 +723,18 @@
   hudState('未连接');
   buildStats();
   controls();
+
+  document.addEventListener('langchange', function () {
+    paintConnect();
+    setModeLabel(dynamic ? t('sim.mode.kinematic') : t('sim.mode.dynamic'));
+    if (readout) {
+      var rows = readout.querySelectorAll('.adv__stat');
+      rows.forEach(function (row, i) {
+        if (STATS[i] && STATS[i][1].startsWith('sim.stat.')) {
+          var lab = row.querySelector('span');
+          if (lab) lab.textContent = t(STATS[i][1]);
+        }
+      });
+    }
+  });
 })();
