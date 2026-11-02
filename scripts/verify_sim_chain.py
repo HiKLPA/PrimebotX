@@ -66,6 +66,31 @@ class Chain:
         return last
 
 
+def squat_settled(rest_z: float):
+    """机身降到 rest_z + base_dz 就算到预设位置了（base_dz 由 bridge 自己报）。"""
+
+    def predicate(state: dict) -> bool:
+        base_z = (state.get("base") or {}).get("z") or 0.0
+        dz = state.get("base_dz") or 0.0
+        return dz < 0 and abs(base_z - (rest_z + dz)) < 0.01
+
+    return predicate
+
+
+def sample_foot_clearance(chain: "Chain", seconds: float) -> float | None:
+    """在一段时间里连续采 /sim/state 的 foot_clearance，返回最小值（米）。"""
+    deadline = time.time() + seconds
+    lowest = None
+    while time.time() < deadline:
+        status, body = chain.call("GET", "/sim/state")
+        if status == 200:
+            value = (body.get("data") or {}).get("foot_clearance")
+            if isinstance(value, (int, float)):
+                lowest = value if lowest is None else min(lowest, value)
+        time.sleep(0.05)
+    return lowest
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="PrimebotX ↔ MuJoCo 全链路验收")
     parser.add_argument("--backend", default="http://127.0.0.1:8080")
@@ -168,28 +193,56 @@ def main() -> int:
     chain.step("切回运动学", (state or {}).get("mode") == "kinematic")
 
     print("\n10. 姿态预设、步态、视角与速度")
+    # 基准值取自运行时：只认 bridge 自己报的 base_dz 和当前姿态，不写死角度和高度。
+    # 写死就要求每次给预设调参都回头同步测试，f4f6f49 调了预设却漏了这一步。
+    before = chain.wait_state(lambda s: True) or {}
+    rest_knee = (before.get("joints") or {}).get("left_knee_joint") or 0.0
+    rest_z = (before.get("base") or {}).get("z") or 0.0
     status, body = chain.call("POST", "/sim/preset", {"name": "squat"})
     chain.step("切换姿态 squat", status == 200, f"HTTP {status}")
-    # 容差 0.06 逼它真的走完 500ms 过渡，0.15 会在半路就判过
-    state = chain.wait_state(
-        lambda s: abs(s.get("joints", {}).get("left_knee_joint", 0) - 0.8) < 0.06
-        and abs(((s.get("base") or {}).get("z") or 0) - 0.314) < 0.02
-    )
+    # 过渡全程盯着脚底高度：机身和关节各走各的速度，最容易在中途把脚插进地面
+    lowest = sample_foot_clearance(chain, 0.9)
+    state = chain.wait_state(squat_settled(rest_z))
+    # 关节按 joint_speed 上斜坡，机身到位后还要再等一下才拿到关节的稳态值
+    time.sleep(0.6)
+    state = chain.wait_state(lambda s: True) or state
     knee = (state or {}).get("joints", {}).get("left_knee_joint")
     base_z = ((state or {}).get("base") or {}).get("z")
-    chain.step("屈膝到位", knee is not None and abs(knee - 0.8) < 0.06, f"膝 {knee}")
-    chain.step("机身随预设下沉", base_z is not None and abs(base_z - 0.314) < 0.02, f"base.z={base_z}")
+    dz = (state or {}).get("base_dz")
+    chain.step(
+        "屈膝到位",
+        knee is not None and abs(knee - rest_knee) > 0.5,
+        f"膝 {rest_knee:.2f} → {knee}",
+    )
+    chain.step(
+        "机身按 base_dz 下沉",
+        base_z is not None and dz is not None and dz < 0 and abs(base_z - (rest_z + dz)) < 0.01,
+        f"base.z {rest_z:.3f} → {base_z}（base_dz={dz}）",
+    )
+    chain.step(
+        "过渡全程脚底不穿地",
+        lowest is not None and lowest > -0.005,
+        f"最低 {lowest * 1000 if lowest is not None else float('nan'):.2f} mm",
+    )
 
     status, body = chain.call("POST", "/sim/gait", {"name": "walk"})
     chain.step("启动步态 walk", status == 200, f"HTTP {status}")
     state = chain.wait_state(lambda s: s.get("gait") == "walk")
     chain.step("状态里能看到 gait=walk", (state or {}).get("gait") == "walk")
+    # 隔固定时间取两帧会踩到正弦的过零点（walk 是 1.1 Hz，0.45 s 刚好接近半周期），
+    # 两帧都落在零附近就误判成没动。改成在一个周期里连续采样取极差。
     time.sleep(0.4)
-    first = (chain.wait_state(lambda s: True) or {}).get("joints", {}).get("left_hip_pitch_joint")
-    time.sleep(0.45)
-    second = (chain.wait_state(lambda s: True) or {}).get("joints", {}).get("left_hip_pitch_joint")
-    swing = abs((first or 0) - (second or 0))
-    chain.step("腿部在交替摆动", swing > 0.05, f"hip {first} → {second}")
+    samples = []
+    for _ in range(8):
+        joint = ((chain.wait_state(lambda s: True) or {}).get("joints") or {}).get("left_hip_pitch_joint")
+        samples.append(joint or 0.0)
+        time.sleep(0.13)
+    swing = max(samples) - min(samples)
+    chain.step(
+        "腿部在交替摆动",
+        swing > 0.05,
+        f"hip 极差 {swing:.4f}（{min(samples):.4f} → {max(samples):.4f}）",
+    )
     status, body = chain.call("POST", "/sim/gait", {"name": "off"})
     state = chain.wait_state(lambda s: not s.get("gait"))
     chain.step("停止步态", status == 200 and not (state or {}).get("gait"), f"HTTP {status}")

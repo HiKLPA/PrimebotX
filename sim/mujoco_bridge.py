@@ -155,6 +155,8 @@ class Sim:
         self.camera = None
         self.cam_home: tuple[float, float, float] | None = None
         self.error: str | None = None
+        self.foot_parts: list[tuple[int, np.ndarray, float]] = []
+        self._init_foot_parts()
         if self.headless:
             self._init_renderer()
 
@@ -427,6 +429,51 @@ class Sim:
             elif name.endswith("shoulder_pitch_joint"):
                 self.slew[name] = max(self.slew[name], arm_rate * self.speed)
 
+    # ---------- 落地校正 ----------
+
+    def _init_foot_parts(self) -> None:
+        """收集脚踝以下的几何，换算成几何局部坐标，供每帧算脚底最低点。
+
+        网格顶点只转一次矩阵乘就能得到世界 z，比每帧重新遍历模型便宜得多。
+        """
+        parts: list[tuple[int, np.ndarray, float]] = []
+        seen: set[tuple[int, tuple[float, ...]]] = set()
+        for g in range(self.model.ngeom):
+            body = mujoco.mj_id2name(self.model, mujoco.mjtObj.mjOBJ_BODY, int(self.model.geom_bodyid[g])) or ""
+            if not body.startswith(("left_ankle", "right_ankle")):
+                continue
+            kind = int(self.model.geom_type[g])
+            pos_key = tuple(np.round(self.model.geom_pos[g], 6).tolist())
+            if kind == int(mujoco.mjtGeom.mjGEOM_MESH):
+                key = (int(self.model.geom_dataid[g]), pos_key)
+                if key in seen:      # 视觉几何与碰撞几何是同一份网格，只留一个
+                    continue
+                seen.add(key)
+                mesh = int(self.model.geom_dataid[g])
+                start = int(self.model.mesh_vertadr[mesh])
+                count = int(self.model.mesh_vertnum[mesh])
+                parts.append((g, np.array(self.model.mesh_vert[start : start + count], copy=True), 0.0))
+            elif kind == int(mujoco.mjtGeom.mjGEOM_SPHERE):
+                parts.append((g, np.zeros((1, 3)), float(self.model.geom_size[g][0])))
+        self.foot_parts = parts
+
+    def _foot_lowest(self) -> float:
+        """脚底最低点的世界 z。foot_parts 为空时返回 0（模型没有可识别的脚）。"""
+        if not self.foot_parts:
+            return 0.0
+        lowest = float("inf")
+        for geom, local, radius in self.foot_parts:
+            mat = self.data.geom_xmat[geom].reshape(3, 3)
+            # 世界 z = (R @ p).z + pos.z = p · R[2] + pos.z
+            lowest = min(lowest, float((local @ mat[2]).min()) + float(self.data.geom_xpos[geom][2]) - radius)
+        return lowest
+
+    def _grounded_z(self) -> float | None:
+        """让脚底最低点正好落在 z=0 时，机身应该所在的 z。"""
+        if not self.foot_parts:
+            return None
+        return float(self.data.qpos[self.free_qadr + 2]) - self._foot_lowest()
+
     def _step_kinematic(self, dt: float) -> None:
         for name, adr in self.hinge_qadr.items():
             cur = float(self.data.qpos[adr])
@@ -441,11 +488,17 @@ class Sim:
             cos_y, sin_y = math.cos(self.yaw), math.sin(self.yaw)
             self.data.qpos[adr] += (vx * cos_y - vy * sin_y) * dt
             self.data.qpos[adr + 1] += (vx * sin_y + vy * cos_y) * dt
-            # 机身高度按预设平滑升降（下蹲要把机身一起压下去，否则脚会离地）
-            want_z = self.home_z + self.base_dz
-            cur_z = float(self.data.qpos[adr + 2])
-            step_z = 0.6 * dt
-            self.data.qpos[adr + 2] = cur_z + max(-step_z, min(step_z, want_z - cur_z))
+            # 机身高度由当前腿型反推：脚底永远贴地。原来按固定 0.6 m/s 往
+            # home_z+base_dz 压，腿还没弯下去机身就先沉了，过渡那 0.4 秒里
+            # 脚会插进地面 8 cm（半蹲看起来「脚陷进去」就是这么来的）。
+            mujoco.mj_forward(self.model, self.data)
+            grounded = self._grounded_z()
+            if grounded is not None:
+                want_z = min(self.home_z, grounded)
+                if self.base_dz < 0.0:
+                    # 预设声明的下沉量只是下限：真按它压会穿地时以脚底贴地为准
+                    want_z = max(want_z, self.home_z + self.base_dz)
+                self.data.qpos[adr + 2] = want_z
             half = self.yaw / 2.0
             self.data.qpos[adr + 3 : adr + 7] = [math.cos(half), 0.0, 0.0, math.sin(half)]
         mujoco.mj_forward(self.model, self.data)
@@ -488,6 +541,7 @@ class Sim:
                 "joints": joints,
                 "contact_count": int(self.data.ncon),
                 "render": self.error is None,
+                "foot_clearance": round(float(self._foot_lowest()), 4),
             }
 
     def joint_table(self) -> dict:
@@ -642,23 +696,26 @@ PRESETS: dict[str, dict] = {
         },
         "base_dz": 0.0,
     },
-    # 半蹲。髋向前摆（负角）让大腿压到接近水平、膝同量回弯让小臂（小腿）立回竖直，
-    # 踝回到 0 使脚掌仍是平的。这一蹲机身要降 0.18，否则脚掌被抬离地面
+    # 半蹲。髋前摆（负角）压大腿、膝回弯让小腿立起来，踝必须反向补一个角脚掌才回得平：
+    # 髋膝踝不是简单相加的关系，踝留 0 时脚掌会翘约 18°（脚底四点高差 46 mm）。
+    # 下面这组角是拿 MJCF 反解出来的——脚底四点高差 5 mm（约 2°）。
+    # base_dz 只当下限用（机身高度实际由腿型反推，见 _step_kinematic）：给 0.085 表示
+    # 可以压这么深；再深踝会先顶到 -0.785 的限位，脚掌就再也压不平了。
     "squat": {
         "label": "半蹲",
         "pose": {
-            "left_hip_pitch_joint": -1.6,
-            "right_hip_pitch_joint": -1.6,
-            "left_knee_joint": 1.7,
-            "right_knee_joint": 1.7,
-            "left_ankle_pitch_joint": 0.0,
-            "right_ankle_pitch_joint": 0.0,
+            "left_hip_pitch_joint": -0.85,
+            "right_hip_pitch_joint": -0.85,
+            "left_knee_joint": 1.55,
+            "right_knee_joint": 1.55,
+            "left_ankle_pitch_joint": -0.76,
+            "right_ankle_pitch_joint": -0.76,
             "left_shoulder_roll_joint": 0.3,
             "right_shoulder_roll_joint": -0.3,
             "left_elbow_joint": 1.4,
             "right_elbow_joint": 1.4,
         },
-        "base_dz": -0.18,
+        "base_dz": -0.085,
     },
     # 举手（投降式）：大臂侧平举、肘微屈，小臂竖直向上、掌心朝前。
     # 这组角度是照模型算出来的（肩 pitch -2.95 / roll -1.81 / yaw 1.38），
