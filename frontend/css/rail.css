@@ -271,6 +271,26 @@ body:has(.rail--right.is-open) .rail__toggle[data-rail="right"]{
 }
 .dock__card:hover::before{opacity:1}
 
+/* Emotions 那列的表情卡：卡里嵌一块小黑屏，屏上画的就是机器人面罩上那张
+   发光脸（同一份画法，见 js/faces.js）。
+   屏要抬到 z-index 1 —— 卡片的 hover 填色是 ::before（z-index 0）铺在整卡上的，
+   不抬的话鼠标一压上去，底色就把脸盖住了；
+   高度 56 配 4 的上下留白，正好把 64 的方形卡填成一块略竖的屏 */
+.dock__card.is-mood{cursor:pointer}
+.dock__card.is-mood:focus-visible{outline:2px solid var(--theme); outline-offset:2px}
+.mood__scr{
+  position:relative; z-index:1;
+  display:block;
+  width:48px; height:56px;
+  margin:4px auto;
+  border-radius:10px;
+  background:#15171a;
+}
+/* 已选态：底片常驻，hover 不再提亮（与 .pill 那套同一条规矩） */
+.dock__card.is-on{box-shadow:inset 0 0 0 1px var(--theme)}
+.dock__card.is-on::before,
+.dock__card.is-on:hover::before{opacity:.18}
+
 /* 升降箭头：展开时贴面板上沿 4。它放在 .dock 里，跟着整块一起上下走，
    不用像栏体那样另算一套位置；箭头本身只是 32 的透明钮。
    层级要压在 .dock__surface 之上：面板 has 一圈 16–32 的投影，收起过程中

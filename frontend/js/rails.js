@@ -80,11 +80,13 @@
   var toggle = dock.querySelector('.dock__toggle');
   var play = dock.querySelector('.dock__btn--play');
 
-  /* 左右两列先铺空白卡片占位：各三行、一行四张。
+  /* 左右两列先铺空白卡片占位：左列三行、右列四行（一行四张）。
+     右列多一行是因为表情有十六种，正好四行铺满；
      写在这里而不是 HTML 里，是因为卡片由磁吸脚本在加载时统一收集，
      这段脚本正好排在它前面；以后接真实动作时把这段换成数据渲染即可 */
   dock.querySelectorAll('.dock__grid').forEach(function (grid) {
-    var rows = 3, cols = 4, html = '';
+    var rows = grid.dataset.dockGrid === 'emotions' ? 4 : 3;
+    var cols = 4, html = '';
     for (var i = 0; i < rows * cols; i++) {
       html += '<div class="dock__card" aria-hidden="true"></div>';
     }

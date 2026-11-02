@@ -1,0 +1,30 @@
+/* ============================================================
+   RobotFX —— 主页中央的机器人本体（model/q1_ff.glb，只露上半身）
+   画布铺满整个舞台、上下左右都贴视口边，pointer-events 关掉，
+   点击与拖动照旧交给页面。机器人不按画布居中：可见高度由 --robofx-top
+   到视口底这段决定，位置则是腰部压在画布下边缘，下半身整段移出画面
+   （dock 与顶栏都是毛玻璃，压过去是一层半透明遮罩，像站在面板之后）。
+   ============================================================ */
+.robofx{
+  position:absolute;
+  inset:0;
+  /* 机器人可见高度 = 视口高减去它，像素值（robot3d.js 用 parseFloat 读，
+     写成 calc 就读不到了）：48 是 --top-h，后面 40 是顶栏下沿的呼吸。
+     调大这个值机器人就变小，但腰始终贴着画面底边 */
+  --robofx-top:88px;
+  pointer-events:none;
+  /* 模型 6.4MB，加载完之前是空画布；用透明度淡入，避免到位那一下硬闪 */
+  opacity:0;
+  transition:opacity .9s ease;
+  /* 机器人整体压在面板与卡片之下（stage 自身 z-index:1），
+     面板的半透明底会把它一起模糊掉，读起来像站在同一层空间里 */
+}
+.robofx.is-ready{opacity:1}
+.robofx canvas{display:block; width:100%; height:100%}
+
+@media (max-width:900px){
+  .robofx{--robofx-top:72px}
+}
+@media (prefers-reduced-motion: reduce){
+  .robofx{transition:none}
+}

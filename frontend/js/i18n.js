@@ -99,6 +99,9 @@ const I18N = {
     "settings.language": "Language",
     "settings.lang.en": "English",
     "settings.lang.zh": "简体中文",
+    "settings.robot": "Robot",
+    "settings.robot.body": "Body",
+    "settings.robot.head": "Head",
   },
 
   zh: {
@@ -197,6 +200,9 @@ const I18N = {
     "settings.language": "语言",
     "settings.lang.en": "English",
     "settings.lang.zh": "简体中文",
+    "settings.robot": "机器人",
+    "settings.robot.body": "上半身",
+    "settings.robot.head": "头部",
   },
 };
 

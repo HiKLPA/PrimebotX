@@ -633,4 +633,26 @@
       subL[0].textContent = SUB_KEY[name] ? t(SUB_KEY[name]) : '';
     }
   });
+
+  /* 机器人显示范围：body（上半身）/ head（头部特写），写进 px.bot 并通知 3D 模块。
+     3D 模块自己也读同一个键，所以刷新后直接就是上次那一档；
+     这里调用时它可能还没加载完，那就只存键，等它起来自己认 */
+  var BOT_KEY = 'px.bot';
+  var botSegs = panel.querySelectorAll('.seg__opt[data-bot]');
+  function pickBot(key) {
+    if (key !== 'head') key = 'body';
+    Array.prototype.forEach.call(botSegs, function (b) {
+      var on = b.dataset.bot === key;
+      b.classList.toggle('is-sel', on);
+      b.setAttribute('aria-checked', on ? 'true' : 'false');
+    });
+    try { localStorage.setItem(BOT_KEY, key); } catch (e) {}
+    if (window.robot3d && window.robot3d.setFraming) window.robot3d.setFraming(key);
+  }
+  Array.prototype.forEach.call(botSegs, function (b) {
+    b.addEventListener('click', function () { pickBot(b.dataset.bot); });
+  });
+  try {
+    pickBot(localStorage.getItem(BOT_KEY) === 'head' ? 'head' : 'body');
+  } catch (e) { pickBot('body'); }
 })();

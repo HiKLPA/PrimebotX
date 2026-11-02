@@ -19,10 +19,10 @@
   } catch (e) {}
 })();
 </script>
-<script src="js/i18n.js?v=1"></script>
+<script src="js/i18n.js?v=2"></script>
   <link rel="stylesheet" href="css/base.css?v=2">
   <link rel="stylesheet" href="css/topbar.css?v=3">
-  <link rel="stylesheet" href="css/rail.css?v=9">
+  <link rel="stylesheet" href="css/rail.css?v=10">
   <link rel="stylesheet" href="css/hud.css">
   <link rel="stylesheet" href="css/cards.css?v=16">
   <link rel="stylesheet" href="css/modal.css?v=19">
@@ -31,6 +31,7 @@
        两个文件保留在仓库里，需要回退时把下面两行放回来即可 -->
   <!-- <link rel="stylesheet" href="css/integration.css"> -->
   <link rel="stylesheet" href="css/sim.css?v=58">
+  <link rel="stylesheet" href="css/robot.css?v=4">
 </head>
 <body>
 
@@ -402,7 +403,7 @@
 
 <script src="js/hud.js"></script>
 
-<script src="js/rails.js?v=8"></script>
+<script src="js/rails.js?v=9"></script>
 
 <!-- 头像：点头像弹出默认头像与本地图片的选择区，选择结果存 localStorage -->
 <script src="js/avatar.js?v=3"></script>
@@ -660,6 +661,19 @@
                         aria-checked="false" data-lang="zh"><span class="seg__lab" data-i18n="settings.lang.zh">简体中文</span><svg class="seg__arrow" viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77,.35-.77,.77v3.9c0,.42,.24,1.01,.54,1.31l4.35,4.35c.3,.3,.3,.79,0,1.09l-4.35,4.35c-.3,.3-.54,.89-.54,1.31v3.9c0,.42,.35,.77,.77,.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3,.79-.79,1.09-1.09l4.35-4.35Z"/></svg></button>
               </div>
             </div>
+          <!-- 机器人显示范围：Body 是现在的上半身（腰压在画面底边），
+               Head 是头部特写，镜头拉近到头部、转头范围放宽到屏幕两侧各 30° -->
+          <div class="set__item">
+            <div class="set__name" data-i18n="settings.robot">Robot</div>
+            <div class="set__body">
+              <div class="seg" role="radiogroup" aria-label="Robot framing">
+                <button class="seg__opt is-sel" type="button" role="radio"
+                        aria-checked="true" data-bot="body"><span class="seg__lab" data-i18n="settings.robot.body">Body</span><svg class="seg__arrow" viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01,.54,1.31l4.35,4.35c.3.3.3.79,0,1.09l-4.35,4.35c-.3.3-.54.89-.54,1.31v3.9c0,.42.35.77,.77.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3,.79-.79,1.09-1.09l4.35-4.35Z"/></svg></button>
+                <button class="seg__opt" type="button" role="radio"
+                        aria-checked="false" data-bot="head"><span class="seg__lab" data-i18n="settings.robot.head">Head</span><svg class="seg__arrow" viewBox="0 0 32 32" aria-hidden="true"><path d="M23.78,16.54c.3-.3.3-.79,0-1.09l-4.35-4.35c-.3-.3-.79-.79-1.09-1.09l-4.35-4.35c-.3-.3-.89-.54-1.31-.54h-3.9c-.42,0-.77.35-.77.77v3.9c0,.42.24,1.01,.54,1.31l4.35,4.35c.3.3.3.79,0,1.09l-4.35,4.35c-.3.3-.54.89-.54,1.31v3.9c0,.42.35.77,.77.77h3.9c.42,0,1.01-.24,1.31-.54l4.35-4.35c.3-.3,.79-.79,1.09-1.09l4.35-4.35Z"/></svg></button>
+              </div>
+            </div>
+          </div>
           </div>
         </section>
       </div>
@@ -680,7 +694,7 @@
   </div>
 </div>
 
-<script src="js/modal.js?v=14"></script>
+<script src="js/modal.js?v=16"></script>
 
 <script src="js/models.js?v=2"></script>
 
@@ -693,6 +707,19 @@
 <!-- <script src="js/integration.js"></script> -->
 <!-- MuJoCo 仿真：操作面板在 Advance 弹窗内（.adv），这里只绑事件与轮询 -->
 <script src="js/sim.js?v=21"></script>
+
+<!-- ===================== 舞台中央的机器人（q1_ff.glb） =====================
+     three.js 与 addons 都放在 lib/three 下，走 importmap 解析裸模块名；
+     模型 6.4MB，加载完才淡入，取不到就只留点阵背景，不影响任何交互 -->
+<script type="importmap">
+{
+  "imports": {
+    "three": "./lib/three/three.module.js",
+    "three/addons/": "./lib/three/addons/"
+  }
+}
+</script>
+<script type="module" src="js/robot3d.js?v=10"></script>
 
 </body>
 </html>
