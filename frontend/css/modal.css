@@ -106,20 +106,26 @@
 .set__tab:hover .set__tab__label{transform:translate(calc(1em + 16px), -50%)}
 .set__tab:hover .set__tab__arrow{opacity:1; transform:translateY(-50%) translateX(0)}
 .set__tab.is-sel{color:var(--theme)}
+
+.set__main{
+  flex:1 1 auto; min-width:0;
+  /* 顶部 6：让每个选项块那行 16 号小标题的中心落在 16，与左区 28 号标题同高。
+     左右两侧都是面板自身的 --modal-pad（16）：与左区标题、侧栏正文同一条线，
+     分隔线到内容、内容到面板右缘的留白相等，两栏不再一边宽一边窄。
+     右缘靠「负外边距 + 等宽内边距」把盒子顶到面板边沿，内边距再把内容推回 16：
+     overflow-x:clip 的裁切面落在 padding box 上，盒子探出去多少就多出多少裁切余量，
+     卡片那圈 --sh 外投影、选中描边、磁吸抬升全落在裁切面以内，右缘不会被切平
+     （上一版把 24 直接写进 padding 也是为躲裁切，代价是右区比左侧多缩一截） */
+  margin-right:calc(-1 * var(--modal-pad, 16px));
+  padding:6px var(--modal-pad, 16px) 8px;
+  overflow-y:auto; overflow-x:clip;
+  scrollbar-width:none;
+}
 /* 左区 25% 的面板内宽放下 18 号的 Appearance 还绰绰有余（约 100px 对 158px），
    所以任何宽度都不降字号；700 以下只放宽左区、标题收一档 */
 @media (max-width:700px){
   .set__nav{flex-basis:34%}
   .set__title{font-size:var(--fs-24); margin-bottom:16px}
-  .set__main{padding-left:16px}
-}
-
-.set__main{
-  flex:1 1 auto; min-width:0;
-  /* 顶部 6：让每个选项块那行 16 号小标题的中心落在 16，与左区 28 号标题同高 */
-  padding:6px 0 8px 24px;
-  overflow-y:auto; overflow-x:clip;
-  scrollbar-width:none;
 }
 .set__main::-webkit-scrollbar{width:0; height:0}
 /* 选项页面：每块「小标题 + 内容」一组，块与块之间竖直 16 */
@@ -243,6 +249,11 @@
 .doc__body{
   flex:1 1 auto; min-height:0;
   display:flex; flex-direction:column; gap:4px;
+  /* 与 .set__main 同一条规矩：负外边距把盒子顶到面板边沿、等宽内边距把字推回原位，
+     内容的左右留白仍是面板的 16，裁切面却退到面板边上 —— 行的外投影、字外的
+     焦点环不会被一条提前 16 的裁切线削掉。两栏的右缘也才对得齐 */
+  margin-inline:calc(-1 * var(--modal-pad, 16px));
+  padding-inline:var(--modal-pad, 16px);
   overflow-y:auto; overflow-x:clip;
   overscroll-behavior:contain;
   scrollbar-width:none;   /* 不显示滚动条：条宽会把行挤窄，右端就不再与标题区齐平 */
@@ -394,10 +405,13 @@
   gap:8px;
   padding:10px 6px;
   border:0; border-radius:16px;
-  /* 底板撤掉之后由卡自己当表面：用 --card-solid 那一档，
-     再加一道很浅的投影，浅色下才分得清「方卡」与「面板」——
-     两者都是近白，只靠色差是拉不开的 */
-  background:var(--card-solid);
+  /* 底板撤掉之后由卡自己当表面。底色取 --card，与右栏 Motions / Emotions
+     那些指令卡（.sc / .rail__card）同一个令牌：深色下是 6% 白叠在面板上，
+     比面板亮一档；浅色下是 50% 白，比面板亮一点点。上一版用 --card-solid
+     （深色 #3a3a3a、浅色 #f8f8f8），深色下反而比面板暗一大截，
+     和同一栏上下的卡片并排时像是凹进去的。
+     分不清「方卡」与「面板」时仍靠那道很浅的投影 */
+  background:var(--card);
   color:var(--text-reduced);
   font-family:inherit; font-weight:var(--fw);
   cursor:pointer;

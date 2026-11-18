@@ -48,6 +48,11 @@
     var pr = p.getBoundingClientRect();
     var left = pr.left + el.offsetLeft;
     var top = pr.top + el.offsetTop;
+    /* 与 magnet.js 的 boxOf 同一条：offsetParent 自己就是滚动区时
+       （桌面端 .panel__body 既是滚动区又是绝对定位盒），它滚过的距离
+       不在下面那圈循环里，得单独减，否则影子会落在滚动前的那个位置 */
+    if (p.scrollTop) top -= p.scrollTop;
+    if (p.scrollLeft) left -= p.scrollLeft;
     for (var n = el.parentElement; n && n !== p; n = n.parentElement) {
       if (n.scrollTop) top -= n.scrollTop;
       if (n.scrollLeft) left -= n.scrollLeft;

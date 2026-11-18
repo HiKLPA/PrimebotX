@@ -964,7 +964,9 @@ function init() {
       '<span class="skin-card__name"></span>',
     ].join('');
     card.querySelector('.skin-card__name').textContent = label;
-    if (importCard) pick.insertBefore(card, importCard);
+    /* 导入钮已从网格里搬到 Costume 标题行，不再是 pick 的子节点：
+       只有在它仍留在网格里时才插到它前面，否则直接追加到末尾 */
+    if (importCard && importCard.parentElement === pick) pick.insertBefore(card, importCard);
     else pick.appendChild(card);
   }
 

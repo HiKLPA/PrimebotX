@@ -19,19 +19,19 @@
   } catch (e) {}
 })();
 </script>
-<script src="js/i18n.js?v=47"></script>
-  <link rel="stylesheet" href="css/base.css?v=18">
+<script src="js/i18n.js?v=48"></script>
+  <link rel="stylesheet" href="css/base.css?v=21">
   <link rel="stylesheet" href="css/topbar.css?v=21">
-  <link rel="stylesheet" href="css/rail.css?v=55">
-  <link rel="stylesheet" href="css/workspace.css?v=33">
+  <link rel="stylesheet" href="css/rail.css?v=57">
+  <link rel="stylesheet" href="css/workspace.css?v=37">
   <link rel="stylesheet" href="css/cards.css?v=32">
-  <link rel="stylesheet" href="css/modal.css?v=36">
-  <link rel="stylesheet" href="css/chat.css?v=143">
+  <link rel="stylesheet" href="css/modal.css?v=39">
+  <link rel="stylesheet" href="css/chat.css?v=144">
   <!-- 旧的 Q1 管理联调浮层样式已随硬件连接一并移除 -->
   <link rel="stylesheet" href="css/robot.css?v=4">
 <link rel="stylesheet" href="css/viewtool.css?v=34">
 <link rel="stylesheet" href="css/auth.css?v=25">
-<link rel="stylesheet" href="css/mobile.css?v=1">
+<link rel="stylesheet" href="css/mobile.css?v=2">
 </head>
 <!-- writingsuggestions="false"：关掉浏览器自己的写作建议与内联 Compose。
      不关的话 Edge / Chrome 会在可编辑框里挂一枚蓝色圆点，点开是它的 AI 改写面板，
@@ -560,6 +560,19 @@
       <div class="rail__title" data-head="gestures" data-i18n="dock.motions">Motions</div>
       <div class="rail__title" data-head="emotions" data-i18n="dock.emotions">Emotions</div>
       <div class="rail__title" data-head="preference" data-i18n="nav.preference">Costume</div>
+      <!-- 导入钮：从外观网格里搬到 Costume 标题行右端。收起时是一枚 32 的加号
+           圆钮，指针压上去就地长成 128 的胶囊、把 new costume 推出来 —— 尺寸、
+           底色、展开曲线都跟左栏 AI Persona 的新增钮同一套。
+           文件选择仍挂在 label 上，脚本读的还是 data-skin-import / data-skin-file
+           这两个钩子；角色是 button，所以回车与空格也能打开选择框
+           （绑定见 js/q1skin.js 尾部的 keydown） -->
+      <label class="rail-add" data-skin-import role="button" tabindex="0">
+        <svg class="rail-add__plus" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12 5v14"/><path d="M5 12h14"/>
+        </svg>
+        <span class="rail-add__text"><span data-i18n="rail.left.skin.importNew">new costume</span></span>
+        <input data-skin-file type="file" accept=".glb,.gltf,.fbx" hidden>
+      </label>
     </div>
     <div class="panel__body" data-panel-body data-view="gestures">
       <!-- 四页共用这一块滚动区，按 data-view 显隐：点图标时 rails.js 写
@@ -607,9 +620,9 @@
       </div>
 
       <!-- 偏好页：机器人外观。一页只看这一件事 —— 一组自适应方卡，
-           选中的那枚涨满主题色，导入卡固定在模型网格末尾，新导入的模型由
-           js/q1skin.js 插在导入卡前面。「删除当前导入」排在卡下面，只在选中
-           导入的模型时出现，导入过程的提示挂在最末一行 -->
+           选中的那枚涨满主题色；导入钮搬到了上面的 Costume 标题行右端，
+           新导入的模型由 js/q1skin.js 追加在网格末尾。「删除当前导入」排在
+           卡下面，只在选中导入的模型时出现，导入过程的提示挂在最末一行 -->
       <div class="rail__view rail__view--pref" data-rail-view="preference">
         <div class="pref" data-skin-panel>
           <div class="pref__group pref__group--skin">
@@ -687,13 +700,6 @@
                 </span>
                 <span class="skin-card__name" data-i18n="rail.left.skin.pixel">Steve</span>
               </button>
-              <label class="skin-card skin-card--import" role="button" tabindex="0" data-skin-import>
-                <span class="skin-card__icon" aria-hidden="true">
-                  <svg viewBox="0 0 32 32"><path d="M6 10h8l3 3h9v13H6V10Z"/><path d="M16 14v7m-3.5-3.5L16 21l3.5-3.5"/></svg>
-                </span>
-                <span class="skin-card__name" data-i18n="rail.left.skin.import">导入</span>
-                <input data-skin-file type="file" accept=".glb,.gltf,.fbx" hidden>
-              </label>
             </div>
             <button class="pref__row" type="button" data-skin-delete hidden>
               <span data-i18n="rail.left.skin.delete">删除当前导入</span>
@@ -789,7 +795,7 @@
 <script src="js/rails.js?v=22"></script>
 
 <!-- 把卡片拖到机器人身上：拾起 → 思考 → 点头 → 卡片消失 → 播动作 -->
-<script src="js/card_pickup.js?v=16"></script>
+<script src="js/card_pickup.js?v=17"></script>
 
 <!-- 头像：点头像弹出默认头像与本地图片的选择区，选择结果存 localStorage -->
 <script src="js/avatar.js?v=7"></script>
@@ -798,12 +804,12 @@
 <script src="lib/gsap.min.js"></script>
 <!-- 滚动驱动：ScrollTrigger 与 GSAP 同版本，组标题的交接淡出挂在这上面 -->
 <script src="lib/ScrollTrigger.min.js"></script>
-<script src="js/press.js?v=16"></script>
+<script src="js/press.js?v=17"></script>
 
 <script src="js/panels.js?v=12"></script>
 <script src="js/mobile.js?v=1"></script>
 
-<script src="js/magnet.js?v=14"></script>
+<script src="js/magnet.js?v=16"></script>
 
 <script src="js/sticky.js?v=5"></script>
 
@@ -1244,7 +1250,7 @@
 </script>
 <script type="module" src="js/robot3d.js?v=82"></script>
 <script type="module" src="js/view-control.js?v=51"></script>
-<script type="module" src="js/q1skin.js?v=51"></script>
+<script type="module" src="js/q1skin.js?v=52"></script>
 
 </body>
 </html>

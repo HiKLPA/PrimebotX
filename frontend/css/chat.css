@@ -1710,11 +1710,10 @@
 }
 .assistant-chat__message--user{
   border-radius:24px 24px 0 24px;
-  /* 自己的话直接用主题色铺满。theme 两支明暗主题下都是同一枚浅色，
-     所以字色取主色文字的反相（始终是深墨），不跟 --text-primary 走
-     （深色模式下那支会变白） */
+  /* 自己的话直接用主题色铺满，字色跟着主色文字走 —— 浅色模式是深墨，
+     深色模式翻成亮字，与页面上其它主色底的表面对齐 */
   background:var(--theme);
-  color:var(--text-primary-invert);
+  color:var(--text-primary);
 }
 .assistant-chat__message--pending{
   color:var(--text-muted);

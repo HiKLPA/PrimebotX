@@ -31,9 +31,6 @@
   --text-reduced:     #4b4b4b;
   --text-muted:       #9b9b9b;
   --text-invert:      #fafafa;
-  /* 主色文字的反相：铺在主题色（mint）底上的那段字用它。主题色两支主题下
-     都是同一枚浅色，所以它在深色模式里也不跟着翻白 —— 见下面 dark 那一块 */
-  --text-primary-invert:#1c1c1c;
   --avatar:           #d9d9d9;
   /* 投影色单独拿出来：浅色底上用 #2d2d2d 的柔灰，深色底上必须换成纯黑，
      否则面板与页面同明度，投影完全看不出来、几层表面会糊成一片。
@@ -126,6 +123,7 @@
 .rail__surface,
 .user__surface,
 .persona-card,
+.model-preset,
 .sc{
   --sh: 16px;
   --sh-a: .1;
@@ -147,8 +145,11 @@
   --text-reduced:   #cdcdcd;
   --text-muted:     #9b9b9b;
   --text-invert:    #1c1c1c;
-  /* 不跟 --text-primary 翻成亮字：底色还是那枚浅 mint，亮字上去就没了对比度 */
-  --text-primary-invert:#1c1c1c;
+  /* 深色模式的主题色改用 theme_dark 那一枚：浅 mint 压在深底上会偏灰、
+     与 --hint 拉开不够，换成略偏青的 #91d7cd 才站得住。
+     只在令牌层改这一处，全站 var(--theme) 的用法都跟着走 ——
+     faces.js 取色时也是按 dark 读 --theme-dark，两边同源 */
+  --theme:          var(--theme-dark);
   --avatar:         #545454;
   --shadow:         0,0,0;
   --sh-k:           1.9;

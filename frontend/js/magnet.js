@@ -55,7 +55,11 @@
     { sel: '.sc',            persp: 800,  tiltX: 6, tiltY: 6, lift: 10, grow: HOVER_SCALE },
     { sel: '.rail__card',    persp: 700,  tiltX: 5, tiltY: 5, lift: 8,  grow: HOVER_SCALE },
     /* 左栏角色卡与右栏动作卡同一档：两块卡的面积相当，翻角与浮起也照抄 */
-    { sel: '.persona-card',  persp: 700,  tiltX: 5, tiltY: 5, lift: 8,  grow: HOVER_SCALE }
+    { sel: '.persona-card',  persp: 700,  tiltX: 5, tiltY: 5, lift: 8,  grow: HOVER_SCALE },
+    /* 设置里的模型预设卡：改版后与 Persona 卡同尺寸同圆角，手感也照抄。
+       inModal —— 弹窗默认整片停手（见 aim 里的判断），这几张卡要破例 */
+    { sel: '.model-preset',  persp: 700,  tiltX: 5, tiltY: 5, lift: 8,  grow: HOVER_SCALE,
+      inModal: true }
   ];
 
   var items = [];
@@ -72,6 +76,16 @@
     var pr = p.getBoundingClientRect();
     var left = pr.left + el.offsetLeft;
     var top  = pr.top  + el.offsetTop;
+    /* offsetParent 自己就是滚动容器时，要把它滚过的距离也减掉。
+       offsetTop 是相对 offsetParent 的 padding box 量的，不含滚动；
+       而下面那圈循环在 n === p 处就停了，p 自身的 scrollTop 谁也减不到。
+       桌面端 .panel__body 恰好既是滚动区、又是绝对定位的（见 rail.css 里那条
+       >641px 的规则），卡片的 offsetParent 正是它 —— 少这一项，判定盒就整段
+       停在「没滚动」的位置，滚过多少就和屏幕错开多少：指针压在下面这张卡上，
+       倾斜与浮起却落到上面那张（雾里的那张），看着像遮罩里的卡也在 hover。
+       手机上 offsetParent 是栏体，p.scrollTop 为 0，这一项不起作用 */
+    if (p.scrollTop)  top  -= p.scrollTop;
+    if (p.scrollLeft) left -= p.scrollLeft;
     for (var n = el.parentElement; n && n !== p; n = n.parentElement) {
       if (n.scrollTop)  top  -= n.scrollTop;
       if (n.scrollLeft) left -= n.scrollLeft;
@@ -89,8 +103,10 @@
        背后挂着 backdrop-filter，那一层每倾斜一点，浏览器都要把它背后的画布
        重新模糊一次 —— 弹窗弹出那几帧的卡顿基本来自这里。
        两者盖在最上面，托盘也没必要继续跟着指针翻 */
-    if (document.body.classList.contains('is-modal') ||
-        document.body.classList.contains('is-auth')) { t.RX = t.RY = t.Z = 0; t.S = 1; return; }
+    if ((document.body.classList.contains('is-modal') ||
+        document.body.classList.contains('is-auth')) && !t.cfg.inModal) {
+      t.RX = t.RY = t.Z = 0; t.S = 1; return;
+    }
 
     /* 正拎着一张卡时整片停手：指针从别的卡上划过去，那套倾斜与浮起
        读起来像「这张也能拎」，而此刻手上已经有一张了。倾斜是按指针坐标算的、
@@ -114,7 +130,7 @@
       var open = rail.classList.contains('is-open');
       /* 指令卡、右栏动作卡与左栏角色卡都算「卡片」：展开时吸它们、收起时吸栏体 */
       var isCard = t.el.classList.contains('sc') || t.el.classList.contains('rail__card') ||
-        t.el.classList.contains('persona-card');
+        t.el.classList.contains('persona-card') || t.el.classList.contains('model-preset');
       if (isCard ? !open : open) { t.RX = t.RY = t.Z = 0; t.S = 1; return; }
       /* 开合动画（scale 胀开 + elastic 回弹）没走完之前，卡片不参与：
          父级的缩放与卡片的透视叠在一起，两层每帧各自重投影，边线会跳。

@@ -91,7 +91,7 @@
   }
   .mobile-dock__item[aria-pressed="true"]{
     background:var(--theme);
-    color:var(--text-primary-invert);
+    color:var(--text-primary);
   }
   .mobile-dock__item:focus-visible{outline:2px solid var(--hint);outline-offset:2px}
 

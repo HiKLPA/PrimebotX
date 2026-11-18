@@ -105,18 +105,26 @@ html[lang="zh-CN"] .sc-group__title{line-height:1}
 }
 .model-preset{
   appearance:none; -webkit-appearance:none;
+  position:relative;
   min-width:0;
-  min-height:66px;
-  padding:10px 12px;
+  min-height:80px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  padding:16px;
   border:0;
-  border-radius:14px;
+  border-radius:24px;
   background:var(--card);
   color:var(--text-secondary);
   font:inherit;
   text-align:left;
   cursor:pointer;
-  box-shadow:inset 0 0 0 1px transparent;
-  transition:background-color .14s ease, box-shadow .14s ease, color .14s ease;
+  /* 尺寸、圆角、投影与选中环全部对齐左栏的 Persona 卡：
+     同一档 80 高 / 24 圆角 / 16 内边距，外投影走 --sh 那一套 */
+  box-shadow:
+    0 0 var(--sh) rgba(var(--shadow),calc(var(--sh-a) * var(--sh-k))),
+    inset 0 0 0 1px transparent;
+  transition:box-shadow .14s ease, background-color .14s ease, color .14s ease;
 }
 .model-preset strong,
 .model-preset span{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -126,10 +134,28 @@ html[lang="zh-CN"] .sc-group__title{line-height:1}
 .model-preset strong{color:var(--text-primary);font-size:var(--fs-14);font-weight:var(--fw)}
 .model-preset span{margin-top:6px;color:var(--text-reduced);font-size:var(--fs-14)}
 .model-preset:hover,
-.model-preset:focus-visible{box-shadow:inset 0 0 0 1.5px var(--theme);outline:none}
-.model-preset.is-on{background:color-mix(in srgb,var(--theme) 34%,var(--card-solid));color:var(--text-primary)}
+.model-preset:focus-visible{
+  box-shadow:
+    0 0 var(--sh) rgba(var(--shadow),calc(var(--sh-a) * var(--sh-k))),
+    inset 0 0 0 1px color-mix(in srgb,var(--theme) 55%,transparent);
+  outline:none;
+}
+/* 选中只加一圈实边，不换底色 —— 与 Persona 卡同一处理：
+   磁吸把它抬起来时底片始终是那块 --card，翻动不会忽明忽暗 */
+.model-preset.is-on{
+  box-shadow:
+    0 0 var(--sh) rgba(var(--shadow),calc(var(--sh-a) * var(--sh-k))),
+    inset 0 0 0 1.5px var(--theme);
+  color:var(--text-primary);
+}
 .model-view__note,
 .model-save{grid-column:1 / -1}
+
+/* 窄屏：设置右区只剩三百来宽，两列预设每张不到 150，名字会被省略号吃掉。
+   退成一列，卡片保持 80 高、整行宽度，与上面那排分段控件同一节奏 */
+@media (max-width:640px){
+  .model-presets{grid-template-columns:minmax(0,1fr)}
+}
 
 /* AI 角色预设 */
 .persona-list{
@@ -270,7 +296,9 @@ html[lang="zh-CN"] .sc-group__title{line-height:1}
    静止是 32×32 的正圆，与聊天页右上角那枚齿轮同档；指针压上去时就地长成
    128 宽的胶囊 —— 右边缘不动、宽度朝左伸，加号停在原位，提示文字从加号
    右侧被撑出来。高度仍是 32，文字走 14 号那一档并垂直居中。
-   行内的 --press 由 js/press.js 逐帧写，按下时整体缩进一格再弹回 */
+   行内的 --press 由 js/press.js 逐帧写，按下时整体缩进一格再弹回。
+   上沿不额外上提：与标题盒同起一线，四边留白都是面板的 16，和右栏 Costume
+   那枚导入钮同一个位置 */
 .persona-new{
   appearance:none;-webkit-appearance:none;
   position:relative;
@@ -383,15 +411,18 @@ html[lang="zh-CN"] .sc-group__title{line-height:1}
 .persona-view .view-badge{display:none}
 /* 表头与右栏 Emotions 页同一条起算线：视图上内边距已归零（见 rail.css 里那条
    [data-view] 规则），表头盒顶边贴住面板顶，文字靠 padding-top 落到 --title-top。
-   行高按那枚 32 的加号算（标题仍是 24）：圆钮顶边与标题同在 --title-top(16)，
-   上距、右距都是面板内边距 16，下沿正好落在表头底边；
-   悬停长成 128 的胶囊也只是横向伸展。
+   在流里占的高度只按标题那一行算（标题 24）：16 上留白 + 24 行盒 + 面板的 16 间隔，
+   首张卡片正好落在 56 —— 与右栏 Costume / Emotions 各页的 56 完全同一条线。
+   上一版这里写的是 --title-top + 32（48），为的是把表头垫到那枚 32 的加号下沿；
+   代价是卡片被推到 64，标题下那道留白比别的页宽出 8，左栏看着比右栏松一档。
+   现在表头只按标题行算，加号从 --title-top 起、32 高落到 48，仍在卡片顶 56 以内，
+   不必再替它撑高；悬停长成 128 的胶囊也只是横向伸展。
    吸附线与静止位都是 0，滚动时表头不动 */
 .persona-view .view-head{
   position:sticky;
   top:0;
   z-index:4;
-  height:calc(var(--title-top) + 32px);
+  height:calc(var(--title-top) + 24px);
   padding-top:var(--title-top);
   align-items:flex-start;
 }

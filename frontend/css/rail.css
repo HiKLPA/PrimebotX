@@ -162,6 +162,94 @@ body:has(.rail--right.is-open) .rail__toggle[data-rail="right"]{
 .rail[data-view="gestures"] .rail__head [data-head="gestures"],
 .rail[data-view="emotions"] .rail__head [data-head="emotions"],
 .rail[data-view="preference"] .rail__head [data-head="preference"]{display:block}
+/* Costume 标题右边让出导入钮那 32：标题再长也不会钻到圆钮底下 */
+.rail__head [data-head="preference"]{right:calc(var(--panel-pad) + 40px)}
+
+/* ── Costume 页的导入钮 ────────────────────────────────────────────
+   原来它是外观网格末尾的一张方卡，现在搬到 Costume 标题行右端：收起时是一枚
+   32 的正圆加号，指针压上去就地长成 128 宽的胶囊 —— 右边缘钉住不动、宽度朝左
+   伸，加号停在原位，提示文字从它右侧被撑出来。
+   尺寸、--theme 底、--text-invert 字、0.32s 那条 --ease 展开，与左栏 AI Persona
+   的新增钮（.persona-new，见 workspace.css）逐项对齐；不同的只是它挂在绝对定位
+   的标题层里、不占 flex 行，所以不取 margin-left:auto。
+   文件选择仍由 label 包着 input，脚本读的还是 data-skin-import / data-skin-file */
+.rail-add{
+  appearance:none; -webkit-appearance:none;
+  position:absolute;
+  /* 上沿与标题盒同一条线、右边与面板内边距同一个 16：这枚圆钮的四边留白
+     都是 --panel-pad。上一版写的是 --title-top - 4（让圆心压在 24 行盒的中线），
+     竖向上沿只剩 12，面板展开后左上看 12、右上却看 17（那 1px 是分割线槽），
+     一眼就看出四边不齐。现在圆心落在 32 的一半处（16 + 16 = 32），比文字行盒的
+     中线低 4，但上沿与标题同起一线，读起来仍是同一个内边距 */
+  top:var(--title-top);
+  right:var(--panel-pad);
+  width:32px; min-width:32px; height:32px;
+  display:none;                 /* 只有 Costume 页要它，由栏体的 data-view 放出来 */
+  align-items:center;
+  justify-content:flex-start;
+  /* 不加左右内边距：静止时宽度就等于那枚 32 的圆钮 */
+  padding:0;
+  border:0;
+  border-radius:999px;
+  background:var(--theme);
+  color:var(--text-invert);
+  font:inherit;
+  cursor:pointer;
+  /* 标题层整层 pointer-events:none（那样卡片从标题下面滚过去才接得住指针），
+     这一枚自己把指针接回来 */
+  pointer-events:auto;
+  transform:scale(calc(1 - var(--press,0) * var(--press-k)));
+  transition:width .32s var(--ease), background-color .2s ease, color .2s ease,
+             transform .16s var(--ease);
+}
+.rail[data-view="preference"] .rail-add{display:inline-flex}
+.rail-add__plus{
+  flex:0 0 auto;
+  width:16px; height:16px;
+  /* 左右各留 8：加号在 32 的圆里居中，展开后它还停在这 32 的格里不动，
+     文字从 32 + 6 起排，右缘正落在按钮的右内边距上 */
+  margin:0 8px;
+  fill:none;
+  stroke:currentColor;
+  /* 实底主题色上细描边会发虚，2 比同栏其它图标的 1.65 重一档 */
+  stroke-width:2;
+  stroke-linecap:round;
+}
+/* 提示文字先只占 0 宽，悬停时按钮定宽到 128（32 的加号 + 6 的间距 + 这段 90），
+   文字在这一格里靠右排：宽度不够时被裁掉的是字头，露出来的字尾始终贴着
+   右内边距，跟着胶囊一起往左展开 */
+.rail-add__text{
+  display:flex;
+  flex:1 1 auto;
+  justify-content:flex-end;
+  max-width:0;
+  /* 右内边距写在里面那枚 span 上，不写在它身上：padding 会先把盒子撑到 7 宽，
+     max-width:0 也压不下去，静止的圆钮就变成 23 宽的椭圆 */
+  min-width:0;
+  margin-left:0;
+  opacity:0;
+  overflow:hidden;
+  white-space:nowrap;
+  font-size:var(--fs-14);
+  line-height:1;
+  transition:max-width .32s var(--ease), margin-left .32s var(--ease), opacity .16s ease;
+}
+.rail-add__text > span{flex:0 0 auto; padding-right:7px}
+.rail-add:hover,
+.rail-add:focus-visible{width:128px; outline:none}
+.rail-add:hover .rail-add__text,
+.rail-add:focus-visible .rail-add__text{
+  max-width:90px;
+  margin-left:6px;
+  opacity:1;
+  transition:max-width .32s var(--ease), margin-left .32s var(--ease),
+             opacity .24s ease .06s;
+}
+/* 按压期间几何交给 GSAP 逐帧写，别让 transform 的过渡把它拉回去；
+   宽度那条保留 —— 按下时若正赶上展开，胶囊不会一顿跳到位 */
+.rail-add.is-press{
+  transition:width .32s var(--ease), background-color .2s ease, color .2s ease;
+}
 /* 卡片网格：一行四张，列宽用 1fr 摊满，卡片靠 aspect-ratio 保持方格 */
 .rail__grid{
   display:grid;
