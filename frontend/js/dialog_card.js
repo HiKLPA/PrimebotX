@@ -213,7 +213,7 @@
   }
 
   function sendWeather() {
-    var chat = window.intellibotChat;
+    var chat = window.primebotxChat;
     if (!chat || typeof chat.send !== 'function') return;
     var ready = cache && Date.now() - cache.t < CACHE_MS ? Promise.resolve(cache) : prefetch();
     /* 取数比人慢的时候不干等：先发一句不带数字的，模型照样能接上话，
@@ -262,7 +262,7 @@
 
   /* 拖到机器人身上、仪式走完：card_pickup 在 release 那一拍把卡上的
      data-dialog 传出来，这里接手。没走这条路的是点击触发 */
-  window.addEventListener('intellibot-dialog-card', function (event) {
+  window.addEventListener('primebotx-dialog-card', function (event) {
     trigger(event.detail && event.detail.id);
   });
 })();

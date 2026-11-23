@@ -77,7 +77,7 @@ const ELEVATION_LIMIT = 89;
 const HOVER_DELAY_MS = 60;
 const WAIST_TRIGGER_Y = 0.045;
 const SHOULDER_PITCH_RADIUS = 0.045;
-const DEFAULT_VIEW_KEY = 'intellibot.default-view';
+const DEFAULT_VIEW_KEY = 'primebotx.default-view';
 const FRONT_VIEW = Object.freeze({ azimuth: 0, elevation: 0, distance: 1, mode: 'front' });
 
 let robo = null;

@@ -3,17 +3,17 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>IntelliBot</title>
+<title>PrimebotX</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;700&family=Barlow+Condensed:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script>
 /* 明暗模式在首帧之前定下来。色值全挂在 :root 的那套变量上，
    晚一步再改 data-theme 会先按浅色画一遍、再整屏跳到深色。
-   键名与 Settings 弹窗里的 intellibot.mode 一致，没存过就走 <html> 上的初始值 day */
+   键名与 Settings 弹窗里的 primebotx.mode 一致，没存过就走 <html> 上的初始值 day */
 (function () {
   try {
-    var v = localStorage.getItem('intellibot.mode');
+    var v = localStorage.getItem('primebotx.mode');
     if (v === 'night') document.documentElement.setAttribute('data-theme', 'dark');
     else if (v === 'day') document.documentElement.setAttribute('data-theme', 'light');
   } catch (e) {}
@@ -42,7 +42,7 @@
 <header class="topbar">
   <!-- 标志不是入口：用 span 而不是 a，不进 Tab 序列、点了也不跳；
        pointer-events 在那条规则里一并关掉（见 topbar.css） -->
-  <span class="brand" role="img" aria-label="IntelliBot">
+  <span class="brand" role="img" aria-label="PrimebotX">
     <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
       <polygon fill="#2d2d2d" points="5.59 8.59 5.59 12.43 9.17 16.73 12.6 11.24 9.43 8.59 5.59 8.59"/>
       <polygon fill="#2d2d2d" points="15.61 24.45 19.74 29.41 26.41 29.41 26.41 22.74 21.01 18.24 15.61 24.45"/>
@@ -340,7 +340,7 @@
           <div class="chat-view__identity">
             <span class="chat-view__avatar" data-chat-avatar aria-hidden="true">IB</span>
             <div class="chat-view__copy">
-              <h3 class="view-title" data-chat-persona>IntelliBot</h3>
+              <h3 class="view-title" data-chat-persona>PrimebotX</h3>
             </div>
           </div>
           <div class="chat-view__actions">
@@ -383,7 +383,7 @@
             </div>
           </div>
         </div>
-        <section class="assistant-chat" data-assistant-chat aria-label="IntelliBot conversation">
+        <section class="assistant-chat" data-assistant-chat aria-label="PrimebotX conversation">
           <div class="assistant-chat__log" data-assistant-log role="log" aria-live="polite"></div>
         </section>
         <!-- 面板自带的一条输入：胶囊输入框与右边那枚圆钮各自独立，横向间隔 8、
@@ -396,7 +396,7 @@
             <textarea class="composer__input chat-composer__input" rows="1" autocomplete="off"
                       spellcheck="false" maxlength="500" data-chat-dock-input
                       data-i18n-placeholder="chat.placeholder" data-i18n-aria="chat.ask"
-                      placeholder="问问 IntelliBot…" aria-label="Ask IntelliBot"></textarea>
+                      placeholder="问问 PrimebotX…" aria-label="Ask PrimebotX"></textarea>
           </div>
           <button class="composer__send" type="button" data-chat-dock-send
                   data-i18n-aria="chat.send" aria-label="发送" disabled>
@@ -422,7 +422,7 @@
             <textarea class="composer__input" rows="1" autocomplete="off" spellcheck="false"
                       maxlength="500" data-assistant-input
                       data-i18n-placeholder="chat.placeholder" data-i18n-aria="chat.ask"
-                      placeholder="问问 IntelliBot…" aria-label="Ask IntelliBot"></textarea>
+                      placeholder="问问 PrimebotX…" aria-label="Ask PrimebotX"></textarea>
             <div class="composer__footer">
               <!-- 打开完整对话流的入口：三横一组的菜单图标，打开后两条斜合成叉 -->
               <button class="composer__history" type="button" data-chat-history
@@ -967,7 +967,7 @@
      Settings 是左区标题与目录 + 右区选项页；Privacy 是一段纯文本（.doc）。
      Contact 不在这一套里 —— 它是账号菜单里的两段式链接入口（js/contact.js） -->
 <div class="modal" id="modal" aria-hidden="true">
-  <div class="modal__panel" role="dialog" aria-modal="true" aria-label="IntelliBot">
+  <div class="modal__panel" role="dialog" aria-modal="true" aria-label="PrimebotX">
     <!-- 柔光两层：常态 16px 一层，展开时再把 32px 那层淡入叠上去（浓度合计 .2×k）。
          都画在独立元素上，弹窗呼吸时改的只有 opacity —— 合成器就能做，
          不必每帧重画一道 32px 的模糊阴影（见 cards.css） -->
@@ -977,7 +977,7 @@
          文案由尾部脚本按所点的胶囊写入。 -->
     <div class="modal__head">
       <div class="modal__col">
-        <div class="modal__title" data-modal-title>IntelliBot</div>
+        <div class="modal__title" data-modal-title>PrimebotX</div>
       </div>
     </div>
 
@@ -992,7 +992,7 @@
       <div class="doc__body">
         <section class="doc__sec">
           <div class="doc__name"><span class="doc__no">01</span>定义</div>
-          <p class="doc__text">本政策中，「本服务」指 IntelliBot 项目的浏览器端界面、账号、智能对话、姿态控制与动作演示功能；「本地存储」包括浏览器 localStorage 与运行本服务的电脑上的 SQLite 数据库；「你」指访问并使用本服务的自然人。</p>
+          <p class="doc__text">本政策中，「本服务」指 PrimebotX 项目的浏览器端界面、账号、智能对话、姿态控制与动作演示功能；「本地存储」包括浏览器 localStorage 与运行本服务的电脑上的 SQLite 数据库；「你」指访问并使用本服务的自然人。</p>
         </section>
         <section class="doc__sec">
           <div class="doc__name"><span class="doc__no">02</span>适用范围</div>

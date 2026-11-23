@@ -1,10 +1,10 @@
-#include "intellibot/ai_proxy.h"
+#include "primebotx/ai_proxy.h"
 
 #include <httplib.h>
 
 #include <stdexcept>
 
-namespace intellibot {
+namespace primebotx {
 
 AiProxy::AiProxy(const std::string& url) {
   constexpr const char* prefix = "http://";
@@ -65,4 +65,4 @@ AiResponse AiProxy::request(const std::string& method, const std::string& path,
   return {true, result->status, result->body};
 }
 
-}  // namespace intellibot
+}  // namespace primebotx

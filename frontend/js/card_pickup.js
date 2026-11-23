@@ -375,7 +375,7 @@
       /* stop() 里刚把 is-dragging 摘掉、原卡重新露出来，紧跟着弹这一下 */
       popBack(back);
       if (dialog) {
-        window.dispatchEvent(new CustomEvent('intellibot-dialog-card', {
+        window.dispatchEvent(new CustomEvent('primebotx-dialog-card', {
           detail: {id: dialog},
         }));
       }

@@ -43,7 +43,7 @@ skinStyle.textContent = [
 ].join('');
 document.head.appendChild(skinStyle);
 
-const SKIN_KEY = 'intellibot.skin';
+const SKIN_KEY = 'primebotx.skin';
 const HIP_Z = 0.50;
 const Q1_BODY_TARGET_Z = 0.70;
 const TPOSE = {
@@ -1296,7 +1296,7 @@ function buildFigure(mat) {
 
 function openDb() {
   return new Promise((resolve, reject) => {
-    const request = indexedDB.open('intellibot-skins', 1);
+    const request = indexedDB.open('primebotx-skins', 1);
     request.onupgradeneeded = () => {
       request.result.createObjectStore('files', { keyPath: 'id' });
     };

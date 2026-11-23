@@ -32,7 +32,7 @@ const POINTER_PAUSE_MOTIONS = new Set([
   'street_dance', 'mechanical_dance', 'disco_dance',
 ]);
 const CLIP = 'idle';        /* 循环动画名；模型自带 apose/idle/standby/raisehand 等 8 段 */
-const FRAME_KEY = 'intellibot.bot'; /* 与 Settings 里那组按钮共用同一个键 */
+const FRAME_KEY = 'primebotx.bot'; /* 与 Settings 里那组按钮共用同一个键 */
 
 /* 每一档：可见段上下沿（归一化身高）、留白、基础朝向、转幅、俯仰、呼吸。
    body 的 yaw 是「指针贴到屏幕边」时多转的角度，0.08 约 4.6°；

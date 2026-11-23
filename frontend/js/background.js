@@ -408,7 +408,7 @@
   /* 背景样式由 Settings 弹窗写入，键名与弹窗脚本里的一致。
      plain 就是那层静态基础网格，没有任何交互：
      旧版存过 matrix 的，这里也读成 plain，不用去改 localStorage */
-  var BG_KEY = 'intellibot.bg';
+  var BG_KEY = 'primebotx.bg';
   function readMode() {
     try {
       var v = localStorage.getItem(BG_KEY);

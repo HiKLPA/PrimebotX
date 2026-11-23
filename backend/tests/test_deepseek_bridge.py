@@ -63,9 +63,9 @@ class DeepSeekBridgeTest(unittest.TestCase):
             self.config,
             "介绍一下你自己",
             [],
-            lambda *_args, **_kwargs: completion('{"reply":"我是 IntelliBot。","action_id":null}'),
+            lambda *_args, **_kwargs: completion('{"reply":"我是 PrimebotX。","action_id":null}'),
         )
-        self.assertEqual(result["reply"], "我是 IntelliBot。")
+        self.assertEqual(result["reply"], "我是 PrimebotX。")
         self.assertIsNone(result["action_id"])
 
     def test_thinking_is_disabled_only_for_deepseek(self):

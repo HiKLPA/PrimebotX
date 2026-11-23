@@ -1,6 +1,6 @@
 #include <httplib.h>
-#include "intellibot/ai_proxy.h"
-#include "intellibot/web_system.h"
+#include "primebotx/ai_proxy.h"
+#include "primebotx/web_system.h"
 #include <sodium.h>
 #include <memory>
 #include <nlohmann/json.hpp>
@@ -28,7 +28,7 @@ bool load_assistant_capabilities(
   views.clear();
   emotions.clear();
   std::vector<std::string> candidates;
-  if (const char* configured = std::getenv("INTELLIBOT_CAPABILITIES")) candidates.emplace_back(configured);
+  if (const char* configured = std::getenv("PRIMEBOTX_CAPABILITIES")) candidates.emplace_back(configured);
   candidates.insert(candidates.end(), {
     "assistant/capabilities.json",
     "../assistant/capabilities.json",
@@ -65,7 +65,7 @@ bool load_assistant_capabilities(
 
 int main(int argc, char** argv) {
   int port = 8080;
-  std::string db_path="data/intellibot.db";
+  std::string db_path="data/primebotx.db";
   std::string web_root;
   std::string ai_url;
   for (int i = 1; i < argc; ++i) {
@@ -79,19 +79,19 @@ int main(int argc, char** argv) {
       } catch (...) { return 2; }
     } else if (arg == "--web-root" && i + 1 < argc) web_root = argv[++i];
     else if (arg == "--ai-url" && i + 1 < argc) ai_url = argv[++i];
-    else { std::cerr << "Usage: intellibot_backend [--port 8080] [--web-root frontend] [--ai-url http://127.0.0.1:8091] [--db-path data/intellibot.db]\n"; return 2; }
+    else { std::cerr << "Usage: primebotx_backend [--port 8080] [--web-root frontend] [--ai-url http://127.0.0.1:8091] [--db-path data/primebotx.db]\n"; return 2; }
   }
   if (port < 1 || port > 65535) return 2;
 
-  std::unique_ptr<intellibot::WebSystem> web;
-  try { web=std::make_unique<intellibot::WebSystem>(db_path); }
+  std::unique_ptr<primebotx::WebSystem> web;
+  try { web=std::make_unique<primebotx::WebSystem>(db_path); }
   catch(const std::exception& e) {
     std::cerr << e.what() << std::endl;
     return 2;
   }
-  std::unique_ptr<intellibot::AiProxy> ai;
+  std::unique_ptr<primebotx::AiProxy> ai;
   if (!ai_url.empty()) {
-    try { ai=std::make_unique<intellibot::AiProxy>(ai_url); }
+    try { ai=std::make_unique<primebotx::AiProxy>(ai_url); }
     catch(const std::exception& e) { std::cerr << e.what() << std::endl; return 2; }
   }
   httplib::Server server;
@@ -105,7 +105,7 @@ int main(int argc, char** argv) {
       std::cerr << "Invalid frontend directory\n"; return 2;
     }
     server.Get("/", [&](const httplib::Request&, httplib::Response& res) {
-      res.set_redirect("/ui/IntelliBot.html");
+      res.set_redirect("/ui/PrimebotX.html");
     });
   }
   std::mutex mutex;
@@ -146,7 +146,7 @@ int main(int argc, char** argv) {
     allow_origin(req, res);
     if(web && web->handle(req,res)) return;
     if (req.method == "GET" && req.path == "/api/v1/health") {
-      response(res, 200, "health", {{"service", "intellibot_backend"}, {"version", "0.1.0"}});
+      response(res, 200, "health", {{"service", "primebotx_backend"}, {"version", "0.1.0"}});
       return;
     }
     /* 模型配置只允许本机页面读取和修改。API Key 写进本机 AI 服务，
@@ -488,6 +488,6 @@ int main(int argc, char** argv) {
   server.Post(R"(/api/v1/.*)",handle);
   server.Put(R"(/api/v1/.*)",handle);
   server.Delete(R"(/api/v1/.*)",handle);
-  std::cout << "IntelliBot backend: http://127.0.0.1:" << port << std::endl;
+  std::cout << "PrimebotX backend: http://127.0.0.1:" << port << std::endl;
   return server.listen("127.0.0.1",port)?0:1;
 }

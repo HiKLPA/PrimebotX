@@ -103,7 +103,7 @@ globalThis.window = {
   addEventListener() {},
   dispatchEvent() {},
   matchMedia: () => ({matches: false}),
-  intellibotPersona: {active: {prompt: '温柔知性的测试角色'}},
+  primebotxPersona: {active: {prompt: '温柔知性的测试角色'}},
   robot3d: {
     ready: true,
     played: [],
@@ -165,22 +165,22 @@ input.listeners.keydown({key: 'Enter', shiftKey: false, isComposing: true, preve
 assert.equal(fetchCalls, 0, 'IME composition should not submit');
 
 input.value = '请敬礼';
-const first = window.intellibotChat.submit();
+const first = window.primebotxChat.submit();
 input.value = '重复提交';
-const duplicate = window.intellibotChat.submit();
+const duplicate = window.primebotxChat.submit();
 assert.equal(fetchCalls, 1, 'pending requests should block duplicate submits');
 assert.equal(lastRequestBody.persona, '温柔知性的测试角色');
 releaseFetch();
 await Promise.all([first, duplicate]);
 assert.deepEqual(window.robot3d.played, ['salute']);
-assert.equal(window.intellibotChat.history.length, 2);
+assert.equal(window.primebotxChat.history.length, 2);
 
 globalThis.fetch = async () => ({
   ok: true,
   json: async () => ({data: {reply: '不执行未知动作。', action_id: 'backflip', model: 'deepseek-flash'}, error: null}),
 });
 input.value = '后空翻';
-await window.intellibotChat.submit();
+await window.primebotxChat.submit();
 assert.deepEqual(window.robot3d.played, ['salute']);
 assert.equal(log.children.at(-1).textContent, '命令未执行：动作 backflip');
 
@@ -192,7 +192,7 @@ globalThis.fetch = async () => ({
   }),
 });
 input.value = '先挥手，再敬礼';
-await window.intellibotChat.submit();
+await window.primebotxChat.submit();
 await new Promise(resolve => setTimeout(resolve, 350));
 assert.deepEqual(window.robot3d.played, ['salute', 'wave', 'salute']);
 
@@ -217,7 +217,7 @@ globalThis.fetch = async () => ({
   }),
 });
 input.value = '执行组合命令';
-await window.intellibotChat.submit();
+await window.primebotxChat.submit();
 await new Promise(resolve => setTimeout(resolve, 350));
 assert.deepEqual(window.robot3d.played.slice(-1), ['belly_laugh']);
 assert.deepEqual(window.robot3d.moods.slice(-2), ['happy', 'calm']);
@@ -229,7 +229,7 @@ globalThis.fetch = async () => ({
   json: async () => ({data: {reply: '已停止。', actions: [], stop: true, model: 'deepseek-flash'}, error: null}),
 });
 input.value = '停止动作';
-await window.intellibotChat.submit();
+await window.primebotxChat.submit();
 assert.equal(stopButton.hidden, true, 'stop button should be hidden once the motion stops');
 assert.ok(window.robot3d.stopped >= 1);
 
@@ -239,17 +239,17 @@ globalThis.fetch = async () => ({
 });
 for (let index = 0; index < 6; index += 1) {
   input.value = '消息 ' + index;
-  await window.intellibotChat.submit();
+  await window.primebotxChat.submit();
 }
-assert.equal(window.intellibotChat.history.length, 10, 'history should retain at most ten messages');
+assert.equal(window.primebotxChat.history.length, 10, 'history should retain at most ten messages');
 
 settingsButton.dispatchEvent(new Event('click'));
 assert.equal(historyMenu.hidden, false, 'settings should open the chat history menu');
 assert.equal(settingsButton.getAttribute('aria-expanded'), 'true');
-assert.equal(window.intellibotChat.history.length, 10, 'settings should not clear chat history');
+assert.equal(window.primebotxChat.history.length, 10, 'settings should not clear chat history');
 
 clearButton.dispatchEvent(new Event('click'));
-assert.equal(window.intellibotChat.history.length, 0);
+assert.equal(window.primebotxChat.history.length, 0);
 assert.equal(log.children.length, 0);
 assert.equal(historyMenu.hidden, true, 'clearing should close the history menu');
 

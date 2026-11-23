@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# 构建 intellibot_backend。
+# 构建 primebotx_backend。
 #   Linux         直接用系统 cmake + make
 #   Windows(MSYS) 用 Visual Studio 自带 cmake/ninja，并显式拼 MSVC + Windows SDK 的
 #                 PATH/INCLUDE/LIB。不调 vcvars64.bat：它内部会用 reg.exe 探测
@@ -32,7 +32,7 @@ case "$(uname -s)" in
     fi
     MSVC_WIN="$(cygpath -w "${MSVC_DIR%/}")"
     SDK_WIN="$(cygpath -w "$SDK_BIN_ROOT")"
-    DEPS_PREFIX_WIN="${INTELLIBOT_DEPS_PREFIX:-}"
+    DEPS_PREFIX_WIN="${PRIMEBOTX_DEPS_PREFIX:-}"
     if [ -z "$DEPS_PREFIX_WIN" ]; then
       CONDA_ON_PATH="$(command -v conda.exe 2>/dev/null || command -v conda 2>/dev/null || true)"
       for CONDA_EXE in "$CONDA_ON_PATH" /e/Miniforge/Scripts/conda.exe /c/Users/"$USERNAME"/miniconda3/Scripts/conda.exe; do
@@ -45,7 +45,7 @@ case "$(uname -s)" in
     fi
     PREFIX_ARG=""
     [ -n "$DEPS_PREFIX_WIN" ] && PREFIX_ARG="-DCMAKE_PREFIX_PATH=\"$DEPS_PREFIX_WIN\""
-    TMP_BAT="$(mktemp -d)/build_intellibot.bat"
+    TMP_BAT="$(mktemp -d)/build_primebotx.bat"
     {
       echo "@echo off"
       echo "set \"PATH=$(cygpath -w "${MSVC_DIR%/}")\\bin\\Hostx64\\x64;$SDK_WIN\\bin\\$SDK_VER\\x64;$(cygpath -w "$NINJA_DIR");%PATH%\""
@@ -59,13 +59,13 @@ case "$(uname -s)" in
       fi
     } > "$TMP_BAT"
     cmd //c "$(cygpath -w "$TMP_BAT")"
-    echo "== 产物：$BUILD/intellibot_backend.exe"
+    echo "== 产物：$BUILD/primebotx_backend.exe"
     ;;
   *)
     echo "== 配置（Unix Makefiles）"
     cmake -S "$SRC" -B "$BUILD" -DCMAKE_BUILD_TYPE=Release
     echo "== 编译"
     cmake --build "$BUILD" -j"$(nproc 2>/dev/null || echo 2)"
-    echo "== 产物：$BUILD/intellibot_backend"
+    echo "== 产物：$BUILD/primebotx_backend"
     ;;
 esac

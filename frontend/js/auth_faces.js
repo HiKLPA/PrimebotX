@@ -1,5 +1,5 @@
 /* 登录页左栏那三枚色块角色（主题色 / 粉 / Dialog 蓝）的三段情绪。
-   结构在 IntelliBot.html 的 .auth__aside 里，形状与配色在 css/auth.css；
+   结构在 PrimebotX.html 的 .auth__aside 里，形状与配色在 css/auth.css；
    这里只做三件事：
 
    1) 眼睛跟着指针走：每只瞳孔按它自己那档幅度（data-pupil）平移，
@@ -288,7 +288,7 @@
     });
   }
 
-  window.intellibotAuthFaces = {
+  window.primebotxAuthFaces = {
     idle: idle,
     celebrate: celebrate,
     shock: shock

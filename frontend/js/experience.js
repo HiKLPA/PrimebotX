@@ -1,10 +1,10 @@
 const $ = id => document.getElementById(id);
-let token = sessionStorage.getItem('intellibot.auth.token') || '';
+let token = sessionStorage.getItem('primebotx.auth.token') || '';
 // Page identifiers are deliberately never stored: duplicated tabs start independent sessions.
 let pageId = null, busy = false, modelReady = false;
 const message = text => { $('message').textContent = text; };
 function signedOut() {
-  token = ''; pageId = null; sessionStorage.removeItem('intellibot.auth.token');
+  token = ''; pageId = null; sessionStorage.removeItem('primebotx.auth.token');
   $('auth-form').hidden = false; $('controls').hidden = true; $('identity').textContent = '尚未登录';
   if (window.robot3d?.ready) window.robot3d.playClip('idle', true);
 }
@@ -54,7 +54,7 @@ async function authenticate(register) {
       await api('/auth/register', 'POST', body); message('注册成功，请登录。');
     } else {
       const result = await api('/auth/login', 'POST', body);
-      token = result.access_token; sessionStorage.setItem('intellibot.auth.token', token);
+      token = result.access_token; sessionStorage.setItem('primebotx.auth.token', token);
       $('password').value = ''; await startPage();
     }
   } catch(e) { message(e.message); }
@@ -71,4 +71,4 @@ window.addEventListener('robot-playback', e => { $('playback').textContent = e.d
 modelReady = window.robot3d?.ready || false;
 if (token) startPage().catch(e => { message(e.message); });
 // Integration hook for the frontend; does not accept arbitrary clips or user IDs.
-window.intellibotExperience = {execute, get sessionId(){return pageId;}};
+window.primebotxExperience = {execute, get sessionId(){return pageId;}};

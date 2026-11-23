@@ -17,14 +17,14 @@
   var initialsInput = form.querySelector('[data-persona-initials]');
   var promptInput = form.querySelector('[data-persona-prompt]');
   var note = panel.querySelector('[data-persona-note]');
-  var PREFS_KEY = 'intellibot:personas';
-  var ACTIVE_KEY = 'intellibot:persona';
+  var PREFS_KEY = 'primebotx:personas';
+  var ACTIVE_KEY = 'primebotx:persona';
 
   var DEFAULTS = [
     {
       id: 'builtin:companion',
-      name: 'IntelliBot',
-      nameZh: 'IntelliBot',
+      name: 'PrimebotX',
+      nameZh: 'PrimebotX',
       style: 'Warm and thoughtful',
       styleZh: '温柔知性',
       color: '#91d2c3',
@@ -397,7 +397,7 @@
     paintActive();
   });
 
-  window.intellibotPersona = {
+  window.primebotxPersona = {
     get active() {
       var active = byId(selectedId) || DEFAULTS[0];
       return {

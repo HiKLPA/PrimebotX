@@ -376,7 +376,7 @@ def _system_prompt(persona: str = "") -> str:
     refresh_capabilities()
     catalog = json.dumps(CAPABILITIES, ensure_ascii=False, separators=(",", ":"))
     base = (
-        "你是 IntelliBot，一台友好、简洁的机器人助手。请用用户使用的语言回答。"
+        "你是 PrimebotX，一台友好、简洁的机器人助手。请用用户使用的语言回答。"
         "普通问答正常回答，不要因为内容不是功能调用而报错。"
         "只有用户明确要求机器人执行动作或控制时，才根据能力清单生成 commands。"
         "commands 是有序数组，支持 motion、pose、view、emotion、reset_pose、reset_view。"
@@ -636,7 +636,7 @@ def _call_anthropic(
             "x-api-key": config.api_key,
             "anthropic-version": "2023-06-01",
             "Content-Type": "application/json",
-            "User-Agent": "IntelliBot/0.1",
+            "User-Agent": "PrimebotX/0.1",
         },
     )
     try:
@@ -671,7 +671,7 @@ def fetch_models(config: Config, opener: Callable = _default_open) -> list[str]:
     endpoint = config.base_url.rstrip("/") + "/models"
     headers = {
         "Accept": "application/json",
-        "User-Agent": "IntelliBot/0.1",
+        "User-Agent": "PrimebotX/0.1",
     }
     if config.api_format == "anthropic":
         headers["x-api-key"] = config.api_key
@@ -751,7 +751,7 @@ def _call_once(
             headers={
                 "Authorization": f"Bearer {config.api_key}",
                 "Content-Type": "application/json",
-                "User-Agent": "IntelliBot/0.1",
+                "User-Agent": "PrimebotX/0.1",
             },
         )
         try:
@@ -895,7 +895,7 @@ class BridgeState:
 
 def make_handler(state: BridgeState):
     class Handler(BaseHTTPRequestHandler):
-        server_version = "IntelliBotAI/0.1"
+        server_version = "PrimebotX-AI/0.1"
 
         def _json(self, status: int, payload: dict) -> None:
             body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
@@ -985,7 +985,7 @@ def make_handler(state: BridgeState):
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="IntelliBot 大模型本地服务")
+    parser = argparse.ArgumentParser(description="PrimebotX 大模型本地服务")
     parser.add_argument("--port", type=int, default=8091)
     parser.add_argument("--check-config", action="store_true")
     args = parser.parse_args()

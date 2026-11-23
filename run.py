@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Start IntelliBot locally with one cross-platform command."""
+"""Start PrimebotX locally with one cross-platform command."""
 
 from __future__ import annotations
 
@@ -20,7 +20,7 @@ LOG_DIR = ROOT / "log"
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Start IntelliBot")
+    parser = argparse.ArgumentParser(description="Start PrimebotX")
     parser.add_argument(
         "--port",
         type=int,
@@ -50,8 +50,8 @@ def python_executable() -> Path:
 
 def backend_executable() -> Path:
     candidates = [
-        ROOT / "backend-build" / "intellibot_backend.exe",
-        ROOT / "backend-build" / "intellibot_backend",
+        ROOT / "backend-build" / "primebotx_backend.exe",
+        ROOT / "backend-build" / "primebotx_backend",
     ]
     for candidate in candidates:
         if candidate.is_file():
@@ -79,7 +79,7 @@ def start_process(args: list[str], *, log_path: Path | None = None) -> subproces
         bufsize=1,
         env={**os.environ, "PYTHONUNBUFFERED": "1"},
     )
-    process._intellibot_log_file = log_file  # type: ignore[attr-defined]
+    process._primebotx_log_file = log_file  # type: ignore[attr-defined]
     return process
 
 
@@ -117,7 +117,7 @@ def stop_process(process: subprocess.Popen | None) -> None:
         except subprocess.TimeoutExpired:
             process.kill()
             process.wait(timeout=5)
-    log_file = getattr(process, "_intellibot_log_file", None)
+    log_file = getattr(process, "_primebotx_log_file", None)
     if log_file is not None:
         log_file.close()
 
@@ -142,7 +142,7 @@ def main() -> int:
     backend = backend_executable()
     ai_script = ROOT / "backend" / "ai" / "deepseek_bridge.py"
     frontend = ROOT / "frontend"
-    database = ROOT / "data" / "intellibot.db"
+    database = ROOT / "data" / "primebotx.db"
     if not ai_script.is_file():
         raise FileNotFoundError(f"AI service not found: {ai_script}")
     if not frontend.is_dir():
@@ -151,7 +151,7 @@ def main() -> int:
 
     backend_url = f"http://127.0.0.1:{args.port}"
     ai_url = f"http://127.0.0.1:{args.ai_port}"
-    page_url = f"{backend_url}/ui/IntelliBot.html"
+    page_url = f"{backend_url}/ui/PrimebotX.html"
     ai_log = LOG_DIR / "ai.log"
     ai_process: subprocess.Popen | None = None
     backend_process: subprocess.Popen | None = None
@@ -178,7 +178,7 @@ def main() -> int:
 
         backend_ready = health(
             f"{backend_url}/api/v1/health",
-            lambda value: value.get("data", {}).get("service") == "intellibot_backend",
+            lambda value: value.get("data", {}).get("service") == "primebotx_backend",
         )
         if not backend_ready:
             print("Starting backend...")
@@ -201,7 +201,7 @@ def main() -> int:
                     backend_process,
                     f"{backend_url}/api/v1/health",
                     lambda value: value.get("data", {}).get("service")
-                    == "intellibot_backend",
+                    == "primebotx_backend",
                 )
             except Exception:
                 show_log(LOG_DIR / "backend.log")
@@ -209,7 +209,7 @@ def main() -> int:
         else:
             print(f"Using backend at {backend_url}")
 
-        print(f"\nIntelliBot is ready: {page_url}")
+        print(f"\nPrimebotX is ready: {page_url}")
         if not args.no_browser:
             webbrowser.open(page_url)
 
@@ -228,7 +228,7 @@ def main() -> int:
                     )
             time.sleep(0.5)
     except KeyboardInterrupt:
-        print("\nStopping IntelliBot...")
+        print("\nStopping PrimebotX...")
         return 0
     except Exception as error:
         print(f"\nStartup failed: {error}", file=sys.stderr)

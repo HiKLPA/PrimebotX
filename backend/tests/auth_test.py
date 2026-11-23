@@ -37,7 +37,7 @@ with tempfile.TemporaryDirectory() as tmp:
         b=data('POST','/auth/login',{'username':'bob','password':'pass word123'})['access_token']
         assert data('GET','/auth/me',token=a)['user']['username']=='alice'
         assert data('GET','/auth/state',token=a)['state'] is None
-        saved={'version':1,'storage':{'intellibot.mode':'night'},'chat':{'records':[],'history':[]}}
+        saved={'version':1,'storage':{'primebotx.mode':'night'},'chat':{'records':[],'history':[]}}
         assert data('PUT','/auth/state',{'state':saved},a)['saved'] is True
         assert data('GET','/auth/state',token=a)['state']==saved
         assert data('GET','/auth/state',token=b)['state'] is None

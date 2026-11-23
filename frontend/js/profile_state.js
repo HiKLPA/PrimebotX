@@ -6,19 +6,19 @@
   var MAX_VALUE_LENGTH = 24 * 1024;
   var MAX_AVATAR_LENGTH = 96 * 1024;
   var STORAGE_KEYS = [
-    'intellibot.mode',
-    'intellibot.bg',
-    'intellibot.bot',
-    'intellibot.lang',
-    'intellibot.idle.enabled',
-    'intellibot.chat.speech.enabled',
-    'intellibot.mood',
-    'intellibot.skin',
-    'intellibot.default-view',
-    'intellibot:avatar',
-    'intellibot:personas',
-    'intellibot:persona',
-    'intellibot:cards',
+    'primebotx.mode',
+    'primebotx.bg',
+    'primebotx.bot',
+    'primebotx.lang',
+    'primebotx.idle.enabled',
+    'primebotx.chat.speech.enabled',
+    'primebotx.mood',
+    'primebotx.skin',
+    'primebotx.default-view',
+    'primebotx:avatar',
+    'primebotx:personas',
+    'primebotx:persona',
+    'primebotx:cards',
   ];
 
   var userId = null;
@@ -28,7 +28,7 @@
   var lastSnapshot = '';
 
   function token() {
-    return window.intellibotAuth ? window.intellibotAuth.token : '';
+    return window.primebotxAuth ? window.primebotxAuth.token : '';
   }
 
   function request(method, body, keepalive) {
@@ -58,14 +58,14 @@
 
   function safeValue(key, value) {
     if (typeof value !== 'string') return '';
-    if (key === 'intellibot:avatar') {
+    if (key === 'primebotx:avatar') {
       if (/^a[1-4]$/.test(value)) return value;
       if (value.length <= MAX_AVATAR_LENGTH &&
           /^data:image\/(?:jpeg|png|webp);base64,[a-z0-9+/=]+$/i.test(value)) return value;
       return '';
     }
     if (value.length > MAX_VALUE_LENGTH) return '';
-    if (key === 'intellibot.skin' && value.indexOf('builtin:') !== 0) return '';
+    if (key === 'primebotx.skin' && value.indexOf('builtin:') !== 0) return '';
     return value;
   }
 
@@ -84,8 +84,8 @@
     return {
       version: 1,
       storage: collectStorage(),
-      chat: window.intellibotChat && typeof window.intellibotChat.exportState === 'function'
-        ? window.intellibotChat.exportState()
+      chat: window.primebotxChat && typeof window.primebotxChat.exportState === 'function'
+        ? window.primebotxChat.exportState()
         : {history: [], records: []},
     };
   }
@@ -114,8 +114,8 @@
     STORAGE_KEYS.forEach(function (key) {
       try { localStorage.removeItem(key); } catch (_error) {}
     });
-    if (window.intellibotChat && typeof window.intellibotChat.restoreState === 'function') {
-      window.intellibotChat.restoreState({history: [], records: []});
+    if (window.primebotxChat && typeof window.primebotxChat.restoreState === 'function') {
+      window.primebotxChat.restoreState({history: [], records: []});
     }
   }
 
@@ -129,7 +129,7 @@
       lastSnapshot = serialized;
       return true;
     }).catch(function (error) {
-      console.warn('[IntelliBot] Could not save account state:', error.message);
+      console.warn('[PrimebotX] Could not save account state:', error.message);
       return false;
     });
   }
@@ -158,14 +158,14 @@
         location.reload();
         return null;
       }
-      if (window.intellibotChat && typeof window.intellibotChat.restoreState === 'function') {
-        window.intellibotChat.restoreState(state.chat || {history: [], records: []});
+      if (window.primebotxChat && typeof window.primebotxChat.restoreState === 'function') {
+        window.primebotxChat.restoreState(state.chat || {history: [], records: []});
       }
       ready = true;
       lastSnapshot = JSON.stringify(collect());
       return null;
     }).catch(function (error) {
-      console.warn('[IntelliBot] Could not restore account state:', error.message);
+      console.warn('[PrimebotX] Could not restore account state:', error.message);
     }).finally(function () {
       loading = false;
       if (seedAccount) flush(false);
@@ -184,7 +184,7 @@
       if (wasSignedIn) clearLocalState();
     }
   });
-  window.addEventListener('intellibot-state-dirty', scheduleSave);
+  window.addEventListener('primebotx-state-dirty', scheduleSave);
   document.addEventListener('click', scheduleSave);
   document.addEventListener('change', scheduleSave);
   document.addEventListener('visibilitychange', function () {
@@ -192,12 +192,12 @@
   });
   window.setInterval(scheduleSave, 10000);
 
-  window.intellibotProfile = {
+  window.primebotxProfile = {
     flush: function () { return flush(false); },
     get ready() { return ready; },
   };
 
-  if (window.intellibotAuth && window.intellibotAuth.user) {
-    hydrate(window.intellibotAuth.user);
+  if (window.primebotxAuth && window.primebotxAuth.user) {
+    hydrate(window.primebotxAuth.user);
   }
 })();

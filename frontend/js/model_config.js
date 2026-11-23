@@ -25,7 +25,7 @@
   var presetButtons = Array.prototype.slice.call(form.querySelectorAll('[data-model-preset]'));
   var queryApi = new URLSearchParams(location.search).get('api');
   var API = queryApi ? queryApi.replace(/\/+$/, '') : '/api/v1';
-  var HISTORY_KEY = 'intellibot.modelHistory';
+  var HISTORY_KEY = 'primebotx.modelHistory';
   var inventories = Object.create(null);
   var busy = false;
   var loaded = false;
@@ -484,7 +484,7 @@
     setNote('');
   });
 
-  window.intellibotModels = {
+  window.primebotxModels = {
     refresh: load,
     get current() { return Object.assign({}, current); },
     setModel: function (model) {

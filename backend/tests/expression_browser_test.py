@@ -4,14 +4,14 @@ from playwright.sync_api import sync_playwright
 r=Path(__file__).resolve().parents[2]
 ids=['surprised','hug','refuse']
 with tempfile.TemporaryDirectory() as t:
- p=subprocess.Popen([str(r/'backend-build/intellibot_backend'),'--port','18085','--web-root',str(r/'frontend')],stdout=subprocess.DEVNULL)
+ p=subprocess.Popen([str(r/'backend-build/primebotx_backend'),'--port','18085','--web-root',str(r/'frontend')],stdout=subprocess.DEVNULL)
  try:
   time.sleep(.6)
   with sync_playwright() as pw:
    browser=pw.chromium.launch(headless=True,args=['--no-sandbox','--enable-unsafe-swiftshader','--use-gl=angle','--use-angle=swiftshader'])
    page=browser.new_page(viewport={'width':1000,'height':760});errors=[]
    page.on('pageerror',lambda e:errors.append(str(e)))
-   page.goto('http://127.0.0.1:18085/ui/IntelliBot.html');page.wait_for_function('window.robot3d?.ready',timeout=60000)
+   page.goto('http://127.0.0.1:18085/ui/PrimebotX.html');page.wait_for_function('window.robot3d?.ready',timeout=60000)
    page.locator('[data-panel="Gestures"]').click()
    out=r/'evidence/expressions';out.mkdir(parents=True,exist_ok=True)
    for removed in ['thinking','shy','curious']:

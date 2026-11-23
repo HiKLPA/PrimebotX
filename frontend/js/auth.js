@@ -1,6 +1,6 @@
 /* 登录 / 注册：首次进入网站浮出；未登录时点账号胶囊照常展开菜单
    （Settings / Privacy / Contact 都能用），点头像才回到这里。
-   面板结构与样式分别是 IntelliBot.html 里的 #auth 与 css/auth.css，
+   面板结构与样式分别是 PrimebotX.html 里的 #auth 与 css/auth.css，
    按钮就是顶栏那枚 .pill，动画一条都没有另写。
 
    后端口（见 backend/src/web_system.cpp）：
@@ -16,8 +16,8 @@
    「先逛逛」也记一笔 seen，之后不再自动浮出；点账号胶囊照样能打开。 */
 (function () {
   const API = '/api/v1';
-  const TOKEN_KEY = 'intellibot.auth.token';
-  const SEEN_KEY = 'intellibot.auth.seen';
+  const TOKEN_KEY = 'primebotx.auth.token';
+  const SEEN_KEY = 'primebotx.auth.seen';
 
   const root = document.getElementById('auth');
   if (!root) return;
@@ -163,7 +163,7 @@
   /* ---------- 弹出 / 收回 ---------- */
 
   /* 与弹窗那套弹出动画同一个来源：时长、两段式挤压形变、缓动全部取自
-     js/modal.js 递出的 window.intellibotPopTiming（见那里的注释）。
+     js/modal.js 递出的 window.primebotxPopTiming（见那里的注释）。
      这里不写字面量，改弹窗那边的节拍，这张卡片自动跟上。
      modal.js 在页面靠后加载，但它的守卫（无 GSAP 时整段退出）会让这个对象缺席，
      所以取的时候留一份同值的兜底，保证卡片不会因为拿不到节拍而弹不出来 */
@@ -178,7 +178,7 @@
   let closing = false;
 
   function pop() {
-    return window.intellibotPopTiming || POP_FALLBACK;
+    return window.primebotxPopTiming || POP_FALLBACK;
   }
 
   /* 起手先落在挤窄态再撑开：卡片是「被挤出来」的，
@@ -264,7 +264,7 @@
     }
     if (window.robot3d && window.robot3d.suspend) window.robot3d.suspend(1200);
     /* 每次重新浮出都从「看着你」的常态开始：上一次的吹口哨或笑脸不该带进来 */
-    if (window.intellibotAuthFaces) window.intellibotAuthFaces.idle();
+    if (window.primebotxAuthFaces) window.primebotxAuthFaces.idle();
     syncGreet();
     popIn();
     window.setTimeout(function () {
@@ -290,7 +290,7 @@
       root.classList.remove('is-open');
       document.body.classList.remove('is-auth');
       /* 卡片走了，左栏那几枚色块和彩带也回到常态，下次开面板不会接着上一次的笑脸 */
-      if (window.intellibotAuthFaces) window.intellibotAuthFaces.idle();
+      if (window.primebotxAuthFaces) window.primebotxAuthFaces.idle();
       /* 行尾那根下划线也收起来：下次浮出要重新看焦点落在哪一格 */
       if (greetEl) greetEl.classList.remove('is-typing');
       if (trigger) trigger.focus({ preventScroll: true });
@@ -380,8 +380,8 @@
   async function logout() {
     disarmLogout();
     if (logoutBtn) logoutBtn.disabled = true;
-    if (window.intellibotProfile && typeof window.intellibotProfile.flush === 'function') {
-      try { await window.intellibotProfile.flush(); } catch (err) {}
+    if (window.primebotxProfile && typeof window.primebotxProfile.flush === 'function') {
+      try { await window.primebotxProfile.flush(); } catch (err) {}
     }
     try {
       await api('/auth/logout', { method: 'POST', body: {} });
@@ -404,7 +404,7 @@
   function reject(errorKey, field) {
     setMessage(t(errorKey), 'error');
     if (field) field.focus();
-    if (window.intellibotAuthFaces) window.intellibotAuthFaces.shock();
+    if (window.primebotxAuthFaces) window.primebotxAuthFaces.shock();
   }
 
   async function submit() {
@@ -445,7 +445,7 @@
         passwordEl.focus();
         /* 笑脸放在真的注册成功之后：先切回登录页、把光标放回密码框，
            再笑 —— 不然「笑完发现用户名已被占用」比不笑更尴尬 */
-        if (window.intellibotAuthFaces) window.intellibotAuthFaces.celebrate();
+        if (window.primebotxAuthFaces) window.primebotxAuthFaces.celebrate();
       } else {
         const data = await api('/auth/login', {
           method: 'POST',
@@ -456,14 +456,14 @@
         applyUser(data.user);
         /* 笑脸与彩带先亮一下再收起卡片：立刻 closePanel 会把刚喷出去的
            彩带连同整块左栏一起切掉，950ms 刚好够它飞到画面上方 */
-        if (window.intellibotAuthFaces) window.intellibotAuthFaces.celebrate();
+        if (window.primebotxAuthFaces) window.primebotxAuthFaces.celebrate();
         window.setTimeout(closePanel, 950);
       }
     } catch (err) {
       setMessage(err.message, 'error');
       /* 账号或密码不匹配也走震惊：提交那一刻不再抢着笑，
          笑脸与彩带只留给真的进去了的那一次 */
-      if (window.intellibotAuthFaces) window.intellibotAuthFaces.shock();
+      if (window.primebotxAuthFaces) window.primebotxAuthFaces.shock();
     } finally {
       busy = false;
       submitBtn.disabled = false;
@@ -565,7 +565,7 @@
   }
 
   /* 给别的脚本留个读口：当前登录用户与手动开合 */
-  window.intellibotAuth = {
+  window.primebotxAuth = {
     get user() { return user; },
     get token() { return readToken(); },
     open: openPanel,

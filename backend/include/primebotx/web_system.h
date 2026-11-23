@@ -3,7 +3,7 @@
 
 #include <memory>
 #include <string>
-namespace intellibot {
+namespace primebotx {
 class WebSystem {
  public:
   explicit WebSystem(const std::string& path);
@@ -14,4 +14,4 @@ class WebSystem {
   struct Impl;
   std::unique_ptr<Impl> impl_;
 };
-}  // namespace intellibot
+}  // namespace primebotx

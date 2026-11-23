@@ -1,4 +1,4 @@
-# IntelliBot 后端
+# PrimebotX 后端
 
 C++17 + cpp-httplib + nlohmann/json；SQLite 保存账号、页面会话和用户状态，libsodium 提供 Argon2id 密码哈希。默认只监听 `127.0.0.1`。
 
@@ -22,7 +22,7 @@ bash scripts/run_web.sh
 ctest --test-dir backend-build --output-on-failure
 ```
 
-启动后打开 <http://localhost:8080/ui/IntelliBot.html>。默认数据库为 `~/intellibot_ws/data/intellibot.db`；`PORT`、`BUILD_DIR`、`DB_PATH` 可覆盖。直接启动程序时可用 `--port`、`--web-root`、`--db-path`、`--ai-url` 指定配置。
+启动后打开 <http://localhost:8080/ui/PrimebotX.html>。默认数据库为 `~/primebotx_ws/data/primebotx.db`；`PORT`、`BUILD_DIR`、`DB_PATH` 可覆盖。直接启动程序时可用 `--port`、`--web-root`、`--db-path`、`--ai-url` 指定配置。
 
 ## 接口
 

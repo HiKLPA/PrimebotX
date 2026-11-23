@@ -1,4 +1,4 @@
-/* IntelliBot 国际化引擎：纯原生 JS，无依赖。
+/* PrimebotX 国际化引擎：纯原生 JS，无依赖。
  * 用法：HTML 元素加 data-i18n="key"，JS 里调用 t('key')。
  * 新增语言只需在 I18N 里加一组字典，页面文字自动跟随。 */
 
@@ -160,14 +160,14 @@ const I18N = {
     "rail.right.message": "Message",
     "rail.right.reset": "Reset",
 
-    "chat.placeholder": "Ask IntelliBot…",
-    "chat.ask": "Ask IntelliBot",
+    "chat.placeholder": "Ask PrimebotX…",
+    "chat.ask": "Ask PrimebotX",
     "chat.send": "Send",
     "chat.openHistory": "Open full chat history",
     "chat.closeHistory": "Close full chat history",
     "chat.example.intro": "👋 Introduce yourself",
     "chat.example.motion": "💃 Show me a dance",
-    "chat.welcome": "Hi, I'm IntelliBot. It's great to meet you! Want to see what I can do?",
+    "chat.welcome": "Hi, I'm PrimebotX. It's great to meet you! Want to see what I can do?",
     "chat.thinking": "Thinking…",
     "chat.stop": "Stop motion",
     "chat.voice.start": "Start voice input",
@@ -400,14 +400,14 @@ const I18N = {
     "rail.right.message": "消息",
     "rail.right.reset": "重置",
 
-    "chat.placeholder": "问问 IntelliBot…",
-    "chat.ask": "向 IntelliBot 提问",
+    "chat.placeholder": "问问 PrimebotX…",
+    "chat.ask": "向 PrimebotX 提问",
     "chat.send": "发送",
     "chat.openHistory": "打开完整聊天记录",
     "chat.closeHistory": "关闭完整聊天记录",
     "chat.example.intro": "👋 介绍一下你自己",
     "chat.example.motion": "💃 向我挥手，然后跳一支街舞",
-    "chat.welcome": "你好，我是 IntelliBot，很高兴见到你！想看看我能做什么吗？",
+    "chat.welcome": "你好，我是 PrimebotX，很高兴见到你！想看看我能做什么吗？",
     "chat.thinking": "正在思考…",
     "chat.stop": "停止动作",
     "chat.voice.start": "开始语音输入",
@@ -484,7 +484,7 @@ const I18N = {
   },
 };
 
-const I18N_KEY = "intellibot.lang";
+const I18N_KEY = "primebotx.lang";
 
 function getLang() {
   try {

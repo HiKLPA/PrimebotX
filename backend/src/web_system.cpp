@@ -1,4 +1,4 @@
-#include "intellibot/web_system.h"
+#include "primebotx/web_system.h"
 
 #include <sodium.h>
 #include <sqlite3.h>
@@ -13,7 +13,7 @@
 #include <stdexcept>
 #include <unordered_map>
 using J = nlohmann::json;
-namespace intellibot {
+namespace primebotx {
 namespace {
 long long now() {
   return std::chrono::duration_cast<std::chrono::seconds>(
@@ -413,4 +413,4 @@ WebSystem::~WebSystem() = default;
 bool WebSystem::handle(const httplib::Request& req, httplib::Response& res) {
   return impl_->handle(req, res);
 }
-}  // namespace intellibot
+}  // namespace primebotx

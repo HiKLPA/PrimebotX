@@ -102,7 +102,7 @@
    也不再按组切页。这一段只管新增卡片：编辑页填的类型 / 名字 / 简介从这里落成一张 .sc，
    追加到该组末尾、编号按位置重排；新增的同样进 localStorage，刷新后按顺序重放一遍 */
 (function () {
-  var STORE = 'intellibot:cards';   /* 新增卡片：{ type, name, brief } */
+  var STORE = 'primebotx:cards';   /* 新增卡片：{ type, name, brief } */
   var LABEL = { action: 'Action', dialog: 'Dialog' };
 
   var made = [];

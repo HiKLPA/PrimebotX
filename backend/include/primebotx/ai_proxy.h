@@ -4,7 +4,7 @@
 
 #include <string>
 
-namespace intellibot {
+namespace primebotx {
 
 struct AiResponse {
   bool connected = false;
@@ -29,4 +29,4 @@ class AiProxy {
   int port_ = 0;
 };
 
-}  // namespace intellibot
+}  // namespace primebotx

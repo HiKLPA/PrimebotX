@@ -10,8 +10,8 @@
   if (!label) return;
 
   /* 跳转用完整地址，显示用的那一行去掉协议头，和原先 Contact 页里那行链接文字一致 */
-  var REPO = 'https://github.com/UniqueUpstart/IntelliBot';
-  var LINK_TEXT = 'github.com/UniqueUpstart/IntelliBot';
+  var REPO = 'https://github.com/HiKLPA/PrimebotX';
+  var LINK_TEXT = 'github.com/HiKLPA/PrimebotX';
   var HOLD_MS = 3000;
 
   var armed = false;

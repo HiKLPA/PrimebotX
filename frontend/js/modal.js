@@ -125,7 +125,7 @@
   /* 这一套节拍递给登录 / 注册面板用（js/auth.js 的 popIn / popOut）：
      那里没有胶囊作为起点，但卡片弹出来的挤压形变、缓动与时长要跟弹窗一致，
      数值整包递出去，不另抄一份 —— 以后调这里，登录面板跟着变 */
-  window.intellibotPopTiming = {
+  window.primebotxPopTiming = {
     open: OPEN_DUR, close: CLOSE_DUR, up: UP_DUR, back: BACK_DUR,
     out: PANEL_OUT, in: PANEL_IN,
     squashX: SQUASH_X, squashY: SQUASH_Y,
@@ -330,7 +330,7 @@
      变量带出来，night 就是预留给深色的那一组。首帧之前 <head> 里已经按存下的选择
      设过一次，这里只负责按钮状态与记住选择；背景画布的底色和点阵色阶由背景脚本
      监听同一个属性自己重铺，不用在这里通知它 */
-  var MODE_KEY = 'intellibot.mode';
+  var MODE_KEY = 'primebotx.mode';
   var modeSegs = panel.querySelectorAll('.seg__opt[data-mode]');
   var modeVt = null;   /* 上一次还没播完的视图过渡，连点时先掐掉再起新的 */
 
@@ -383,7 +383,7 @@
   /* 背景样式：三选一，写进背景脚本（window.Bgfx）并记住选择。
      背景脚本自己也会读同一个键，所以刷新后一进页面就是上次那一种，不用等这里来对齐。
      旧版存过 matrix 的，读进来一律当 plain（plain 现在就是那层静态基础网格） */
-  var BG_KEY = 'intellibot.bg';
+  var BG_KEY = 'primebotx.bg';
   var segs = panel.querySelectorAll('.seg__opt[data-bg]');
   function pickBg(key) {
     if (key !== 'plain' && key !== 'wave') key = 'magnetic';
@@ -417,7 +417,7 @@
   /* 机器人显示范围：body（上半身）/ head（头部特写），写进 px.bot 并通知 3D 模块。
      3D 模块自己也读同一个键，所以刷新后直接就是上次那一档；
      这里调用时它可能还没加载完，那就只存键，等它起来自己认 */
-  var BOT_KEY = 'intellibot.bot';
+  var BOT_KEY = 'primebotx.bot';
   var botSegs = panel.querySelectorAll('.seg__opt[data-bot]');
   function pickBot(key) {
     if (key !== 'head') key = 'body';

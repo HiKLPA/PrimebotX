@@ -1,8 +1,8 @@
-# IntelliBot
+# PrimebotX
 
-![IntelliBot 智能机器人交互平台](docs/image/intellibot-cover-16x9.png)
+A comprehensive platform designed for better Primebot control.
 
-IntelliBot 是一个浏览器端智能机器人交互平台。首页提供实时 3D 机器人、表情与动作演示、角色设定、AI 对话、语音朗读、账号状态保存和动作卡片管理。
+PrimebotX 是一个浏览器端智能机器人交互平台。首页提供实时 3D 机器人、表情与动作演示、角色设定、AI 对话、语音朗读、账号状态保存和动作卡片管理。
 
 ## 索引
 
@@ -36,7 +36,7 @@ python run.py
 1. 启动本地 AI 与语音服务；
 2. 启动 C++ 后端；
 3. 等待两个服务通过健康检查；
-4. 自动打开 <http://127.0.0.1:8080/ui/IntelliBot.html>；
+4. 自动打开 <http://127.0.0.1:8080/ui/PrimebotX.html>；
 5. 按 `Ctrl+C` 同时停止本次启动的服务。
 
 如果端口被修改，可以执行：
@@ -69,8 +69,8 @@ python run.py --no-browser
 ### 1. 获取代码
 
 ```powershell
-git clone https://github.com/UniqueUpstart/IntelliBot.git
-cd IntelliBot
+git clone https://github.com/HiKLPA/PrimebotX.git
+cd PrimebotX
 ```
 
 ### 2. 创建 Python 环境
@@ -122,8 +122,8 @@ bash scripts/build_backend.sh
 构建成功后应存在以下文件之一：
 
 ```text
-backend-build/intellibot_backend.exe
-backend-build/intellibot_backend
+backend-build/primebotx_backend.exe
+backend-build/primebotx_backend
 ```
 
 ## 运行方式
@@ -145,14 +145,14 @@ python run.py
 ```
 
 ```powershell
-.\backend-build\intellibot_backend.exe `
+.\backend-build\primebotx_backend.exe `
   --port 8080 `
   --web-root frontend `
-  --db-path data\intellibot.db `
+  --db-path data\primebotx.db `
   --ai-url http://127.0.0.1:8091
 ```
 
-页面必须通过 <http://127.0.0.1:8080/ui/IntelliBot.html> 打开，不能直接双击 HTML 文件。
+页面必须通过 <http://127.0.0.1:8080/ui/PrimebotX.html> 打开，不能直接双击 HTML 文件。
 
 ### 只启动后端
 
@@ -177,10 +177,10 @@ python run.py --port 8081 --ai-port 8093
 ### 账号体验页
 
 ```powershell
-.\backend-build\intellibot_backend.exe `
+.\backend-build\primebotx_backend.exe `
   --port 8080 `
   --web-root frontend `
-  --db-path data\intellibot.db
+  --db-path data\primebotx.db
 ```
 
 打开 <http://127.0.0.1:8080/ui/experience.html>。
@@ -189,7 +189,7 @@ python run.py --port 8081 --ai-port 8093
 
 | 现象 | 处理 |
 | --- | --- |
-| 找不到 `intellibot_backend` | 运行 `bash scripts/fetch_deps.sh && bash scripts/build_backend.sh` |
+| 找不到 `primebotx_backend` | 运行 `bash scripts/fetch_deps.sh && bash scripts/build_backend.sh` |
 | 编译提示缺少 SQLite3 或 sodium | 安装对应开发库后重新构建后端 |
 | 页面显示但 AI 对话不可用 | 使用 `python run.py` 启动会自动连接本地 AI 服务；随后检查 `.env` 或页面中的模型配置 |
 | 登录接口不可用 | 确认页面从 `http://127.0.0.1:8080` 打开，且后端正在运行 |

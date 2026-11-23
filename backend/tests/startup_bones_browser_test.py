@@ -16,7 +16,7 @@ with sync_playwright() as p:
     };
    });''')
   for run in range(2):
-   page.goto(os.environ.get('INTELLIBOT_TEST_URL', 'http://127.0.0.1:8080/ui/IntelliBot.html'),wait_until='domcontentloaded')
+   page.goto(os.environ.get('PRIMEBOTX_TEST_URL', 'http://127.0.0.1:8080/ui/PrimebotX.html'),wait_until='domcontentloaded')
    page.wait_for_function('window.robot3d?.ready',timeout=60000)
    page.locator('[data-auth-skip]').first.evaluate('(e)=>e.click()')
    page.wait_for_timeout(1800)

@@ -1,6 +1,6 @@
 // Shared idle rhythm. Reactions are sampled from the render loop so no extra
 // timer or animation clip can compete with gesture playback.
-const KEY = 'intellibot.idle.enabled';
+const KEY = 'primebotx.idle.enabled';
 const FIRST_REACTION_MS = 45000;
 const REACTION_GAP_MS = [75000, 150000];
 const REACTION_DURATION_MS = 5200;
@@ -65,7 +65,7 @@ export function sampleIdle(now, blocked = false) {
       start: now,
       direction: Math.random() < .5 ? -1 : 1,
     };
-    window.dispatchEvent(new CustomEvent('intellibot-idle-reaction', {
+    window.dispatchEvent(new CustomEvent('primebotx-idle-reaction', {
       detail: {kind: reaction.kind},
     }));
   }
@@ -97,4 +97,4 @@ export function idleState() { return state; }
 document.querySelectorAll('[data-idle-enabled]').forEach(button =>
   button.addEventListener('click', () => setIdleEnabled(button.dataset.idleEnabled === 'true')));
 paint();
-window.intellibotIdle = {setEnabled: setIdleEnabled, get state() { return state; }};
+window.primebotxIdle = {setEnabled: setIdleEnabled, get state() { return state; }};

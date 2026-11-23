@@ -43,7 +43,7 @@ with tempfile.TemporaryDirectory() as tmp:
             raise AssertionError("server did not start")
 
         health = call("GET", "/health")[1]["data"]
-        assert health["service"] == "intellibot_backend"
+        assert health["service"] == "primebotx_backend"
         assert "sim_enabled" not in health
         assert call("GET", "/auth/me")[0] == 401
         assert call("POST", "/chat")[0] == 401

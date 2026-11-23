@@ -63,7 +63,7 @@
   var restoring = false;
   var pending = false;
   var sequenceToken = 0;
-  var STARTED_KEY = 'intellibot.chat.started';
+  var STARTED_KEY = 'primebotx.chat.started';
   /* 清空的二次确认：与账号面板的退出登录同一条时间常量（auth.js 的
      LOGOUT_HOLD 3s）。这段时间里指针进出都不算信号，只有「再点一次」才执行 */
   var CLEAR_HOLD = 3000;
@@ -71,7 +71,7 @@
   var clearTimer = 0;
   var welcomeShown = false;
   var welcomeMotionPlayed = false;
-  var SPEECH_KEY = 'intellibot.chat.speech.enabled';
+  var SPEECH_KEY = 'primebotx.chat.speech.enabled';
   var SpeechRecognitionCtor = window.SpeechRecognition || window.webkitSpeechRecognition || null;
   var recognition = null;
   var listening = false;
@@ -91,7 +91,7 @@
 
   function stateDirty() {
     if (!restoring && window.dispatchEvent && typeof CustomEvent === 'function') {
-      window.dispatchEvent(new CustomEvent('intellibot-state-dirty'));
+      window.dispatchEvent(new CustomEvent('primebotx-state-dirty'));
     }
   }
 
@@ -126,7 +126,7 @@
     var salt = role === 'user' ? 1 : 0;
     var variant = (Number(recordId || 0) + salt) % 4;
     node.dataset.bubbleVariant = String(variant);
-    node.dataset.author = role === 'user' ? tr('chat.you', '你') : 'IntelliBot';
+    node.dataset.author = role === 'user' ? tr('chat.you', '你') : 'PrimebotX';
   }
 
   /* 舞台不再滚动：一屏只留最近三组（一问一答算一组），更早的一条在
@@ -631,7 +631,7 @@
     if (input) {
       input.placeholder = active
         ? tr('chat.voice.listening', '正在聆听…')
-        : tr('chat.placeholder', '问问 IntelliBot…');
+        : tr('chat.placeholder', '问问 PrimebotX…');
     }
     if (!voiceButton) return;
     var key = active ? 'chat.voice.stop' : 'chat.voice.start';
@@ -739,7 +739,7 @@
     if (speechStop) speechStop.hidden = false;
     var voice = speechLanguage() === 'zh-CN' ? 'zh-CN-XiaoxiaoNeural' : 'en-US-AriaNeural';
     var headers = {'Content-Type': 'application/json'};
-    var authToken = sessionStorage.getItem('intellibot.auth.token');
+    var authToken = sessionStorage.getItem('primebotx.auth.token');
     if (authToken) headers.Authorization = 'Bearer ' + authToken;
     fetch(api + '/ai/speech', {
       method: 'POST',
@@ -974,10 +974,10 @@
     var timer = setTimeout(function () { controller.abort(); }, 35000);
     try {
       var headers = {'Content-Type': 'application/json', 'Idempotency-Key': crypto.randomUUID()};
-      var token = window.intellibotAuth ? window.intellibotAuth.token : '';
+      var token = window.primebotxAuth ? window.primebotxAuth.token : '';
       if (token) headers.Authorization = 'Bearer ' + token;
       var body = {message: text, history: previous};
-      var persona = window.intellibotPersona && window.intellibotPersona.active;
+      var persona = window.primebotxPersona && window.primebotxPersona.active;
       if (persona && persona.prompt) body.persona = persona.prompt;
       var response = await fetch(api + '/chat', {
         method: 'POST', headers: headers,
@@ -986,9 +986,9 @@
       });
       var payload = await response.json().catch(function () { throw new Error('AI 服务返回了无法解析的响应'); });
       if (response.status === 401) {
-        try { localStorage.removeItem('intellibot.auth.token'); } catch (_error) {}
+        try { localStorage.removeItem('primebotx.auth.token'); } catch (_error) {}
         stopActions();
-        window.dispatchEvent(new CustomEvent('intellibot-auth-required'));
+        window.dispatchEvent(new CustomEvent('primebotx-auth-required'));
       }
       if (!response.ok || payload.error) {
         throw new Error(payload.error && payload.error.message ? payload.error.message : '请求失败');
@@ -1245,14 +1245,14 @@
   function exportHistory() {
     if (!records.length) return;
     var text = records.map(function (record) {
-      var author = record.role === 'user' ? tr('chat.you', '你') : 'IntelliBot';
+      var author = record.role === 'user' ? tr('chat.you', '你') : 'PrimebotX';
       return author + ': ' + record.content;
     }).join('\n\n');
     var blob = new Blob([text], {type: 'text/markdown;charset=utf-8'});
     var url = URL.createObjectURL(blob);
     var link = document.createElement('a');
     link.href = url;
-    link.download = 'intellibot-chat-' + new Date().toISOString().slice(0, 10) + '.md';
+    link.download = 'primebotx-chat-' + new Date().toISOString().slice(0, 10) + '.md';
     link.click();
     setTimeout(function () { URL.revokeObjectURL(url); }, 0);
     setHistoryMenu(false);
@@ -1318,7 +1318,7 @@
   function welcome(playMotion) {
     if (!welcomeShown) {
       welcomeShown = true;
-      addRecord('ai', tr('chat.welcome', '你好，我是 IntelliBot，很高兴见到你！想看看我能做什么吗？'));
+      addRecord('ai', tr('chat.welcome', '你好，我是 PrimebotX，很高兴见到你！想看看我能做什么吗？'));
     }
     var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (playMotion && !welcomeMotionPlayed && !reduced &&
@@ -1411,7 +1411,7 @@
     window.addEventListener('resize', function () {
       syncStagePerspective();
     });
-    window.addEventListener('intellibot-idle-reaction', function (event) {
+    window.addEventListener('primebotx-idle-reaction', function (event) {
       showIdleReaction(event.detail && event.detail.kind);
     });
     window.addEventListener('robot-ready', function () { welcome(true); }, {once: true});
@@ -1432,7 +1432,7 @@
   syncHistoryActions();
   refreshSpeechControls();
 
-  window.intellibotChat = {
+  window.primebotxChat = {
     send: send,
     submit: function () { return send(input.value); },
     clear: clear,
